@@ -56,8 +56,8 @@ const JoinForm: React.FC<JoinFormProps> = ({joinEvent, nextState, setNextStage})
                     passwd,
                     name,
                     phoneNum,
-                    RNum : RNum1 + RNum2,
-                    Email : email1 + '@' + email2
+                    rNum : RNum1 + RNum2,
+                    email : email1 + '@' + email2
                 }), {
                     headers: {'Content-Type': 'application/json'}
                 }).then((res) => {

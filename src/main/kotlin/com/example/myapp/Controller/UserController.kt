@@ -1,7 +1,9 @@
 package com.example.myapp.Controller
 
 import com.example.myapp.Dto.UserDto
+import com.example.myapp.Entity.User
 import com.example.myapp.Service.UserService
+import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -22,7 +24,10 @@ class UserController {
 
     @RequestMapping("userJoin")
     fun userJoin(@RequestBody userDto :UserDto){
-        println("userDto.toString() : ${userDto.userId}");
+        val modelMapper = ModelMapper()
+
+        userService?.userJoin(modelMapper.map(userDto, User::class.java))
+
     }
 
 }
