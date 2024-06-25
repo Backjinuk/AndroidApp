@@ -10,5 +10,7 @@ interface UserService {
 
     fun userJoin(map: User?)
 
+    fun getFindUserId(userDtoToEntity: User) : String
+
 
 }

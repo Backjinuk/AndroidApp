@@ -44,6 +44,17 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    val jdslVersion = "2.2.1.RELEASE"
+    implementation("com.linecorp.kotlin-jdsl:hibernate-kotlin-jdsl-jakarta:$jdslVersion")
+    implementation("org.hibernate:hibernate-core:6.2.4.Final") // up to 6
+    // if using spring-data-jpa
+    implementation("com.linecorp.kotlin-jdsl:spring-data-kotlin-jdsl-starter-jakarta:$jdslVersion")
+
+
+    //spy 설정
+    implementation("p6spy:p6spy:3.9.1")
+    implementation("com.github.gavlyukovskiy:datasource-decorator-spring-boot-autoconfigure:1.9.0")
 }
 
 kotlin {

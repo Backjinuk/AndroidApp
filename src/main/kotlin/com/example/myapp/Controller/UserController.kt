@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 class UserController {
 
     private var userService : UserService? = null;
+    private var modelMapper = ModelMapper();
 
     @Autowired
     fun userController(userService: UserService){
@@ -24,10 +25,15 @@ class UserController {
 
     @RequestMapping("userJoin")
     fun userJoin(@RequestBody userDto :UserDto){
-        val modelMapper = ModelMapper()
-
-        userService?.userJoin(modelMapper.map(userDto, User::class.java))
-
+        userService?.userJoin(userDtoToEntity(userDto))
     }
 
+    @RequestMapping("getfindUserId")
+    fun getfindUserId(@RequestBody userDto : UserDto) : String? {
+        return userService?.getFindUserId(userDtoToEntity(userDto))
+    }
+
+    fun userDtoToEntity(userDto: UserDto) : User{
+        return modelMapper.map(userDto, User::class.java);
+    }
 }

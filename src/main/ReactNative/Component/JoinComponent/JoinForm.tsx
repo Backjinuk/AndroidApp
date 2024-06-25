@@ -79,6 +79,18 @@ const JoinForm: React.FC<JoinFormProps> = ({joinEvent, nextState, setNextStage})
         return true;
     }
 
+    const getFindUser= () => {
+        axios.post(api+"/user/getfindUserId", JSON.stringify({
+            userId : 'user01'
+        }), {
+            headers : {"Content-type" : "application/json"}
+        }).then(res => {
+            console.log(res.data)
+        }).catch(e => {
+            console.log(e)
+        })
+    }
+
 
 
     return (
