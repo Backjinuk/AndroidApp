@@ -82,7 +82,8 @@ const createStyles = (props: StylesProps) => {
         modalText: {
             marginBottom: 15,
             textAlign: "center"
-        }
+        },
+
     });
 };
 
