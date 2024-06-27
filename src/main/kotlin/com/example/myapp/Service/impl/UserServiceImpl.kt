@@ -23,6 +23,11 @@ class UserServiceImpl(
 
     override fun getFindUserId(user: User): String {
         val findUser = user.userId?.let { userRepository.findByUserId(it, queryFactory) }
-        return findUser?.toString() ?: "User not found"
+        return findUser?.toString() ?: "N"
+    }
+
+
+    override fun userLogin(user: User): Long? {
+        return user?.let{userRepository.userLogin(it, queryFactory)}
     }
 }

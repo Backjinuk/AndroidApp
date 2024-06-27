@@ -12,5 +12,7 @@ interface UserService {
 
     fun getFindUserId(userDtoToEntity: User) : String
 
+    fun userLogin(userDtoToEntity: User): Long?
+
 
 }
