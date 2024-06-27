@@ -28,10 +28,18 @@ class UserController {
         userService?.userJoin(userDtoToEntity(userDto))
     }
 
-    @RequestMapping("getfindUserId")
-    fun getfindUserId(@RequestBody userDto : UserDto) : String? {
+    @RequestMapping("getFindUserId")
+    fun getFindUserId(@RequestBody userDto : UserDto) : String? {
         return userService?.getFindUserId(userDtoToEntity(userDto))
     }
+
+    @RequestMapping("userLogin")
+    fun userLogin(@RequestBody userDto: UserDto) : Long?{
+        return userService?.userLogin(userDtoToEntity(userDto));
+    }
+
+
+
 
     fun userDtoToEntity(userDto: UserDto) : User{
         return modelMapper.map(userDto, User::class.java);

@@ -3,11 +3,7 @@ import React from "react";
 import createStyles from "./styles.ts";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-
-type RootStackParamList = {
-    Login: undefined;
-    Join: undefined;
-};
+import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
 
 
 export default function LoginMain(){
@@ -47,7 +43,7 @@ export default function LoginMain(){
                 <Text style={styles.signupButtonText}>이메일로 회원가입</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={ () => { navigation.navigate("LoginForm"); }}>
                 <Text style={styles.loginText}>이미 회원이신가요? 로그인</Text>
             </TouchableOpacity>
         </View>

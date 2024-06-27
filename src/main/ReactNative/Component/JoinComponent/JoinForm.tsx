@@ -4,6 +4,9 @@ import React, {useEffect, useState} from "react";
 import GeneratorType2 from "./GeneratorType2.tsx";
 import axios from "axios";
 import Config from "react-native-config";
+import {useNavigation} from "@react-navigation/native";
+import {NativeStackNavigationProp} from "@react-navigation/native-stack";
+import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
 
 interface JoinFormProps {
     joinEvent: boolean,
@@ -28,13 +31,10 @@ const JoinForm: React.FC<JoinFormProps> = ({joinEvent, nextState, setNextStage})
     const [email1, setEmail1] = useState('')
     const [email2, setEmail2] = useState('')
 
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
 
     const api = Config.API_BASE_URL;
-
-    // console.log('phoneNum :  ' + phoneNum);
-    // console.log('name : ' + name);
-    // console.log('RNum :' + RNum1 + RNum2)
-    // console.log('email :' + email1 + email2)
 
 
     useEffect(() => {
@@ -62,6 +62,7 @@ const JoinForm: React.FC<JoinFormProps> = ({joinEvent, nextState, setNextStage})
                     headers: {'Content-Type': 'application/json'}
                 }).then((res) => {
                     Alert.alert('회원가입에 성공하였습니다.');
+                    navigation.navigate('LoginMain');
                 })
             }
 
@@ -78,20 +79,6 @@ const JoinForm: React.FC<JoinFormProps> = ({joinEvent, nextState, setNextStage})
         }
         return true;
     }
-
-    const getFindUser= () => {
-        axios.post(api+"/user/getfindUserId", JSON.stringify({
-            userId : 'user01'
-        }), {
-            headers : {"Content-type" : "application/json"}
-        }).then(res => {
-            console.log(res.data)
-        }).catch(e => {
-            console.log(e)
-        })
-    }
-
-
 
     return (
         <>
@@ -151,7 +138,8 @@ const JoinForm: React.FC<JoinFormProps> = ({joinEvent, nextState, setNextStage})
                             value={userId}
                             setState={setUserId}
                             setBoardBottomColor={setBoardBottomColor1}
-                            BorderBottomColor={BorderBottomColor1}/>
+                            BorderBottomColor={BorderBottomColor1}
+                        />
 
                         <GeneratorType1
                             name='비밀번호'
@@ -172,7 +160,3 @@ const JoinForm: React.FC<JoinFormProps> = ({joinEvent, nextState, setNextStage})
 }
 
 export default JoinForm;
-
-function alert(arg0: string) {
-    throw new Error("Function not implemented.");
-}

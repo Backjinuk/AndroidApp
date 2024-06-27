@@ -60,6 +60,58 @@ const createStyles = () => {
             color: '#888',
             marginTop: 20,
         },
+        input: {
+            width: '100%',
+            height: 40,
+            borderColor: '#ddd',
+            borderWidth: 1,
+            borderRadius: 4,
+            paddingHorizontal: 8,
+            marginBottom: 12,
+        },
+        checkboxContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 12,
+        },
+        checkboxLabel: {
+            marginLeft: 8,
+            fontSize: 14,
+        },
+        loginButton: {
+            backgroundColor: '#000',
+            paddingVertical: 12,
+            paddingHorizontal: 32,
+            borderRadius: 4,
+            marginBottom: 16,
+        },
+        loginButtonText: {
+            color: '#fff',
+            fontSize: 16,
+        },
+        linkContainer: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '100%',
+            marginBottom: 16,
+        },
+        linkText: {
+            color: '#0066cc',
+        },
+        simpleLoginText: {
+            fontSize: 16,
+            marginBottom: 12,
+        },
+        socialIconsContainer: {
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            width: '100%',
+            marginBottom: 16,
+        },
+        noticeText: {
+            fontSize: 14,
+            color: '#ff6a00',
+        },
     });
 }
 
