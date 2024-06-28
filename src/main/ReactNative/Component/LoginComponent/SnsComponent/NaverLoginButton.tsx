@@ -1,7 +1,11 @@
 import React, {useState} from 'react';
-import { TouchableOpacity, Image } from 'react-native';
+import {TouchableOpacity, Image, Alert} from 'react-native';
 import Config from "react-native-config";
 import NaverLogin, {GetProfileResponse, NaverLoginResponse} from "@react-native-seoul/naver-login";
+import axios from "axios";
+import {NativeStackNavigationProp} from "@react-navigation/native-stack";
+import {RootStackParamList} from "../../../CommonTypes/RootStackParamList.ts";
+import {useNavigation} from "@react-navigation/native";
 
 
 // @ts-ignore
@@ -10,6 +14,7 @@ export default function NaverLoginButton({ styles }){
     const [failure, setFailureResponse]  = useState<NaverLoginResponse['failureResponse']>();
     const [getProfileRes, setGetProfileRes] = useState<GetProfileResponse>();
 
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const consumerKey = Config.NAVER_KEY as string;
     const consumerSecret = Config.NAVER_SECRET_KEY as string;
     const appName = 'MoGakCo';
@@ -27,16 +32,30 @@ export default function NaverLoginButton({ styles }){
     const login = async () => {
         try {
             const response = await NaverLogin.login();
-            if (response.isSuccess && response.successResponse) {
-                setSuccessResponse(response.successResponse);
-                const profileResult = await NaverLogin.getProfile(response.successResponse.accessToken);
-                setGetProfileRes(profileResult);
+            if (response.isSuccess) {
+                if (response.successResponse) {
+                    setSuccessResponse(response.successResponse);
+                    const profileResult = await NaverLogin.getProfile(response.successResponse.accessToken);
+                    setGetProfileRes(profileResult);
 
-                console.log("response.successResponse : " + response.successResponse.accessToken)
-                console.log("profileResult : " + profileResult)
+                    loginAxsio();
+
+                } else if (response.failureResponse) {
+                    // @ts-ignore
+                    const {lastErrorCodeFromNaverSDK, lastErrorDescriptionFromNaverSDK} = response;
+
+                    if (lastErrorCodeFromNaverSDK === 'user_cancel') {
+                        console.log('User cancelled the login process.');
+                        // 사용자가 취소했을 때 처리할 로직 추가
+                    } else {
+                        console.error('Login failed:', lastErrorDescriptionFromNaverSDK);
+                        // 로그인 실패 시 처리할 로직 추가
+                    }
+                    setFailureResponse(response.failureResponse);
+                }
             } else if (response.failureResponse) {
                 // @ts-ignore
-                const { lastErrorCodeFromNaverSDK, lastErrorDescriptionFromNaverSDK } = response;
+                const {lastErrorCodeFromNaverSDK, lastErrorDescriptionFromNaverSDK} = response;
                 if (lastErrorCodeFromNaverSDK === 'user_cancel') {
                     console.log('User cancelled the login process.');
                     // 사용자가 취소했을 때 처리할 로직 추가
@@ -50,6 +69,30 @@ export default function NaverLoginButton({ styles }){
             console.error('Login error', error);
         }
     };
+
+    const loginAxsio = () => {
+        axios.post(Config.API_BASE_URL + '/user/userJoin', JSON.stringify({
+            userId: getProfileRes?.response.id,
+            email : getProfileRes?.response.email,
+            userName : getProfileRes?.response.name,
+            phoneNum : getProfileRes?.response.mobile,
+            userType : "Naver"
+        }), {
+
+            headers : {
+                "Content-Type" : "application/json"
+            }
+
+        }).then(res => {
+
+            if(res.data){
+                Alert.alert("회원가입이 완료 되었습니다.")
+            }else{
+                navigation.navigate("MapMain")
+            }
+
+        })
+    }
 
 
 

@@ -19,6 +19,10 @@
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:host="oauth" android:scheme="kakaob63be41514f002f3227d0edfc3d32517" />
         </intent-filter>
       </activity>
     </application>

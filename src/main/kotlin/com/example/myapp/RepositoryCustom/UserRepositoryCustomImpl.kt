@@ -44,5 +44,18 @@ class UserRepositoryCustomImpl @Autowired constructor(
         return query.resultList.firstOrNull()
     }
 
+    override fun searchUser(it: User, queryFactory: QueryFactoryImpl): Long? {
+        val query = queryFactory.selectQuery<Long> {
+            select(count(User::userId))
+            from(entity(User::class))
+            where(
+                and(
+                    col(User::userId).equal(it.userId)
+                )
+            )
+        }
+        return query.resultList.firstOrNull()
+    }
+
 
 }

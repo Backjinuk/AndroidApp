@@ -12,4 +12,6 @@ interface UserRepositoryCustom {
 
     fun userLogin(it: User, queryFactory: QueryFactoryImpl) : Long?
 
+    fun searchUser(it: User, queryFactory: QueryFactoryImpl) : Long?
+
 }

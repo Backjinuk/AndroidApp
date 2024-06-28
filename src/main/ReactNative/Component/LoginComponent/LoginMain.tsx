@@ -5,9 +5,9 @@ import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
 import NaverLoginButton from "./SnsComponent/NaverLoginButton.tsx";
-import KakaoLogin from "./SnsComponent/KakaoLogin.tsx";
-import GoogleLogin from "./SnsComponent/GoogleLogin.tsx";
-import FaceBookLogin from "./SnsComponent/FaceBookLogin.tsx";
+import KakaoLoginButton from "./SnsComponent/KakaoLoginButton.tsx";
+import GoogleLoginButton from "./SnsComponent/GoogleLoginButton.tsx";
+import FaceBookLoginButton from "./SnsComponent/FaceBookLoginButton.tsx";
 
 
 export default function LoginMain(){
@@ -22,9 +22,9 @@ export default function LoginMain(){
 
             <View style={styles.socialButtonsContainer}>
                 <NaverLoginButton styles={styles} />
-                <KakaoLogin styles={styles} />
-                <GoogleLogin styles={styles}/>
-                <FaceBookLogin styles={styles} />
+                <KakaoLoginButton styles={styles} />
+                <GoogleLoginButton styles={styles}/>
+                <FaceBookLoginButton styles={styles} />
             </View>
 
             <Text style={styles.orText}>또는</Text>

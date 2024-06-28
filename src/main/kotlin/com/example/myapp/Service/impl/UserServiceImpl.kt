@@ -21,13 +21,18 @@ class UserServiceImpl(
         user?.let { userRepository.save(it) }
     }
 
+    override fun searchUser(user: User): Long? {
+        return user?.let { userRepository.searchUser(it, queryFactory) }
+    }
+    
     override fun getFindUserId(user: User): String {
         val findUser = user.userId?.let { userRepository.findByUserId(it, queryFactory) }
         return findUser?.toString() ?: "N"
     }
-
-
+    
     override fun userLogin(user: User): Long? {
         return user?.let{userRepository.userLogin(it, queryFactory)}
     }
+
 }
+
