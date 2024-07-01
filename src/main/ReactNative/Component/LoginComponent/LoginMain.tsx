@@ -4,6 +4,10 @@ import createStyles from "./styles.ts";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
+import NaverLoginButton from "./SnsComponent/NaverLoginButton.tsx";
+import KakaoLoginButton from "./SnsComponent/KakaoLoginButton.tsx";
+import GoogleLoginButton from "./SnsComponent/GoogleLoginButton.tsx";
+import FaceBookLoginButton from "./SnsComponent/FaceBookLoginButton.tsx";
 
 
 export default function LoginMain(){
@@ -17,21 +21,10 @@ export default function LoginMain(){
             <Text style={styles.description}>회원가입 방식을 선택해 주세요.</Text>
 
             <View style={styles.socialButtonsContainer}>
-                <TouchableOpacity style={styles.socialButton}>
-                    <Image source={require('./assets/naver.png')} style={styles.icon} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                    <Image source={require('./assets/kakao.png')} style={styles.icon} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                    <Image source={require('./assets/google.png')} style={styles.icon} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                    <Image source={require('./assets/apple.png')} style={styles.icon} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                    <Image source={require('./assets/facebook.png')} style={styles.icon} />
-                </TouchableOpacity>
+                <NaverLoginButton styles={styles} />
+                <KakaoLoginButton styles={styles} />
+                <GoogleLoginButton styles={styles}/>
+                <FaceBookLoginButton styles={styles} />
             </View>
 
             <Text style={styles.orText}>또는</Text>

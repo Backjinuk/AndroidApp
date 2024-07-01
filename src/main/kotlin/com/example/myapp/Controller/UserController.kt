@@ -22,10 +22,16 @@ class UserController {
         this.userService = userService;
     }
 
-
     @RequestMapping("userJoin")
-    fun userJoin(@RequestBody userDto :UserDto){
-        userService?.userJoin(userDtoToEntity(userDto))
+    fun userJoin(@RequestBody userDto :UserDto) : Boolean {
+        val searchUser: Boolean = userService?.searchUser(userDtoToEntity(userDto)) === 0.toLong()
+
+
+        if(searchUser){
+            userService?.userJoin(userDtoToEntity(userDto))
+        }
+
+        return  searchUser
     }
 
     @RequestMapping("getFindUserId")
@@ -37,9 +43,6 @@ class UserController {
     fun userLogin(@RequestBody userDto: UserDto) : Long?{
         return userService?.userLogin(userDtoToEntity(userDto));
     }
-
-
-
 
     fun userDtoToEntity(userDto: UserDto) : User{
         return modelMapper.map(userDto, User::class.java);

@@ -10,6 +10,8 @@ interface UserService {
 
     fun userJoin(map: User?)
 
+    fun searchUser(userDtoToEntity: User): Long?
+
     fun getFindUserId(userDtoToEntity: User) : String
 
     fun userLogin(userDtoToEntity: User): Long?
