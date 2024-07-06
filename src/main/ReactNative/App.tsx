@@ -12,7 +12,7 @@ function App(): React.JSX.Element {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="MapMain">
+      <Stack.Navigator initialRouteName="LoginMain">
         <Stack.Screen name="Join" component={JoinFormMain} />
         <Stack.Screen name="LoginMain" component={LoginMain} />
         <Stack.Screen name="LoginForm" component={LoginForm} />
