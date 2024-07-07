@@ -12,12 +12,13 @@ buildscript {
         google()
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
-        maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' } // 추가
+        maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
+        classpath("com.android.tools.build:gradle:7.4.2")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("com.google.gms:google-services:4.4.2") // Google Services Gradle Plugin 추가
     }
 }
 
