@@ -85,9 +85,16 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
+            storeFile file('C:/Users/user/.android/debug.keystore')
             storePassword 'android'
-            keyAlias 'androiddebugkey'
+            keyAlias 'myNewKey'
+            keyPassword 'android'
+        }
+
+        release {
+            storeFile file('C:/Users/user/.android/release.keystore')
+            storePassword 'android'
+            keyAlias 'myNewKey'
             keyPassword 'android'
         }
     }
@@ -108,6 +115,7 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation("com.facebook.android:facebook-login:latest.release")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
