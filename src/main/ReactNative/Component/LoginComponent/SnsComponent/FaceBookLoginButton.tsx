@@ -26,8 +26,8 @@ export default function FaceBookLoginButton({ styles }) {
                 const tokenData = await AccessToken.getCurrentAccessToken();
                 if (tokenData) {
                     setToken(tokenData.accessToken.toString());
-                    await fetchUserProfile(tokenData.accessToken.toString());
-                    console.log('Access Token:', token);
+                    //token값으로 회원의 프로필 조회
+                    await fetchUserProfile(token);
                 } else {
                     Alert.alert('Login failed', 'Unable to get access token');
                 }
@@ -43,7 +43,6 @@ export default function FaceBookLoginButton({ styles }) {
             const response = await fetch(`https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,email,picture`);
             const data = await response.json();
             setUserInfo(data);
-            console.log('User Info:', data);
             LoginAxios();
         } catch (error) {
             // @ts-ignore
@@ -66,6 +65,10 @@ export default function FaceBookLoginButton({ styles }) {
         }).then(res => {
             if(res.data){
                 Alert.alert("회원가입이 완료 되었습니다.")
+                setTimeout( () => {
+                    navigation.navigate("MapMain")
+
+                }, 1000 )
             }else{
                 navigation.navigate("MapMain")
             }

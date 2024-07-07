@@ -5,6 +5,7 @@ import auth from '@react-native-firebase/auth';
 import Config from "react-native-config";
 
 // @ts-ignore
+//보류....
 export default function GoogleLoginButton({styles}) {
     const [token, setIdToken] = useState('');
 
@@ -14,7 +15,6 @@ export default function GoogleLoginButton({styles}) {
 
 
     const googleSigninConfigure = () => {
-        console.log(Config.GOOGLE_CLIENT_ID)
         GoogleSignin.configure({
             webClientId: Config.GOOGLE_CLIENT_ID, // Firebase 콘솔에서 가져온 웹 클라이언트 ID
             offlineAccess: true, // 필요한 경우 오프라인 액세스 설정
