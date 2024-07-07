@@ -21,5 +21,13 @@ buildscript {
         classpath("com.google.gms:google-services:4.4.2") // Google Services Gradle Plugin 추가
     }
 }
-
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url 'https://repository.map.naver.com/archive/maven'
+        }
+    }
+}
 apply plugin: "com.facebook.react.rootproject"

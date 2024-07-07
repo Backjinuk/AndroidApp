@@ -76,7 +76,6 @@ export default function LoginForm() {
             </View>
 
             <Text style={styles.simpleLoginText}>간편로그인</Text>
-
             <View style={styles.socialIconsContainer}>
                 <Image source={require('./assets/naver.png')} style={styles.icon} />
                 <Image source={require('./assets/kakao.png')} style={styles.icon} />
