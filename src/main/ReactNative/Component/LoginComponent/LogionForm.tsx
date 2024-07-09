@@ -24,9 +24,9 @@ export default function LoginForm() {
                 "Content-Type" : "application/json"
             }
         }).then((res) => {
-            if(res.data === 1){
+            if(res.data != null){
                 Alert.alert("로그인 되었습니다.")
-
+                console.log("jwtToken : " + res.data)
                 setTimeout(() => {
                     navigation.navigate('MapMain')
                 },1000)

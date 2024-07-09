@@ -1,5 +1,6 @@
 package com.example.myapp.Service
 
+import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.User
 import com.example.myapp.Repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,7 +15,7 @@ interface UserService {
 
     fun getFindUserId(userDtoToEntity: User) : String
 
-    fun userLogin(userDtoToEntity: User): Long?
+    fun userLogin(userDtoToEntity: User): UserDto?
 
 
 }

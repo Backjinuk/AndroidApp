@@ -1,5 +1,6 @@
 package com.example.myapp.Service.impl
 
+import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.User
 import com.example.myapp.Repository.UserRepository
 import com.example.myapp.Service.UserService
@@ -30,7 +31,7 @@ class UserServiceImpl(
         return findUser?.toString() ?: "N"
     }
     
-    override fun userLogin(user: User): Long? {
+    override fun userLogin(user: User): UserDto? {
         return user?.let{userRepository.userLogin(it, queryFactory)}
     }
 

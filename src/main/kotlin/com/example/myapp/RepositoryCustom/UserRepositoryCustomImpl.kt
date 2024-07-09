@@ -1,5 +1,6 @@
 package com.example.myapp.RepositoryCustom
 
+import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.User
 import com.linecorp.kotlinjdsl.QueryFactoryImpl
 import com.linecorp.kotlinjdsl.querydsl.expression.col
@@ -7,6 +8,7 @@ import com.linecorp.kotlinjdsl.querydsl.expression.count
 import com.linecorp.kotlinjdsl.selectQuery
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
+import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 
@@ -16,6 +18,7 @@ class UserRepositoryCustomImpl @Autowired constructor(
     @PersistenceContext private val entityManager: EntityManager
 ) : UserRepositoryCustom {
 
+    private var modelMapper = ModelMapper();
 
     override fun findByUserId(userId: String, queryFactory: QueryFactoryImpl): User? {
         val query = queryFactory.selectQuery<User> {
@@ -30,9 +33,9 @@ class UserRepositoryCustomImpl @Autowired constructor(
         return query.resultList.firstOrNull()
     }
 
-    override fun userLogin(user: User, queryFactory: QueryFactoryImpl): Long? {
-        val query = queryFactory.selectQuery<Long> {
-            select(count(User::userId))
+    override fun userLogin(user: User, queryFactory: QueryFactoryImpl): UserDto? {
+        val query = queryFactory.selectQuery<User> {
+            select(entity(User::class))
             from(entity(User::class))
             where(
                 and(
@@ -41,7 +44,7 @@ class UserRepositoryCustomImpl @Autowired constructor(
                 )
             )
         }
-        return query.resultList.firstOrNull()
+        return modelMapper.map(query.resultList.firstOrNull(), UserDto::class.java)
     }
 
     override fun searchUser(it: User, queryFactory: QueryFactoryImpl): Long? {
