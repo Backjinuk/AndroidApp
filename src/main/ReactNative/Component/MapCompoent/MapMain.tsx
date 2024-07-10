@@ -11,17 +11,19 @@ import Config from 'react-native-config';
 import Geolocation from '@react-native-community/geolocation';
 
 interface Position {
+  title?: string;
+  address?: string;
   latitude: number;
   longitude: number;
 }
 interface Location {
   address: string;
-  lat: number;
-  lon: number;
+  latitude: number;
+  longitude: number;
   title: string;
 }
 export default function MapMain() {
-  const debug = false;
+  const debug = true;
   const log = (message?: any, ...optionalParams: any[]) => {
     if (debug) console.log(message, ...optionalParams);
   };
@@ -39,12 +41,26 @@ export default function MapMain() {
     log(region);
     privateSetLocations(array);
   };
-  const [position, setPosition] = useState<Position | undefined>(undefined);
+  const [position, privateSetPosition] = useState<Position | undefined>(
+    undefined,
+  );
+  const setPosition = async (position: Position) => {
+    const info = await reverseGeocoding(position);
+    log(info.results[1]);
+    //도로명 주소가 없을 경우
+    if (info.results[1] === undefined) {
+      //도로명 주소가 있을 경우
+    } else {
+      // position.address  =
+    }
+    // privateSetPosition(info)
+  };
   const naver_search_api_client_id = Config.NAVER_SEARCH_API_CLIENT_ID;
   const naver_search_api_client_secret = Config.NAVER_SEARCH_API_CLIENT_SECRET;
   const naver_map_api_client_id = Config.NAVER_MAP_API_CLIENT_ID;
   const naver_map_api_client_secret = Config.NAVER_MAP_API_CLIENT_SECRET;
 
+  // 지역 검색 결과 분석
   const analyzeLocations = (locations: any[]) => {
     const array: Location[] = [];
     const indexSet: string[] = [];
@@ -61,9 +77,9 @@ export default function MapMain() {
       const lon = e.mapx / 10000000;
       const lat = e.mapy / 10000000;
       log(e.address);
-      log({address, lat, lon, title: e.title});
+      log({address, latitude: lat, longitude: lon, title: e.title});
       if (!indexSet.includes(address)) {
-        array.push({address, lat, lon, title: e.title});
+        array.push({address, latitude: lat, longitude: lon, title: e.title});
         minLat = Math.min(minLat, lat);
         maxLat = Math.max(maxLat, lat);
         minLon = Math.min(minLon, lon);
@@ -83,6 +99,10 @@ export default function MapMain() {
     return {array, region};
   };
 
+  // 주소 문자열로 치환
+  const analyzeAddress = () => {};
+
+  // 키워드로 검색
   const searchLocation = async (keyword: string, dongname: string) => {
     const locationKeyword = keyword + ' ' + dongname;
     const aroundLocations = await getLocationData(locationKeyword);
@@ -112,14 +132,14 @@ export default function MapMain() {
     return items;
   };
 
-  const reverseGeocoding = async () => {
-    if (camera === undefined) return;
+  const reverseGeocoding = async (position: Camera | Position) => {
+    if (position === undefined) return;
     const data = await axios.get(
       'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc',
       {
         params: {
-          coords: camera.longitude + ',' + camera.latitude,
-          orders: 'admcode',
+          coords: position.longitude + ',' + position.latitude,
+          orders: 'admcode,roadaddr',
           output: 'json',
         },
         headers: {
@@ -128,40 +148,26 @@ export default function MapMain() {
         },
       },
     );
-    const dongname = data.data.results[0].region.area3.name;
+    return data.data;
+  };
+
+  const getDongName = async () => {
+    if (camera === undefined) return;
+    const data = await reverseGeocoding(camera);
+    const dongname = data.results[0].region.area3.name;
     log(dongname);
     return dongname;
   };
 
   const getLocations = async () => {
-    const dongname = await reverseGeocoding();
+    const dongname = await getDongName();
     await searchLocation(keyword, dongname);
   };
 
-  const getMyPosition = () => {
-    Geolocation.getCurrentPosition(
-      position => {
-        const latitude = Number(JSON.stringify(position.coords.latitude));
-        const longitude = Number(JSON.stringify(position.coords.longitude));
-
-        setPosition({
-          latitude,
-          longitude,
-        });
-      },
-      error => {
-        console.log(error.code, error.message);
-      },
-      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-    );
-  };
-
   const NAVER_MAP_INSTALL_LINK = 'market://details?id=com.nhn.android.nmap';
-  const findRoute = async (location: Location) => {
-    const title = encodeURI(
-      location.title.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '),
-    );
-    const url = `nmap://route/walk?dlat=${location.lat}&dlng=${location.lon}&dname=${title}&appname=com.reactnative`;
+  const findRoute = async (location: Position) => {
+    const title = getLocationTitle(location);
+    const url = `nmap://route/walk?dlat=${location.latitude}&dlng=${location.longitude}&dname=${title}&appname=com.reactnative`;
     log(url);
 
     if (await Linking.canOpenURL(url)) {
@@ -170,6 +176,22 @@ export default function MapMain() {
       await Linking.openURL(NAVER_MAP_INSTALL_LINK);
     }
   };
+
+  const getLocationTitle = (location: Position) => {
+    const title = location?.title;
+    if (title === undefined) {
+      const data = reverseGeocoding(location);
+      console.log(data);
+      // return encodeURI(
+      // title.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '),
+      // );
+      return '';
+    } else {
+      return encodeURI(title.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '));
+    }
+  };
+
+  const tapMap = () => {};
 
   return (
     <>
@@ -191,6 +213,7 @@ export default function MapMain() {
           animationDuration={500}
           region={region}
           onTapMap={params => {
+            setPosition(params);
             setLat(params.latitude);
             setLon(params.longitude);
           }}>
@@ -207,16 +230,23 @@ export default function MapMain() {
           {locations.length !== 0 &&
             locations.map(location => (
               <NaverMapMarkerOverlay
-                key={location.lat + ' ' + location.lon}
-                latitude={location.lat}
-                longitude={location.lon}
+                key={location.latitude + ' ' + location.longitude}
+                latitude={location.latitude}
+                longitude={location.longitude}
                 onTap={() => {
-                  findRoute(location);
+                  setPosition(location);
                 }}
                 anchor={{x: 0.5, y: 1}}
               />
             ))}
         </NaverMapView>
+      </View>
+      <View>
+        <Text>{position?.title}</Text>
+        <Button
+          title="길찾기"
+          onPress={() => (position ? findRoute(position) : () => {})}
+        />
       </View>
     </>
   );
