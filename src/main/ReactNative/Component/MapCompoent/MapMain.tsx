@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Alert, Button, Linking, Text, TextInput, View} from 'react-native';
 import {
   Camera,
@@ -8,7 +8,6 @@ import {
 } from '@mj-studio/react-native-naver-map';
 import axios, {AxiosError} from 'axios';
 import Config from 'react-native-config';
-import Geolocation from '@react-native-community/geolocation';
 
 interface Position {
   title?: string;
@@ -27,12 +26,11 @@ export default function MapMain() {
   const log = (message?: any, ...optionalParams: any[]) => {
     if (debug) console.log(message, ...optionalParams);
   };
-  const [lat, setLat] = useState(0);
-  const [lon, setLon] = useState(0);
   const [camera, setCamera] = useState<Camera>();
   const [keyword, setKeyword] = useState('');
   const [locations, privateSetLocations] = useState<Location[]>([]);
   const [region, setRegion] = useState<Region>();
+  //검색 좌표들
   const setLocations = (locations: any[]) => {
     log(locations);
     const {array, region} = analyzeLocations(locations);
@@ -44,17 +42,57 @@ export default function MapMain() {
   const [position, privateSetPosition] = useState<Position | undefined>(
     undefined,
   );
+  //마커의 현재 위치
   const setPosition = async (position: Position) => {
-    const info = await reverseGeocoding(position);
-    log(info.results[1]);
-    //도로명 주소가 없을 경우
-    if (info.results[1] === undefined) {
-      //도로명 주소가 있을 경우
+    const newRegion = {
+      latitude: position.latitude,
+      longitude: position.longitude,
+      latitudeDelta: Math.floor(Math.random() * 10) / 10000000,
+      longitudeDelta: Math.floor(Math.random() * 10) / 10000000,
+    };
+    setRegion(newRegion);
+    if (position.address == undefined) {
+      const info = await reverseGeocoding(position);
+      const nextPosition = {...position};
+      nextPosition.title = '';
+      log('start');
+      log(info.results[0]);
+      log(info.results[1]);
+      //도로명 주소가 없을 경우
+      if (info.results[1] === undefined || info.results[1].land === undefined) {
+        nextPosition.address =
+          info.results[0].region.area1.name +
+          ' ' +
+          info.results[0].region.area2.name +
+          ' ' +
+          info.results[0].region.area3.name;
+        //도로명 주소가 있을 경우
+      } else {
+        let positionAddress =
+          info.results[1].region.area1.name +
+          ' ' +
+          info.results[1].region.area2.name +
+          ' ' +
+          info.results[1].region.area3.name +
+          ' ' +
+          info.results[1].land.name;
+        positionAddress += ' ' + info.results[1].land.number1;
+        if (info.results[1].land.number2 !== '') {
+          positionAddress += '-' + info.results[1].land.number2;
+        }
+        nextPosition.address = positionAddress;
+        nextPosition.title = info.results[1].land.addition0.value;
+      }
+      if (nextPosition.title == '') nextPosition.title = nextPosition.address;
+      privateSetPosition(nextPosition);
     } else {
-      // position.address  =
+      position.title = getLocationTitle(position);
+      privateSetPosition(position);
     }
-    // privateSetPosition(info)
+    setCameraPoint(undefined);
   };
+  const [cameraPoint, setCameraPoint] = useState<any>();
+  const timerRef = useRef<any>();
   const naver_search_api_client_id = Config.NAVER_SEARCH_API_CLIENT_ID;
   const naver_search_api_client_secret = Config.NAVER_SEARCH_API_CLIENT_SECRET;
   const naver_map_api_client_id = Config.NAVER_MAP_API_CLIENT_ID;
@@ -69,11 +107,7 @@ export default function MapMain() {
     let minLon = 1000;
     let maxLon = 0;
     locations.forEach(e => {
-      const addressArray = e.address.split(' ');
-      let address = addressArray[0];
-      for (let index = 1; index < 4; index++) {
-        address += ' ' + addressArray[index];
-      }
+      const address = analyzeAddress(e.address);
       const lon = e.mapx / 10000000;
       const lat = e.mapy / 10000000;
       log(e.address);
@@ -100,9 +134,16 @@ export default function MapMain() {
   };
 
   // 주소 문자열로 치환
-  const analyzeAddress = () => {};
+  const analyzeAddress = (address: string) => {
+    const addressArray = address.split(' ');
+    let result = addressArray[0];
+    for (let index = 1; index < 4; index++) {
+      result += ' ' + addressArray[index];
+    }
+    return result;
+  };
 
-  // 키워드로 검색
+  // 키워드 + 현재 동 검색 => 키워드 검색
   const searchLocation = async (keyword: string, dongname: string) => {
     const locationKeyword = keyword + ' ' + dongname;
     const aroundLocations = await getLocationData(locationKeyword);
@@ -114,6 +155,7 @@ export default function MapMain() {
     }
   };
 
+  // 지역 검색 조회 api
   const getLocationData = async (str: string) => {
     const data = await axios.get(
       'https://openapi.naver.com/v1/search/local.json',
@@ -132,6 +174,7 @@ export default function MapMain() {
     return items;
   };
 
+  // 좌표 => 주소 api
   const reverseGeocoding = async (position: Camera | Position) => {
     if (position === undefined) return;
     const data = await axios.get(
@@ -139,7 +182,7 @@ export default function MapMain() {
       {
         params: {
           coords: position.longitude + ',' + position.latitude,
-          orders: 'admcode,roadaddr',
+          orders: 'legalcode,roadaddr,admcode',
           output: 'json',
         },
         headers: {
@@ -151,6 +194,7 @@ export default function MapMain() {
     return data.data;
   };
 
+  // 현재 행정동 이름 가져오기
   const getDongName = async () => {
     if (camera === undefined) return;
     const data = await reverseGeocoding(camera);
@@ -159,14 +203,16 @@ export default function MapMain() {
     return dongname;
   };
 
+  // 지역 검색
   const getLocations = async () => {
     const dongname = await getDongName();
     await searchLocation(keyword, dongname);
   };
 
+  // 네이버 길찾기 실행
   const NAVER_MAP_INSTALL_LINK = 'market://details?id=com.nhn.android.nmap';
   const findRoute = async (location: Position) => {
-    const title = getLocationTitle(location);
+    const title = encodeURI(getLocationTitle(location));
     const url = `nmap://route/walk?dlat=${location.latitude}&dlng=${location.longitude}&dname=${title}&appname=com.reactnative`;
     log(url);
 
@@ -177,18 +223,36 @@ export default function MapMain() {
     }
   };
 
+  // html 코드 제거
   const getLocationTitle = (location: Position) => {
     const title = location?.title;
     if (title === undefined) {
       const data = reverseGeocoding(location);
-      console.log(data);
+      log(data);
       // return encodeURI(
       // title.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '),
       // );
       return '';
     } else {
-      return encodeURI(title.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '));
+      return title.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
     }
+  };
+
+  const startTimeout = (position: Position) => {
+    timerRef.current = setTimeout(() => {
+      setPosition(position);
+    }, 1000); // 1초 타이머 설정
+  };
+
+  const cancelTimeout = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+  };
+
+  const resetTimeout = (position: Position) => {
+    cancelTimeout();
+    startTimeout(position);
   };
 
   const tapMap = () => {};
@@ -201,7 +265,13 @@ export default function MapMain() {
           setKeyword(e);
         }}
       />
-      <Button title="search" onPress={getLocations} />
+      <Button
+        title="search"
+        onPress={() => {
+          getLocations();
+          privateSetPosition(undefined);
+        }}
+      />
       <View style={{flex: 1}}>
         <NaverMapView
           maxZoom={18}
@@ -209,20 +279,37 @@ export default function MapMain() {
           style={{flex: 1}}
           onCameraChanged={camera => {
             setCamera(camera);
+            if (
+              camera.reason == 'Gesture' &&
+              (cameraPoint !== undefined || position !== undefined)
+            ) {
+              log(camera);
+              const nextCameraPoint = {
+                latitude: camera.latitude,
+                longitude: camera.longitude,
+              };
+              resetTimeout(nextCameraPoint);
+              setCameraPoint(nextCameraPoint);
+            }
           }}
           animationDuration={500}
           region={region}
           onTapMap={params => {
             setPosition(params);
-            setLat(params.latitude);
-            setLon(params.longitude);
           }}>
-          {lat !== 0 && (
+          {cameraPoint && (
             <NaverMapMarkerOverlay
-              latitude={lat}
-              longitude={lon}
+              latitude={cameraPoint.latitude}
+              longitude={cameraPoint.longitude}
+              anchor={{x: 0.5, y: 1}}
+            />
+          )}
+          {!cameraPoint && position && (
+            <NaverMapMarkerOverlay
+              latitude={position.latitude}
+              longitude={position.longitude}
               onTap={() => {
-                setLat(0);
+                setPosition(position);
               }}
               anchor={{x: 0.5, y: 1}}
             />
@@ -242,11 +329,19 @@ export default function MapMain() {
         </NaverMapView>
       </View>
       <View>
-        <Text>{position?.title}</Text>
-        <Button
-          title="길찾기"
-          onPress={() => (position ? findRoute(position) : () => {})}
-        />
+        {position && (
+          <>
+            <Text>{position?.title}</Text>
+            <Button title="길찾기" onPress={() => findRoute(position)} />
+            <Button
+              title="닫기"
+              onPress={() => {
+                privateSetPosition(undefined);
+                cancelTimeout();
+              }}
+            />
+          </>
+        )}
       </View>
     </>
   );

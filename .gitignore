@@ -45,5 +45,10 @@ out/
 # Ignore application.yml file
 /src/main/resources/application.yml
 
+/src/main/ReactNative/android/google-services.json
+/src/main/ReactNative/android/app/google-services.json
+
+/local.properties
+
 
 
