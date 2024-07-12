@@ -1,37 +1,53 @@
 package com.example.myapp.Config
 
+import com.example.myapp.Util.JwtUtil
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import kotlin.jvm.Throws
 
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig  {
+class SecurityConfig(private val jwtUtil: JwtUtil) {
+
+    private val log = LoggerFactory.getLogger(JwtUtil::class.java)
+
+    @Bean
+    fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
+        return authenticationConfiguration.authenticationManager
+    }
 
     @Bean
     @Throws(Exception::class)
-    fun filterChain(httpSecurity: HttpSecurity) : SecurityFilterChain{
-        httpSecurity.csrf{it.disable()}
-            .httpBasic{it.disable()}
+    fun filterChain(http: HttpSecurity, authenticationManager: AuthenticationManager): SecurityFilterChain {
+        http.csrf { it.disable() }
+            .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .authorizeHttpRequests { authorize ->
-                authorize.requestMatchers("/user/userJoin", "/" ,"/user/userLogin").permitAll()
+                authorize.requestMatchers("/user/userJoin", "/", "/user/userLogin", "/user/JwtTokenGetUserSeq").permitAll()
                     .anyRequest().authenticated()
             }
-            .logout{logout ->
+            .logout { logout ->
                 logout.logoutSuccessUrl("/userLogin")
                     .invalidateHttpSession(true)
             }
-            .sessionManagement{session ->
+            .sessionManagement { session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
-        return httpSecurity.build();
+            .addFilterBefore(JwtAuthenticationFilter(jwtUtil, authenticationManager), BasicAuthenticationFilter::class.java)
+
+        log.debug("Security configuration loaded with JWT filter")
+        return http.build()
     }
 
 
@@ -39,6 +55,7 @@ class SecurityConfig  {
     fun bCryptPasswordEncoder(): BCryptPasswordEncoder {
         return BCryptPasswordEncoder();
     }
+
 
 
 }

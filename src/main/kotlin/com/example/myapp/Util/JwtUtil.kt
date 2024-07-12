@@ -16,7 +16,8 @@ import java.util.Date
 @Component
 class JwtUtil(
     @Value("\${jwt.secret}") secretKey: String,
-    @Value("\${jwt.expiration_time}") private val accessTokenExpTime: Long) {
+    @Value("\${jwt.expiration_time}") private val accessTokenExpTime: Long,
+    @Value("\${jwt.refresh_time}") private val refreshTokenExpTime: Long) {
 
     private val key: Key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))
     private val log = LoggerFactory.getLogger(JwtUtil::class.java)
@@ -28,6 +29,15 @@ class JwtUtil(
      */
     fun createAccessToken(userDto: UserDto): String {
         return createToken(userDto, accessTokenExpTime)
+    }
+
+    /**
+     * Refresh Token 생성
+     * @param userDto : UserDto
+     * @return Refresh Token String
+     */
+    fun createRefreshToken(userDto: UserDto): String {
+        return createToken(userDto, refreshTokenExpTime)
     }
 
     /**
@@ -46,27 +56,24 @@ class JwtUtil(
         val tokenValidity: ZonedDateTime = now.plusSeconds(accessTokenExpTime)
 
         return try {
-            Jwts.builder()
+            val jwt = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(Date.from(now.toInstant()))
                 .setExpiration(Date.from(tokenValidity.toInstant()))
                 .signWith(key, SignatureAlgorithm.HS256)
-                .compact().also {
-                    println("Token generated successfully: $it")
-                }
+                .compact()
+                .replace("\\s+".toRegex(), "")
+
+            // Bearer 토큰 형식으로 반환
+            "Bearer $jwt".also {
+                println("Token generated successfully: $it")
+            }
+
         } catch (e: Exception) {
             println("Error creating token: ${e.message}")
             e.printStackTrace()
             ""
         }
-    }
-    /**
-     * Token에서 User ID 추출
-     * @param token : String
-     * @return UserSeq :Long
-     */
-    fun getUserSeq(token:String) : Long{
-        return parseClaims(token)["userSeq", Long::class.java]
     }
 
     /**
@@ -74,40 +81,75 @@ class JwtUtil(
      * @param token : String
      * @return Claims : Claims
      */
-    fun parseClaims(token: String): Claims {
-        return try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).body;
+    fun parseClaims(token: Map<String, Any>): Claims? {
+        try {
+            // JwtToken에서 JWT를 추출하고 처리
+            val accessToken = token["AccessToken"].toString().replace("Bearer ", "").replace(" ", "")
+            val claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(accessToken)
+                .body
+            // Access Token이 유효하면 그대로 반환
+            return claims
         } catch (e: ExpiredJwtException) {
-            e.claims;
+            println("Expired JWT: ${e.message}")
+            return null // 만료된 경우 null 반환
+        } catch (e: MalformedJwtException) {
+            println("Malformed JWT: ${e.message}")
+            e.printStackTrace()
+            throw e
+        } catch (e: Exception) {
+            println("Error parsing JWT: ${e.message}")
+            e.printStackTrace()
+            throw e
         }
     }
 
+
     /**
-     * JWT검즌
-     * @param token : string
-     * @return IsValidate : boolean
+     * Token에서 User ID 추출
+     * @param token : String
+     * @return UserSeq :Long
      */
-    fun validateToken(token : String) : Boolean{
+    fun JwtTokenGetUserSeq(token: Map<String, Any>): Long {
+        val userSeqInt = parseClaims(token)?.get("userSeq", Integer::class.java)
+        return userSeqInt?.toLong() ?: 0L
+    }
+
+    /**
+     * 토큰 기한 만료시 ReFreshToken 기준으로 Token재발급
+     * @param Map<String, Any>
+     * @return Token : String
+    */
+    fun refreshAccessToken(token: Map<String, Any>) : String{
+        val refreshToken = token["RefreshToken"].toString().replace("Bearer ", "").replace(" ", "")
         return try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
-            true;
-        } catch (e: SecurityException) {
-            log.info("Invalid JWT Token", e)
-            false
-        } catch (e: MalformedJwtException) {
-            log.info("Invalid JWT Token", e)
-            false
-        } catch (e: ExpiredJwtException) {
-            log.info("Expired JWT Token", e)
-            false
-        } catch (e: UnsupportedJwtException) {
-            log.info("Unsupported JWT Token", e)
-            false
-        } catch (e: IllegalArgumentException) {
-            log.info("JWT claims string is empty.", e)
-            false
+            log.info("TOKEN ReFresh 실행중...")
+            val claims : Claims  = Jwts.parserBuilder()
+                .setSigningKey(key )
+                .build()
+                .parseClaimsJws(refreshToken)
+                .body
+
+            // UserDto에 값을 할당
+            val userDto = UserDto().apply {
+                userSeq = claims["userSeq"]?.toString()?.toLong()
+                email = claims["email"] as? String
+            }
+
+            log.info("TOKEN ReFresh 완료...")
+            createToken(userDto, accessTokenExpTime)
+
+        }catch (e:Exception){
+            println("Invalid refresh token: ${e.message}")
+            e.printStackTrace()
+            ""
         }
     }
+
+
+
 
 
 }

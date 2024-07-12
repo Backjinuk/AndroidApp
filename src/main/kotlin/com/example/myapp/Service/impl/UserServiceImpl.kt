@@ -35,5 +35,9 @@ class UserServiceImpl(
         return user?.let{userRepository.userLogin(it, queryFactory)}
     }
 
+    override fun getUserInfo(userSeq: Long?): UserDto? {
+        return userRepository.getUserInfo(userSeq, queryFactory)
+    }
+
 }
 

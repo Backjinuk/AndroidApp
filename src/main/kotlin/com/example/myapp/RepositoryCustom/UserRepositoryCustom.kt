@@ -15,4 +15,6 @@ interface UserRepositoryCustom {
 
     fun searchUser(it: User, queryFactory: QueryFactoryImpl) : Long?
 
+    fun getUserInfo(userSeq: Long?, queryFactory: QueryFactoryImpl): UserDto?
+
 }

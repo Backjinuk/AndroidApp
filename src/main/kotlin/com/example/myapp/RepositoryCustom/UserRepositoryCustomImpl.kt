@@ -60,5 +60,19 @@ class UserRepositoryCustomImpl @Autowired constructor(
         return query.resultList.firstOrNull()
     }
 
+    override fun getUserInfo(userSeq: Long?, queryFactory: QueryFactoryImpl): UserDto? {
+        val query = queryFactory.selectQuery<User> {
+            select(entity(User::class))
+            from(entity(User::class))
+            where(
+                and(
+                    col(User::usrSeq).equal(userSeq)
+                )
+            )
+        }
+
+        return modelMapper.map(query.resultList.firstOrNull(), UserDto::class.java)
+    }
+
 
 }

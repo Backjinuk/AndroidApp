@@ -17,5 +17,7 @@ interface UserService {
 
     fun userLogin(userDtoToEntity: User): UserDto?
 
+    fun getUserInfo(userSeq: Long?): UserDto?
+
 
 }
