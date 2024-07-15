@@ -1,14 +1,15 @@
-import React, {useRef, useState} from 'react';
-import {Alert, Button, Linking, Text, TextInput, View} from 'react-native';
+import React, {useState} from 'react';
+import {Button, Linking, Text, TextInput, View} from 'react-native';
 import {
   Camera,
   NaverMapMarkerOverlay,
   NaverMapView,
   Region,
 } from '@mj-studio/react-native-naver-map';
-import axios, {AxiosError} from 'axios';
+import axios from 'axios';
 import Config from 'react-native-config';
 import MapAddForm from './MapAddForm';
+import Geolocation from '@react-native-community/geolocation';
 
 interface Position {
   title?: string;
@@ -23,7 +24,7 @@ interface Location {
   title: string;
 }
 export default function MapMain() {
-  const debug = true;
+  const debug = false;
   const log = (message?: any, ...optionalParams: any[]) => {
     if (debug) console.log(message, ...optionalParams);
   };
@@ -91,14 +92,9 @@ export default function MapMain() {
       position.title = getLocationTitle(position);
       privateSetPosition(position);
     }
-    setCameraPoint(undefined);
   };
-  const [cameraPoint, setCameraPoint] = useState<any>();
   const [state, setState] = useState<string>('find');
   const [dummies, setDummies] = useState<Location[]>([]);
-  const timerRef = useRef<any>();
-  const naver_search_api_client_id = Config.NAVER_SEARCH_API_CLIENT_ID;
-  const naver_search_api_client_secret = Config.NAVER_SEARCH_API_CLIENT_SECRET;
   const naver_map_api_client_id = Config.NAVER_MAP_API_CLIENT_ID;
   const naver_map_api_client_secret = Config.NAVER_MAP_API_CLIENT_SECRET;
 
@@ -112,17 +108,23 @@ export default function MapMain() {
     let maxLon = 0;
     locations.forEach(e => {
       if (e.latitude === undefined) {
-        const address = e.address.replaceAll('  ', ' ');
-        const lon = e.mapx / 10000000;
-        const lat = e.mapy / 10000000;
-        log(e.address);
-        log({address, latitude: lat, longitude: lon, title: e.title});
+        const address = e.address_name;
+        const longitude = parseFloat(e.x);
+        const latitude = parseFloat(e.y);
+        const title = e.place_name;
+        log(e.address_name);
+        log({address, latitude, longitude, title});
         if (!indexSet.includes(address)) {
-          array.push({address, latitude: lat, longitude: lon, title: e.title});
-          minLat = Math.min(minLat, lat);
-          maxLat = Math.max(maxLat, lat);
-          minLon = Math.min(minLon, lon);
-          maxLon = Math.max(maxLon, lon);
+          array.push({
+            address,
+            latitude,
+            longitude,
+            title,
+          });
+          minLat = Math.min(minLat, latitude);
+          maxLat = Math.max(maxLat, latitude);
+          minLon = Math.min(minLon, longitude);
+          maxLon = Math.max(maxLon, longitude);
           indexSet.push(address);
         }
       } else {
@@ -153,37 +155,6 @@ export default function MapMain() {
     return {array, region};
   };
 
-  // 키워드 + 현재 동 검색 => 키워드 검색
-  const searchLocation = async (keyword: string, dongname: string) => {
-    const locationKeyword = keyword + ' ' + dongname;
-    const aroundLocations = await getLocationData(locationKeyword);
-    if (aroundLocations.length === 0) {
-      const locations = await getLocationData(keyword);
-      setLocations(locations);
-    } else {
-      setLocations(aroundLocations);
-    }
-  };
-
-  // 지역 검색 조회 api
-  const getLocationData = async (str: string) => {
-    const data = await axios.get(
-      'https://openapi.naver.com/v1/search/local.json',
-      {
-        params: {
-          query: str,
-          display: 5,
-        },
-        headers: {
-          'X-Naver-Client-Id': naver_search_api_client_id, // 여기에 네이버 개발자 센터에서 발급받은 Client ID를 입력하세요
-          'X-Naver-Client-Secret': naver_search_api_client_secret, // 여기에 네이버 개발자 센터에서 발급받은 Client Secret을 입력하세요
-        },
-      },
-    );
-    const items = data.data.items;
-    return items;
-  };
-
   // 좌표 => 주소 api
   const reverseGeocoding = async (position: Camera | Position) => {
     if (position === undefined) return;
@@ -204,19 +175,45 @@ export default function MapMain() {
     return data.data;
   };
 
-  // 현재 행정동 이름 가져오기
-  const getDongName = async () => {
-    if (camera === undefined) return;
-    const data = await reverseGeocoding(camera);
-    const dongname = data.results[0].region.area3.name;
-    log(dongname);
-    return dongname;
-  };
-
-  // 지역 검색
+  // 키워드로 조회
   const getLocations = async () => {
-    const dongname = await getDongName();
-    await searchLocation(keyword, dongname);
+    // 근처 500m
+    let data = await axios.get(
+      'https://dapi.kakao.com/v2/local/search/keyword.JSON',
+      {
+        params: {
+          query: keyword,
+          x: camera?.longitude,
+          y: camera?.latitude,
+          radius: 500,
+          size: 5,
+          sort: 'distance',
+        },
+        headers: {
+          Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY, // 여기에 네이버 개발자 센터에서 발급받은 Client ID를 입력하세요
+        },
+      },
+    );
+    // 전체 거리순
+    if (data.data.meta.total_count === 0) {
+      log('데이터가 없습니다.');
+      data = await axios.get(
+        'https://dapi.kakao.com/v2/local/search/keyword.JSON',
+        {
+          params: {
+            query: keyword,
+            x: camera?.longitude,
+            y: camera?.latitude,
+            size: 5,
+            sort: 'distance',
+          },
+          headers: {
+            Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY, // 여기에 네이버 개발자 센터에서 발급받은 Client ID를 입력하세요
+          },
+        },
+      );
+    }
+    setLocations(data.data.documents);
   };
 
   // 네이버 길찾기 실행
@@ -253,22 +250,67 @@ export default function MapMain() {
     setState('add');
   };
 
-  const startTimeout = (position: Position) => {
-    timerRef.current = setTimeout(() => {
-      setPosition(position);
-    }, 1000); // 1초 타이머 설정
+  // 내 위도 경도 찾기
+  const getMyPosition = async () => {
+    const position: any = await getCurrentPositionAsync({
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 10000,
+    });
+    log(position);
+    const latitude = Number(JSON.stringify(position.coords.latitude));
+    const longitude = Number(JSON.stringify(position.coords.longitude));
+    const myPosition = {
+      latitude,
+      longitude,
+    };
+    log(myPosition);
+    return myPosition;
   };
 
-  const cancelTimeout = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
+  // 내 위치 조회 비동기화
+  const getCurrentPositionAsync = (options?: any) => {
+    return new Promise((resolve, reject) => {
+      Geolocation.getCurrentPosition(
+        position => resolve(position),
+        error => reject(error),
+        options,
+      );
+    });
   };
 
-  const resetTimeout = (position: Position) => {
-    cancelTimeout();
-    startTimeout(position);
+  // (임시) 입력받은 위치 기반 500m 더미 찾기
+  const findCloseLocation = (position: Position) => {
+    const rule = 500;
+    const array: Location[] = [];
+    dummies.forEach(dummy => {
+      if (distance(position, dummy) <= rule) {
+        array.push(dummy);
+      }
+    });
+    return array;
   };
+
+  // (임시) 두 좌표간 거리 계산
+  const distance = (start: Position, end: Position) => {
+    const R = 6371; // 지구 반지름 (단위: km)
+    const dLat = deg2rad(start.latitude - end.latitude);
+    const dLon = deg2rad(start.longitude - end.longitude);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(start.latitude)) *
+        Math.cos(deg2rad(end.latitude)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c * 1000; // 두 지점 간의 거리 (단위: m)
+    return distance;
+  };
+
+  // (임시) 라디안 구하기
+  function deg2rad(deg: number) {
+    return deg * (Math.PI / 180);
+  }
 
   const tapMap = () => {};
 
@@ -298,9 +340,23 @@ export default function MapMain() {
             }}
           />
           <Button
-            title="머지"
+            title="위치기반 확인"
+            onPress={async () => {
+              log('위치기반 확인');
+              const myPosition = await getMyPosition();
+              const dummies = findCloseLocation(myPosition);
+              setLocations(dummies);
+              privateSetPosition(undefined);
+            }}
+          />
+          <Button
+            title="화면기반 확인"
             onPress={() => {
-              log(locations);
+              if (camera === undefined) return;
+              log('화면기반확인');
+              const dummies = findCloseLocation(camera);
+              setLocations(dummies);
+              privateSetPosition(undefined);
             }}
           />
           <View style={{flex: 1}}>
@@ -310,32 +366,13 @@ export default function MapMain() {
               style={{flex: 1}}
               onCameraChanged={camera => {
                 setCamera(camera);
-                if (
-                  camera.reason == 'Gesture' &&
-                  (cameraPoint !== undefined || position !== undefined)
-                ) {
-                  log(camera);
-                  const nextCameraPoint = {
-                    latitude: camera.latitude,
-                    longitude: camera.longitude,
-                  };
-                  resetTimeout(nextCameraPoint);
-                  setCameraPoint(nextCameraPoint);
-                }
               }}
               animationDuration={500}
               region={region}
               onTapMap={params => {
                 setPosition(params);
               }}>
-              {cameraPoint && (
-                <NaverMapMarkerOverlay
-                  latitude={cameraPoint.latitude}
-                  longitude={cameraPoint.longitude}
-                  anchor={{x: 0.5, y: 1}}
-                />
-              )}
-              {!cameraPoint && position && (
+              {position && (
                 <NaverMapMarkerOverlay
                   latitude={position.latitude}
                   longitude={position.longitude}
@@ -371,7 +408,6 @@ export default function MapMain() {
                   title="닫기"
                   onPress={() => {
                     privateSetPosition(undefined);
-                    cancelTimeout();
                   }}
                 />
               </>
