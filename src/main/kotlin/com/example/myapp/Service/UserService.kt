@@ -19,5 +19,7 @@ interface UserService {
 
     fun getUserInfo(userSeq: Long?): UserDto?
 
+    fun insertRefreshToken(refreshToken: String, userSeq: Long?)
+
 
 }

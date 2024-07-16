@@ -9,12 +9,14 @@ import org.springframework.stereotype.Repository
 @Repository
 interface UserRepositoryCustom {
 
-    fun findByUserId(it: String, queryFactory: QueryFactoryImpl): User?
+    fun findByUserId(it: String): User?
 
-    fun userLogin(it: User, queryFactory: QueryFactoryImpl) : UserDto?
+    fun userLogin(it: User) : UserDto?
 
-    fun searchUser(it: User, queryFactory: QueryFactoryImpl) : Long?
+    fun searchUser(it: User) : Long?
 
-    fun getUserInfo(userSeq: Long?, queryFactory: QueryFactoryImpl): UserDto?
+    fun getUserInfo(userSeq: Long?): UserDto?
+
+    fun insertRefreshToken(refreshToken: String, userSeq: Long?)
 
 }

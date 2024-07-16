@@ -23,20 +23,24 @@ class UserServiceImpl(
     }
 
     override fun searchUser(user: User): Long? {
-        return user?.let { userRepository.searchUser(it, queryFactory) }
+        return user?.let { userRepository.searchUser(it) }
     }
     
     override fun getFindUserId(user: User): String {
-        val findUser = user.userId?.let { userRepository.findByUserId(it, queryFactory) }
+        val findUser = user.userId?.let { userRepository.findByUserId(it) }
         return findUser?.toString() ?: "N"
     }
     
     override fun userLogin(user: User): UserDto? {
-        return user?.let{userRepository.userLogin(it, queryFactory)}
+        return user?.let{userRepository.userLogin(it)}
     }
 
     override fun getUserInfo(userSeq: Long?): UserDto? {
-        return userRepository.getUserInfo(userSeq, queryFactory)
+        return userRepository.getUserInfo(userSeq)
+    }
+
+    override fun insertRefreshToken(refreshToken: String, userSeq: Long?) {
+        return userRepository.insertRefreshToken(refreshToken, userSeq)
     }
 
 }

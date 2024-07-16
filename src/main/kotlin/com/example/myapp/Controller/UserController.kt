@@ -50,8 +50,14 @@ class UserController {
         val loggedInUser: UserDto? = userService?.userLogin(userDtoToEntity(userDto))
 
         val mutableMap: MutableMap<String, String> = mutableMapOf()
-        mutableMap["AccessToken"] = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString();
-        mutableMap["RefreshToken"] = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString();
+
+        val accessToken:String = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString();
+        val refreshToken:String = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString();
+
+        mutableMap["AccessToken"] = accessToken
+        mutableMap["RefreshToken"] = refreshToken
+
+        userService?.insertRefreshToken(refreshToken, loggedInUser?.userSeq);
 
         return try {
             if (loggedInUser?.userId != null) {
