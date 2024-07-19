@@ -106,7 +106,6 @@ class JwtUtil(
         }
     }
 
-
     /**
      * Token에서 User ID 추출
      * @param token : String

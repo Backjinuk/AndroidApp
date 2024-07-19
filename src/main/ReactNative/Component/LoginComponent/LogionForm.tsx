@@ -1,11 +1,13 @@
 import createStyles from "./styles.ts";
 import {Alert, Image, Text, TextInput, TouchableOpacity, View} from "react-native";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useNavigation, useNavigationState} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
 import Config from "react-native-config";
 import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axiosPost from "../../Util/AxiosUtil.ts";
 
 
 export default function LoginForm() {
@@ -15,6 +17,40 @@ export default function LoginForm() {
     const [userId ,setUserId] = useState('');
     const [passwd, setPasswd] = useState('');
 
+    useEffect(() => {
+        const fetchToken = async () => {
+            const token = await getToken();
+            if (token) {
+                console.log("AccessToken : " + token.AccessToken);
+                console.log("RefreshToken : " + token.RefreshToken);
+
+
+                axiosPost.post("/user/userLogin", JSON.stringify({"userId" : "1", "passwd" : "2"}))
+            }
+
+
+
+        };
+
+        fetchToken();
+    }, []);
+
+    const getToken = async () => {
+        try {
+            const accessToken = await AsyncStorage.getItem('AccessToken');
+            const refreshToken = await AsyncStorage.getItem('RefreshToken');
+
+            const token = {
+                AccessToken: accessToken,
+                RefreshToken: refreshToken
+            };
+
+            return token;
+        } catch (error) {
+            console.error('Error reading token', error);
+        }
+    };
+
     const userLogin = () => {
         axios.post(api+'/user/userLogin', JSON.stringify({
             userId,
@@ -23,13 +59,16 @@ export default function LoginForm() {
             headers : {
                 "Content-Type" : "application/json"
             }
-        }).then((res) => {
-            if(res.data != null){
+        }).then(async (res) => {
+            if (res.data != null) {
                 Alert.alert("로그인 되었습니다.")
-                console.log("jwtToken : " + res.data)
+            console.log("token :" + res.data)
+                await AsyncStorage.setItem("AccessToken", res.data["AccessToken"]);
+                await AsyncStorage.setItem("RefreshToken", res.data["RefreshToken"]);
+
                 setTimeout(() => {
                     navigation.navigate('MapMain')
-                },1000)
+                }, 1000)
 
             }
         }).catch(e => {

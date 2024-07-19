@@ -5,6 +5,7 @@ import com.example.myapp.Service.UserService
 import com.example.myapp.Util.JwtUtil
 import com.example.myapp.Util.ModelMapperUtil.Companion.userDtoToEntity
 import io.jsonwebtoken.ExpiredJwtException
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PostMapping
@@ -31,7 +32,6 @@ class UserController {
     fun userJoin(@RequestBody userDto :UserDto) : Boolean {
         val searchUser: Boolean = userService?.searchUser(userDtoToEntity(userDto)) === 0.toLong()
 
-
         if(searchUser){
             userService?.userJoin(userDtoToEntity(userDto))
         }
@@ -39,20 +39,23 @@ class UserController {
         return  searchUser
     }
 
-    @PostMapping("getFindUserId")
-    fun getFindUserId(@RequestBody userDto : UserDto) : String? {
-        return userService?.getFindUserId(userDtoToEntity(userDto))
-    }
-
-
     @PostMapping("userLogin")
-    fun userLogin(@RequestBody userDto: UserDto): MutableMap<String, String>? {
-        val loggedInUser: UserDto? = userService?.userLogin(userDtoToEntity(userDto))
+    fun userLogin(@RequestBody userDto: UserDto, request:HttpServletRequest): MutableMap<String, String>? {
 
+        var accessToken:String = request.getHeader("AccessToken").toString()
+        var refreshToken:String = request.getHeader("RefreshToken").toString()
+
+        println("accessToken : " + accessToken);
+        println("refreshToken : " + refreshToken);
+
+
+        val loggedInUser: UserDto? = userService?.userLogin(userDtoToEntity(userDto))
         val mutableMap: MutableMap<String, String> = mutableMapOf()
 
-        val accessToken:String = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString();
-        val refreshToken:String = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString();
+        if(accessToken.equals("") or accessToken.equals("")){
+            accessToken  = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString();
+            refreshToken = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString();
+        }
 
         mutableMap["AccessToken"] = accessToken
         mutableMap["RefreshToken"] = refreshToken
@@ -70,6 +73,12 @@ class UserController {
             println("Error generating access token: ${e.message}")
             null
         }
+    }
+
+
+    @PostMapping("getFindUserId")
+    fun getFindUserId(@RequestBody userDto : UserDto) : String? {
+        return userService?.getFindUserId(userDtoToEntity(userDto))
     }
 
     @PostMapping("JwtTokenGetUserSeq")
