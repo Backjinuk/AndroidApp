@@ -29,37 +29,66 @@ class UserController {
     }
 
     @PostMapping("userJoin")
-    fun userJoin(@RequestBody userDto :UserDto) : Boolean {
+    fun userJoin(@RequestBody userDto :UserDto) : MutableMap<String, String>{
+
+        val mutableMap: MutableMap<String, String> = mutableMapOf()
+        var loggedInUser:UserDto = UserDto();
+        var accessToken:String =  "";
+        var refreshToken:String = "";
+
         val searchUser: Boolean = userService?.searchUser(userDtoToEntity(userDto)) === 0.toLong()
 
         if(searchUser){
             userService?.userJoin(userDtoToEntity(userDto))
         }
 
-        return  searchUser
+        loggedInUser = userService?.userLogin(userDtoToEntity(userDto))!!;
+        accessToken  = loggedInUser.let { jwtUtil?.createAccessToken(it).toString() }.toString();
+        refreshToken = loggedInUser.let { jwtUtil?.createRefreshToken(it).toString() }.toString();
+
+        mutableMap["AccessToken"] = accessToken
+        mutableMap["RefreshToken"] = refreshToken
+        mutableMap["searchUser"] = searchUser.toString()
+
+        userService?.insertRefreshToken(refreshToken, loggedInUser?.userSeq);
+
+        return  mutableMap;
     }
 
     @PostMapping("userLogin")
     fun userLogin(@RequestBody userDto: UserDto, request:HttpServletRequest): MutableMap<String, String>? {
 
-        var accessToken:String = request.getHeader("AccessToken").toString()
-        var refreshToken:String = request.getHeader("RefreshToken").toString()
-
-        println("accessToken : " + accessToken);
-        println("refreshToken : " + refreshToken);
-
-
-        val loggedInUser: UserDto? = userService?.userLogin(userDtoToEntity(userDto))
         val mutableMap: MutableMap<String, String> = mutableMapOf()
+        var accessToken = request.getHeader("AccessToken")?.toString() ?: ""
+        var refreshToken = request.getHeader("RefreshToken")?.toString() ?: ""
 
-        if(accessToken.equals("") or accessToken.equals("")){
-            accessToken  = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString();
-            refreshToken = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString();
+
+        var loggedInUser:UserDto = UserDto();
+
+        // JWT 없으면 새로 발급
+        if(accessToken.equals("") and accessToken.equals("")){
+            loggedInUser = userService?.userLogin(userDtoToEntity(userDto))!!;
+            accessToken  = loggedInUser.let { jwtUtil?.createAccessToken(it).toString() }.toString();
+            refreshToken = loggedInUser.let { jwtUtil?.createRefreshToken(it).toString() }.toString();
         }
 
         mutableMap["AccessToken"] = accessToken
         mutableMap["RefreshToken"] = refreshToken
 
+        //JWT가 있으면 JWT검증
+        if (!accessToken.equals("") and !accessToken.equals("")){
+            var accessTokenParse = jwtUtil?.parseClaims(mutableMap);
+
+            val tokenMap: Map<String, String>? = jwtUtil?.refreshAccessToken(mutableMap);
+            mutableMap["RefreshToken"] = tokenMap?.get("refreshToken").toString()
+
+            //accessTokenParse 만료시 refreshToken으로 재발급, refreshToken도 재발급
+            if(accessTokenParse == null){
+                mutableMap["AccessToken"] = tokenMap?.get("accessToken").toString()
+            }
+        }
+
+        //JWT가 없으면 insert 있으면 Update
         userService?.insertRefreshToken(refreshToken, loggedInUser?.userSeq);
 
         return try {
@@ -92,7 +121,7 @@ class UserController {
         // userSeq = 0 이면 토큰 만료로 판단
         if(userSeq!! <= 0L){
             log.info("JWT TOKEN이 만료되었습니다.")
-            newToken = jwtUtil!!.refreshAccessToken(map)
+            newToken = jwtUtil!!.refreshAccessToken(map).get("accessToken").toString()
             userSeq = jwtUtil?.JwtTokenGetUserSeq(mapOf("AccessToken" to newToken))
             mutableMap["AccessToken"] = newToken // map에 userDto 추가
         }
@@ -112,18 +141,5 @@ class UserController {
         }
 
     }
-
-    @PostMapping("JwtAccessTest")
-    fun jwtAccessTest(){
-        log.info("무사히 JwtAccessTest 통과")
-    }
-
-
-
-
-
-
-
-
 
 }

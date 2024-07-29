@@ -50,6 +50,8 @@ class JwtUtil(
         val claims: Claims = Jwts.claims().also {
             it["userSeq"] = userDto.userSeq
             it["email"] = userDto.email
+            it["userId"] = userDto.userId
+            it["usertype"] = userDto.userType
         }
 
         val now: ZonedDateTime = ZonedDateTime.now()
@@ -121,7 +123,7 @@ class JwtUtil(
      * @param Map<String, Any>
      * @return Token : String
     */
-    fun refreshAccessToken(token: Map<String, Any>) : String{
+    fun refreshAccessToken(token: Map<String, Any>) : Map<String,String> {
         val refreshToken = token["RefreshToken"].toString().replace("Bearer ", "").replace(" ", "")
         return try {
             log.info("TOKEN ReFresh 실행중...")
@@ -138,12 +140,23 @@ class JwtUtil(
             }
 
             log.info("TOKEN ReFresh 완료...")
-            createToken(userDto, accessTokenExpTime)
+            val newAccessToken =  createAccessToken(userDto)
+            val newRefreshToken =  createRefreshToken(userDto)
+
+            mapOf(
+                "accessToken" to newAccessToken,
+                "refreshToken" to newRefreshToken
+            )
+
 
         }catch (e:Exception){
             println("Invalid refresh token: ${e.message}")
             e.printStackTrace()
-            ""
+
+            mapOf(
+                "accessToken" to "",
+                "refreshToken" to ""
+            )
         }
     }
 

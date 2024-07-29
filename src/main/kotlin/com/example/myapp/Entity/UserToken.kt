@@ -9,7 +9,10 @@ class UserToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var userTokenSeq:Long ?= 0;
-    var refreshUserToken:String ?= "";
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    var refreshUserToken: String? = ""
 
     @OneToOne
     @JoinColumn(name="usrSeq")

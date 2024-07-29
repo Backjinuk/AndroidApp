@@ -17,39 +17,8 @@ export default function LoginForm() {
     const [userId ,setUserId] = useState('');
     const [passwd, setPasswd] = useState('');
 
-    useEffect(() => {
-        const fetchToken = async () => {
-            const token = await getToken();
-            if (token) {
-                console.log("AccessToken : " + token.AccessToken);
-                console.log("RefreshToken : " + token.RefreshToken);
 
 
-                axiosPost.post("/user/userLogin", JSON.stringify({"userId" : "1", "passwd" : "2"}))
-            }
-
-
-
-        };
-
-        fetchToken();
-    }, []);
-
-    const getToken = async () => {
-        try {
-            const accessToken = await AsyncStorage.getItem('AccessToken');
-            const refreshToken = await AsyncStorage.getItem('RefreshToken');
-
-            const token = {
-                AccessToken: accessToken,
-                RefreshToken: refreshToken
-            };
-
-            return token;
-        } catch (error) {
-            console.error('Error reading token', error);
-        }
-    };
 
     const userLogin = () => {
         axios.post(api+'/user/userLogin', JSON.stringify({
@@ -62,7 +31,7 @@ export default function LoginForm() {
         }).then(async (res) => {
             if (res.data != null) {
                 Alert.alert("로그인 되었습니다.")
-            console.log("token :" + res.data)
+
                 await AsyncStorage.setItem("AccessToken", res.data["AccessToken"]);
                 await AsyncStorage.setItem("RefreshToken", res.data["RefreshToken"]);
 

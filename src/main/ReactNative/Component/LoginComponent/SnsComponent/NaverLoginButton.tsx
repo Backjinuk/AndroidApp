@@ -6,6 +6,8 @@ import axios from "axios";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../../../CommonTypes/RootStackParamList.ts";
 import {useNavigation} from "@react-navigation/native";
+import axiosPost from "../../../Util/AxiosUtil.ts";
+import {setToken} from "../../../Util/JwtTokenUtil.ts";
 
 
 // @ts-ignore
@@ -71,7 +73,7 @@ export default function NaverLoginButton({ styles }){
     };
 
     const loginAxsio = () => {
-        axios.post(Config.API_BASE_URL + '/user/userJoin', JSON.stringify({
+        axiosPost.post(Config.API_BASE_URL + '/user/userJoin', JSON.stringify({
             userId: getProfileRes?.response.id,
             email : getProfileRes?.response.email,
             userName : getProfileRes?.response.name,
@@ -85,7 +87,9 @@ export default function NaverLoginButton({ styles }){
 
         }).then(res => {
 
-            if(res.data){
+            setToken(res.data)
+
+            if(res.data['searchUser'] === 'true'){
                 Alert.alert("회원가입이 완료 되었습니다.")
             }else{
                 navigation.navigate("MapMain")

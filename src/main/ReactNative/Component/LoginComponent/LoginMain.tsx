@@ -1,5 +1,5 @@
 import {Image, Text, TouchableOpacity, View} from "react-native";
-import React from "react";
+import React, {useEffect} from "react";
 import createStyles from "./styles.ts";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
@@ -8,11 +8,37 @@ import NaverLoginButton from "./SnsComponent/NaverLoginButton.tsx";
 import KakaoLoginButton from "./SnsComponent/KakaoLoginButton.tsx";
 import GoogleLoginButton from "./SnsComponent/GoogleLoginButton.tsx";
 import FaceBookLoginButton from "./SnsComponent/FaceBookLoginButton.tsx";
+import axiosPost from "../../Util/AxiosUtil.ts";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+/*import getToken from "../../Util/JwtTokenUtil.ts";*/
 
 
 export default function LoginMain(){
     const styles = createStyles();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+    /*useEffect(() => {
+        const fetchToken = async () => {
+            const token = await getToken();
+            if (token) {
+
+                axiosPost.post("/user/userLogin",
+                    JSON.stringify({"userId" : "1", "passwd" : "2"})
+                ).then((res)=>{
+
+                    setToken(res.data);
+
+                    setTimeout(() => {
+                        navigation.navigate('MapMain')
+                    }, 1000)
+                })
+            }
+        };
+
+        fetchToken();
+
+    }, []);*/
+
     // @ts-ignore
     return (
         <View style={styles.container}>

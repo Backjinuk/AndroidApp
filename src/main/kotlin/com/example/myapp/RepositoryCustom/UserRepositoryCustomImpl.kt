@@ -7,6 +7,7 @@ import com.linecorp.kotlinjdsl.QueryFactoryImpl
 import com.linecorp.kotlinjdsl.querydsl.expression.col
 import com.linecorp.kotlinjdsl.querydsl.expression.count
 import com.linecorp.kotlinjdsl.selectQuery
+import com.linecorp.kotlinjdsl.updateQuery
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
@@ -79,6 +80,7 @@ class UserRepositoryCustomImpl @Autowired constructor(
 
     @Transactional
     override fun insertRefreshToken(refreshToken: String, userSeq: Long?) {
+
         val query = queryFactory.selectQuery<Long> {
                 select(count(entity(UserToken::class)))
                 from(entity(UserToken::class))
@@ -94,8 +96,21 @@ class UserRepositoryCustomImpl @Autowired constructor(
                 this.user = userSeq?.let { User().apply { this.usrSeq = it } }
             }
 
+            println("userSeq = ${userSeq}")
+
+            println("userToken = ${userToken.user?.usrSeq}")
+
             entityManager.persist(userToken)
         }
+
+        if(query){
+            queryFactory.updateQuery<UserToken> {
+                set(col(UserToken::refreshUserToken), refreshToken)
+                where(col(UserToken::refreshUserToken).equal(refreshToken))
+            }.executeUpdate()
+        }
+
+
     }
 
 
