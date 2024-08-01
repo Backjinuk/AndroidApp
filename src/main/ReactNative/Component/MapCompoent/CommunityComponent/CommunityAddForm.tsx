@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button, Text} from 'react-native';
 
-export default function MapAddForm(props: any) {
+export default function CommunityAddForm(props: any) {
   const setDummies = () => {
     const dummies = [...props.dummies, props.position];
     props.setDummies(dummies);
@@ -11,11 +11,15 @@ export default function MapAddForm(props: any) {
 
   return (
     <>
-      {Object.entries(props.position).map((elem: any) => (
+{/*      {Object.entries(props.position).map((elem: any) => (
         <Text key={elem[0]}>
           {elem[0]} : {elem[1]}
         </Text>
       ))}
+*/}
+
+
+
       <Button title="등록" onPress={setDummies} />
       <Button
         title="뒤로"

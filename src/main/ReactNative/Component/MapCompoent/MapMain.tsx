@@ -8,7 +8,7 @@ import {
 } from '@mj-studio/react-native-naver-map';
 import axios from 'axios';
 import Config from 'react-native-config';
-import MapAddForm from './MapAddForm';
+import CommunityAddForm from './CommunityComponent/CommunityAddForm.tsx';
 import Geolocation from '@react-native-community/geolocation';
 
 interface Position {
@@ -415,7 +415,7 @@ export default function MapMain() {
           </View>
         </>
       ) : (
-        <MapAddForm
+        <CommunityAddForm
           position={position}
           setState={setState}
           dummies={dummies}

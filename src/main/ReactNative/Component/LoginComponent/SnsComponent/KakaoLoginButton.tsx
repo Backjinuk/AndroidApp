@@ -16,9 +16,10 @@ export default function KakaoLoginButton({ styles }){
 
     const signInWithKakao = async (): Promise<void> => {
         try {
+            console.log(11)
             const token = await login();
+            console.log(22)
             setResult(JSON.stringify(token));
-
             LoginAxois();
 
         } catch (err) {

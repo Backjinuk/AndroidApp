@@ -10,7 +10,6 @@ class UserToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var userTokenSeq:Long ?= 0;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     var refreshUserToken: String? = ""
 
