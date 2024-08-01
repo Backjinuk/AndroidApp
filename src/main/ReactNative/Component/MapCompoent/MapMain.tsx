@@ -1,5 +1,12 @@
 import React, {useState} from 'react';
-import {Button, Linking, Text, TextInput, View} from 'react-native';
+import {
+  Button,
+  Linking,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   Camera,
   NaverMapMarkerOverlay,
@@ -8,23 +15,13 @@ import {
 } from '@mj-studio/react-native-naver-map';
 import axios from 'axios';
 import Config from 'react-native-config';
-import MapAddForm from './MapAddForm';
+import MapAddModal from './MapAddModal';
 import Geolocation from '@react-native-community/geolocation';
+import LocationMarker from './LocationMarker';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-interface Position {
-  title?: string;
-  address?: string;
-  latitude: number;
-  longitude: number;
-}
-interface Location {
-  address: string;
-  latitude: number;
-  longitude: number;
-  title: string;
-}
-export default function MapMain() {
-  const debug = false;
+export default function MapMain({navigation}: any) {
+  const debug = true;
   const log = (message?: any, ...optionalParams: any[]) => {
     if (debug) console.log(message, ...optionalParams);
   };
@@ -36,7 +33,6 @@ export default function MapMain() {
   const setLocations = (locations: any[]) => {
     log(locations);
     const {array, region} = analyzeLocations(locations);
-    setRegion(undefined);
     setRegion(region);
     log(region);
     privateSetLocations(array);
@@ -50,8 +46,8 @@ export default function MapMain() {
     const newRegion = {
       latitude: position.latitude,
       longitude: position.longitude,
-      latitudeDelta: Math.floor(Math.random() * 10) / 10000000,
-      longitudeDelta: Math.floor(Math.random() * 10) / 10000000,
+      latitudeDelta: randomNumber(),
+      longitudeDelta: randomNumber(),
     };
     setRegion(newRegion);
     if (position.address == undefined) {
@@ -98,10 +94,14 @@ export default function MapMain() {
   const naver_map_api_client_id = Config.NAVER_MAP_API_CLIENT_ID;
   const naver_map_api_client_secret = Config.NAVER_MAP_API_CLIENT_SECRET;
 
+  // 아주 작은 랜덤 숫자 리턴
+  const randomNumber = () => {
+    return Math.floor(Math.random() * 10) / 10000000;
+  };
+
   // 지역 검색 결과 분석
   const analyzeLocations = (locations: any[]) => {
     const array: Location[] = [];
-    const indexSet: string[] = [];
     let minLat = 1000;
     let maxLat = 0;
     let minLon = 1000;
@@ -114,33 +114,27 @@ export default function MapMain() {
         const title = e.place_name;
         log(e.address_name);
         log({address, latitude, longitude, title});
-        if (!indexSet.includes(address)) {
-          array.push({
-            address,
-            latitude,
-            longitude,
-            title,
-          });
-          minLat = Math.min(minLat, latitude);
-          maxLat = Math.max(maxLat, latitude);
-          minLon = Math.min(minLon, longitude);
-          maxLon = Math.max(maxLon, longitude);
-          indexSet.push(address);
-        }
+        array.push({
+          address,
+          latitude,
+          longitude,
+          title,
+        });
+        minLat = Math.min(minLat, latitude);
+        maxLat = Math.max(maxLat, latitude);
+        minLon = Math.min(minLon, longitude);
+        maxLon = Math.max(maxLon, longitude);
       } else {
         const address = e.address;
         const lat = e.latitude;
         const lon = e.longitude;
         log(e.address);
         log({address, latitude: lat, longitude: lon, title: e.title});
-        if (!indexSet.includes(address)) {
-          array.push({address, latitude: lat, longitude: lon, title: e.title});
-          minLat = Math.min(minLat, lat);
-          maxLat = Math.max(maxLat, lat);
-          minLon = Math.min(minLon, lon);
-          maxLon = Math.max(maxLon, lon);
-          indexSet.push(address);
-        }
+        array.push({address, latitude: lat, longitude: lon, title: e.title});
+        minLat = Math.min(minLat, lat);
+        maxLat = Math.max(maxLat, lat);
+        minLon = Math.min(minLon, lon);
+        maxLon = Math.max(maxLon, lon);
       }
     });
     const delLat = maxLat - minLat;
@@ -190,7 +184,7 @@ export default function MapMain() {
           sort: 'distance',
         },
         headers: {
-          Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY, // 여기에 네이버 개발자 센터에서 발급받은 Client ID를 입력하세요
+          Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY,
         },
       },
     );
@@ -208,7 +202,7 @@ export default function MapMain() {
             sort: 'distance',
           },
           headers: {
-            Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY, // 여기에 네이버 개발자 센터에서 발급받은 Client ID를 입력하세요
+            Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY,
           },
         },
       );
@@ -250,6 +244,24 @@ export default function MapMain() {
     setState('add');
   };
 
+  // 내 위치 기반 모임 찾기
+  const findMoimByMyPosition = async () => {
+    log('위치기반 확인');
+    const myPosition = await getMyPosition();
+    const locations = await findCloseLocation(myPosition);
+    setLocations(locations);
+    privateSetPosition(undefined);
+  };
+
+  // 화면 위치 기반 모임 찾기
+  const findMoimByCamera = async () => {
+    if (camera === undefined) return;
+    log('화면기반확인');
+    const locations = await findCloseLocation(camera);
+    setLocations(locations);
+    privateSetPosition(undefined);
+  };
+
   // 내 위도 경도 찾기
   const getMyPosition = async () => {
     const position: any = await getCurrentPositionAsync({
@@ -280,7 +292,7 @@ export default function MapMain() {
   };
 
   // (임시) 입력받은 위치 기반 500m 더미 찾기
-  const findCloseLocation = (position: Position) => {
+  const findCloseLocation = async (position: Position) => {
     const rule = 500;
     const array: Location[] = [];
     dummies.forEach(dummy => {
@@ -312,116 +324,109 @@ export default function MapMain() {
     return deg * (Math.PI / 180);
   }
 
-  const tapMap = () => {};
-
   return (
     <>
-      {state === 'find' ? (
-        <>
-          <TextInput
-            value={keyword}
-            onChangeText={e => {
-              setKeyword(e);
-            }}
-          />
-          <Button
-            title="search"
-            onPress={() => {
-              getLocations();
-              privateSetPosition(undefined);
-            }}
-          />
-          <Button
-            title="더미 확인"
-            onPress={() => {
-              log('더미확인');
-              setLocations(dummies);
-              privateSetPosition(undefined);
-            }}
-          />
-          <Button
-            title="위치기반 확인"
-            onPress={async () => {
-              log('위치기반 확인');
-              const myPosition = await getMyPosition();
-              const dummies = findCloseLocation(myPosition);
-              setLocations(dummies);
-              privateSetPosition(undefined);
-            }}
-          />
-          <Button
-            title="화면기반 확인"
-            onPress={() => {
-              if (camera === undefined) return;
-              log('화면기반확인');
-              const dummies = findCloseLocation(camera);
-              setLocations(dummies);
-              privateSetPosition(undefined);
-            }}
-          />
-          <View style={{flex: 1}}>
-            <NaverMapView
-              maxZoom={18}
-              minZoom={9}
-              style={{flex: 1}}
-              onCameraChanged={camera => {
-                setCamera(camera);
-              }}
-              animationDuration={500}
-              region={region}
-              onTapMap={params => {
-                setPosition(params);
-              }}>
-              {position && (
-                <NaverMapMarkerOverlay
-                  latitude={position.latitude}
-                  longitude={position.longitude}
-                  onTap={() => {
-                    setPosition(position);
-                  }}
-                  anchor={{x: 0.5, y: 1}}
-                />
-              )}
-              {locations.length !== 0 &&
-                locations.map(location => (
-                  <NaverMapMarkerOverlay
-                    key={
-                      location.latitude + location.longitude + location.title
-                    }
-                    latitude={location.latitude}
-                    longitude={location.longitude}
-                    onTap={() => {
-                      setPosition(location);
-                    }}
-                    anchor={{x: 0.5, y: 1}}
-                  />
-                ))}
-            </NaverMapView>
-          </View>
-          <View>
-            {position && (
-              <>
-                <Text>{position?.title}</Text>
-                <Button title="등록" onPress={addMoim} />
-                <Button title="길찾기" onPress={() => findRoute(position)} />
-                <Button
-                  title="닫기"
-                  onPress={() => {
-                    privateSetPosition(undefined);
-                  }}
-                />
-              </>
-            )}
-          </View>
-        </>
-      ) : (
-        <MapAddForm
-          position={position}
-          setState={setState}
-          dummies={dummies}
-          setDummies={setDummies}
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}>
+        <TextInput
+          style={{width: '90%'}}
+          value={keyword}
+          onChangeText={setKeyword}
         />
-      )}
+        <TouchableOpacity
+          onPress={() => {
+            getLocations();
+            privateSetPosition(undefined);
+          }}
+          style={{
+            width: '10%',
+            alignItems: 'center',
+            backgroundColor: '#2196F3',
+            borderRadius: 3,
+          }}>
+          <Icon
+            style={{
+              marginVertical: 'auto',
+            }}
+            name="search"
+            size={20}
+            color="white"
+          />
+        </TouchableOpacity>
+      </View>
+      <Button title="위치기반 모임확인" onPress={findMoimByMyPosition} />
+      <Button title="화면기반 모임확인" onPress={findMoimByCamera} />
+      <View style={{flex: 1}}>
+        <NaverMapView
+          onInitialized={async () => {
+            log('init');
+            const position = await getMyPosition();
+            const round = 0.0025;
+            const region = {
+              latitude: position.latitude - round,
+              longitude: position.longitude - round,
+              latitudeDelta: 2 * round,
+              longitudeDelta: 2 * round,
+            };
+            setRegion(region);
+          }}
+          onCameraChanged={setCamera}
+          region={region}
+          onTapMap={params => {
+            setPosition(params);
+          }}
+          isExtentBoundedInKorea={true}
+          maxZoom={18}
+          minZoom={9}
+          style={{flex: 1}}
+          animationDuration={500}>
+          {position && (
+            <NaverMapMarkerOverlay
+              latitude={position.latitude}
+              longitude={position.longitude}
+              onTap={() => {
+                setPosition(position);
+              }}
+              anchor={{x: 0.5, y: 1}}
+            />
+          )}
+          {locations.length !== 0 &&
+            locations.map(location => (
+              <LocationMarker
+                key={location.latitude + location.longitude + location.title}
+                location={location}
+                setPosition={setPosition}
+              />
+            ))}
+        </NaverMapView>
+      </View>
+      <View>
+        {position && (
+          <>
+            <Text>{position?.title}</Text>
+            <Button title="등록" onPress={addMoim} />
+            <Button title="길찾기" onPress={() => findRoute(position)} />
+            <Button
+              title="닫기"
+              onPress={() => {
+                privateSetPosition(undefined);
+              }}
+            />
+          </>
+        )}
+      </View>
+      <MapAddModal
+        state={state}
+        position={position}
+        closeAddForm={() => {
+          setState('find');
+        }}
+        dummies={dummies}
+        setDummies={setDummies}
+      />
     </>
   );
 }

@@ -16,7 +16,11 @@ function App(): React.JSX.Element {
         <Stack.Screen name="Join" component={JoinFormMain} />
         <Stack.Screen name="LoginMain" component={LoginMain} />
         <Stack.Screen name="LoginForm" component={LoginForm} />
-        <Stack.Screen name="MapMain" component={MapMain} />
+        <Stack.Screen
+          name="MapMain"
+          component={MapMain}
+          options={{title: '지도'}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
