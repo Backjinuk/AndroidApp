@@ -2,7 +2,6 @@ package com.example.myapp.RepositoryCustom
 
 import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.User
-import com.linecorp.kotlinjdsl.QueryFactoryImpl
 
 import org.springframework.stereotype.Repository
 
@@ -17,6 +16,6 @@ interface UserRepositoryCustom {
 
     fun getUserInfo(userSeq: Long?): UserDto?
 
-    fun insertRefreshToken(refreshToken: String, userSeq: Long?)
+    fun insertRefreshToken(refreshToken: String, newRefreshToken: String, userSeq: Long?)
 
 }

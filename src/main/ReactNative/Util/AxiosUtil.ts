@@ -17,6 +17,7 @@ axiosPost.interceptors.request.use(
         try {
             const accessToken = await AsyncStorage.getItem('AccessToken');
             const refreshToken = await AsyncStorage.getItem('RefreshToken');
+
             if (accessToken) {
                 config.headers['AccessToken'] = `Bearer ${accessToken}`;
             }

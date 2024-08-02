@@ -39,8 +39,8 @@ class UserServiceImpl(
         return userRepository.getUserInfo(userSeq)
     }
 
-    override fun insertRefreshToken(refreshToken: String, userSeq: Long?) {
-        return userRepository.insertRefreshToken(refreshToken, userSeq)
+    override fun insertRefreshToken(refreshToken: String, newRefreshToken: String, userSeq: Long?) {
+        return userRepository.insertRefreshToken(refreshToken, newRefreshToken,  userSeq)
     }
 
 }

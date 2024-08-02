@@ -8,6 +8,7 @@ import Config from "react-native-config";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosPost from "../../Util/AxiosUtil.ts";
+import {getToken, setToken} from "../../Util/JwtTokenUtil.ts";
 
 
 export default function LoginForm() {
@@ -19,9 +20,27 @@ export default function LoginForm() {
 
 
 
+    useEffect(() => {
+        const fetchTokens = async () => {
+            const tokens = await getToken();
+            if (tokens) {
+                console.log("AccessToken: " + tokens.AccessToken);
+                console.log("RefreshToken: " + tokens.RefreshToken);
+            }
+        };
+
+
+        // AsyncStorage.setItem("AccessToken", "");
+        // AsyncStorage.setItem("RefreshToken", "");
+
+
+        fetchTokens();
+    }, []);
+
+
 
     const userLogin = () => {
-        axios.post(api+'/user/userLogin', JSON.stringify({
+        axiosPost.post(api+'/user/userLogin', JSON.stringify({
             userId,
             passwd
         }), {
@@ -32,8 +51,7 @@ export default function LoginForm() {
             if (res.data != null) {
                 Alert.alert("로그인 되었습니다.")
 
-                await AsyncStorage.setItem("AccessToken", res.data["AccessToken"]);
-                await AsyncStorage.setItem("RefreshToken", res.data["RefreshToken"]);
+                setToken(res.data)
 
                 setTimeout(() => {
                     navigation.navigate('MapMain')

@@ -2,9 +2,6 @@ package com.example.myapp.Service
 
 import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.User
-import com.example.myapp.Repository.UserRepository
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Service
 
 
 interface UserService {
@@ -19,7 +16,7 @@ interface UserService {
 
     fun getUserInfo(userSeq: Long?): UserDto?
 
-    fun insertRefreshToken(refreshToken: String, userSeq: Long?)
+    fun insertRefreshToken(refreshToken: String, newRefreshToken: String, userSeq: Long?)
 
 
 }

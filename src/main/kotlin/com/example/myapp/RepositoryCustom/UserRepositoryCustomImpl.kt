@@ -79,7 +79,7 @@ class UserRepositoryCustomImpl @Autowired constructor(
     }
 
     @Transactional
-    override fun insertRefreshToken(refreshToken: String, userSeq: Long?) {
+    override fun insertRefreshToken(refreshToken: String, newRefreshToken: String, userSeq: Long?) {
 
         val query = queryFactory.selectQuery<Long> {
                 select(count(entity(UserToken::class)))
@@ -105,7 +105,7 @@ class UserRepositoryCustomImpl @Autowired constructor(
 
         if(query){
             queryFactory.updateQuery<UserToken> {
-                set(col(UserToken::refreshUserToken), refreshToken)
+                set(col(UserToken::refreshUserToken), newRefreshToken)
                 where(col(UserToken::refreshUserToken).equal(refreshToken))
             }.executeUpdate()
         }

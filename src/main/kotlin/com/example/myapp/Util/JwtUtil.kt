@@ -86,7 +86,7 @@ class JwtUtil(
     fun parseClaims(token: Map<String, Any>): Claims? {
         try {
             // JwtToken에서 JWT를 추출하고 처리
-            val accessToken = token["AccessToken"].toString().replace("Bearer ", "").replace(" ", "")
+            val accessToken = token["AccessToken"]?.toString()?.replace("Bearer ", "")?.replace(" ", "")
             val claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

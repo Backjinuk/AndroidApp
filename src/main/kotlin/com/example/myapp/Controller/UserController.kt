@@ -4,7 +4,6 @@ import com.example.myapp.Dto.UserDto
 import com.example.myapp.Service.UserService
 import com.example.myapp.Util.JwtUtil
 import com.example.myapp.Util.ModelMapperUtil.Companion.userDtoToEntity
-import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,50 +49,45 @@ class UserController {
         mutableMap["RefreshToken"] = refreshToken
         mutableMap["searchUser"] = searchUser.toString()
 
-        userService?.insertRefreshToken(refreshToken, loggedInUser?.userSeq);
+        userService?.insertRefreshToken(refreshToken, mutableMap["NewRefreshToken"].toString(), loggedInUser?.userSeq);
 
         return  mutableMap;
     }
 
     @PostMapping("userLogin")
-    fun userLogin(@RequestBody userDto: UserDto, request:HttpServletRequest): MutableMap<String, String>? {
+    fun userLogin(@RequestBody userDto: UserDto, request: HttpServletRequest): MutableMap<String, String>? {
+        val mutableMap: MutableMap<String, String> = mutableMapOf(
+            "AccessToken" to  (request.getHeader("AccessToken")?.toString() ?: ""),
+            "RefreshToken" to (request.getHeader("RefreshToken")?.toString() ?: ""),
+            "NewRefreshToken" to (request.getHeader("RefreshToken")?.toString() ?: "")
+        )
 
-        val mutableMap: MutableMap<String, String> = mutableMapOf()
-        var accessToken = request.getHeader("AccessToken")?.toString() ?: ""
-        var refreshToken = request.getHeader("RefreshToken")?.toString() ?: ""
-
-
-        var loggedInUser:UserDto = UserDto();
+        var loggedInUser: UserDto = UserDto()
 
         // JWT 없으면 새로 발급
-        if(accessToken.equals("") and accessToken.equals("")){
-            loggedInUser = userService?.userLogin(userDtoToEntity(userDto))!!;
-            accessToken  = loggedInUser.let { jwtUtil?.createAccessToken(it).toString() }.toString();
-            refreshToken = loggedInUser.let { jwtUtil?.createRefreshToken(it).toString() }.toString();
+        if (mutableMap["AccessToken"].isNullOrEmpty() && mutableMap["RefreshToken"].isNullOrEmpty()) {
+            loggedInUser = userService?.userLogin(userDtoToEntity(userDto))!!
+            mutableMap["AccessToken"] = loggedInUser.let { jwtUtil?.createAccessToken(it).toString() }.toString()
+            mutableMap["RefreshToken"] = loggedInUser.let { jwtUtil?.createRefreshToken(it).toString() }.toString()
         }
 
-        mutableMap["AccessToken"] = accessToken
-        mutableMap["RefreshToken"] = refreshToken
+        // JWT가 있으면 JWT 검증
+        if (!mutableMap["AccessToken"].isNullOrEmpty() && !mutableMap["RefreshToken"].isNullOrEmpty()) {
+            val accessTokenParse = jwtUtil?.parseClaims(mutableMap)
 
-        //JWT가 있으면 JWT검증
-        if (!accessToken.equals("") and !accessToken.equals("")){
-            var accessTokenParse = jwtUtil?.parseClaims(mutableMap);
-
-            val tokenMap: Map<String, String>? = jwtUtil?.refreshAccessToken(mutableMap);
-            mutableMap["RefreshToken"] = tokenMap?.get("refreshToken").toString()
-
-            //accessTokenParse 만료시 refreshToken으로 재발급, refreshToken도 재발급
-            if(accessTokenParse == null){
+            if (accessTokenParse == null) {
+                val tokenMap: Map<String, String>? = jwtUtil?.refreshAccessToken(mutableMap)
                 mutableMap["AccessToken"] = tokenMap?.get("accessToken").toString()
+                mutableMap["NewRefreshToken"] = tokenMap?.get("refreshToken").toString() // Update NewRefreshToken too
             }
         }
 
-        //JWT가 없으면 insert 있으면 Update
-        userService?.insertRefreshToken(refreshToken, loggedInUser?.userSeq);
+        // JWT가 없으면 insert, 있으면 Update
+        userService?.insertRefreshToken(mutableMap["RefreshToken"].toString(), mutableMap["NewRefreshToken"].toString(),loggedInUser.userSeq);
 
         return try {
-            if (loggedInUser?.userId != null) {
-                mutableMap;
+            if (loggedInUser.userId != null) {
+                mutableMap
             } else {
                 println("User not found or invalid credentials")
                 null
@@ -103,6 +97,7 @@ class UserController {
             null
         }
     }
+
 
 
     @PostMapping("getFindUserId")
