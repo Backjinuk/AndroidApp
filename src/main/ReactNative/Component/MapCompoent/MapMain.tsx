@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Linking, Text, TextInput, View} from 'react-native';
 import {
   Camera,
@@ -10,6 +10,7 @@ import axios from 'axios';
 import Config from 'react-native-config';
 import CommunityAddForm from './CommunityComponent/CommunityAddForm.tsx';
 import Geolocation from '@react-native-community/geolocation';
+import axiosPost from "../../Util/AxiosUtil.ts";
 
 interface Position {
   title?: string;
@@ -45,6 +46,37 @@ export default function MapMain() {
   const [position, privateSetPosition] = useState<Position | undefined>(
     undefined,
   );
+
+  useEffect(  () => {
+
+
+    const getLocationBaseInpuery = async ()=> {
+      const myposition = await getMyPosition()
+      const radius  = 0.0;
+
+      // POST 요청을 보내기 위한 데이터 구성
+      const postData = {
+        myposition: {
+          ...myposition, // 기존의 위치 정보
+          radius // 반경 추가
+        }
+      };
+
+      axiosPost.post("/commu/getLocationBaseInquery", JSON.stringify({
+       "myposition" :  {
+         ...myposition, // 기존의 위치 정보
+         radius // 반경 추가
+        }
+      })).then((res) => {
+        console.log(res.data);
+      })
+
+      console.log(myposition)
+    }
+
+    getLocationBaseInpuery();
+  },[])
+
   //마커의 현재 위치
   const setPosition = async (position: Position) => {
     const newRegion = {
@@ -177,6 +209,7 @@ export default function MapMain() {
 
   // 키워드로 조회
   const getLocations = async () => {
+
     // 근처 500m
     let data = await axios.get(
       'https://dapi.kakao.com/v2/local/search/keyword.JSON',

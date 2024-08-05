@@ -24,6 +24,9 @@ axiosPost.interceptors.request.use(
             if (refreshToken) {
                 config.headers['RefreshToken'] = refreshToken;
             }
+
+            config.headers['Content-Type'] = 'application/json';
+
         } catch (error) {
             console.error('Error fetching token', error);
         }

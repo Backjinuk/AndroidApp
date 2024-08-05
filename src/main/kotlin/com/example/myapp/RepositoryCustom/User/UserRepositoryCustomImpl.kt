@@ -1,4 +1,4 @@
-package com.example.myapp.RepositoryCustom
+package com.example.myapp.RepositoryCustom.User
 
 import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.User
@@ -70,7 +70,7 @@ class UserRepositoryCustomImpl @Autowired constructor(
             from(entity(User::class))
             where(
                 and(
-                    col(User::usrSeq).equal(userSeq)
+                    col(User::userSeq).equal(userSeq)
                 )
             )
         }
@@ -82,23 +82,23 @@ class UserRepositoryCustomImpl @Autowired constructor(
     override fun insertRefreshToken(refreshToken: String, newRefreshToken: String, userSeq: Long?) {
 
         val query = queryFactory.selectQuery<Long> {
-                select(count(entity(UserToken::class)))
-                from(entity(UserToken::class))
-                where(
-                    col(UserToken::refreshUserToken).equal(refreshToken)
-                )
-            }.singleResult > 0
+            select(count(entity(UserToken::class)))
+            from(entity(UserToken::class))
+            where(
+                col(UserToken::refreshUserToken).equal(refreshToken)
+            )
+        }.singleResult > 0
 
         if(!query){
 
             val userToken = UserToken().apply {
                 this.refreshUserToken = refreshToken
-                this.user = userSeq?.let { User().apply { this.usrSeq = it } }
+                this.user = userSeq?.let { User().apply { this.userSeq = it } }
             }
 
             println("userSeq = ${userSeq}")
 
-            println("userToken = ${userToken.user?.usrSeq}")
+            println("userToken = ${userToken.user?.userSeq}")
 
             entityManager.persist(userToken)
         }

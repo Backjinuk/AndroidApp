@@ -1,7 +1,7 @@
 package com.example.myapp.Controller
 
 import com.example.myapp.Dto.UserDto
-import com.example.myapp.Service.UserService
+import com.example.myapp.Service.User.UserService
 import com.example.myapp.Util.JwtUtil
 import com.example.myapp.Util.ModelMapperUtil.Companion.userDtoToEntity
 import jakarta.servlet.http.HttpServletRequest

@@ -26,7 +26,7 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         chain: FilterChain
     ) {
-        val header = request.getHeader("Authorization")
+        val header = request.getHeader("AccessToken")
         log.debug("Authorization Header: $header")
 
         if (header == null || !header.startsWith("Bearer ")) {

@@ -1,4 +1,4 @@
-package com.example.myapp.Service
+package com.example.myapp.Service.User
 
 import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.User

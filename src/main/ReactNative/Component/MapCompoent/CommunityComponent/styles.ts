@@ -31,6 +31,18 @@ const styles = StyleSheet.create({
         marginTop: 8,
         marginBottom: 8,
     },
+    textArea: {
+        height: 100,
+        textAlignVertical: 'top',
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 4,
+        padding: 8,
+        fontSize: 16,
+    },
+
 });
 
 export default styles;

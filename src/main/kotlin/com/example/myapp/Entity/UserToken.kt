@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 @Entity
 class UserToken {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var userTokenSeq:Long ?= 0;
@@ -17,6 +18,6 @@ class UserToken {
     @JoinColumn(name="usrSeq")
     var user:User ?= User();
 
-    var regDt:LocalDateTime ?= LocalDateTime.now()
+    var regDt: LocalDateTime?= LocalDateTime.now()
 
 }
