@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState, useRef} from 'react';
 import {
   View,
@@ -32,9 +33,17 @@ const ChatScreen: React.FC = () => {
     }
   };
 
-  const connect = () => {
+  const connect = async () => {
     if (wsurl) {
-      client.current = new WebSocket(wsurl);
+      const accessToken = await AsyncStorage.getItem('AccessToken');
+      const refreshToken = await AsyncStorage.getItem('RefreshToken');
+      client.current = new WebSocket(wsurl, null, {
+        headers: {
+          AccessToken: `Bearer ${accessToken}`,
+          RefreshToken: `${refreshToken}`,
+        },
+      });
+      console.log(client.current);
       client.current.onopen = () => {
         console.log('소켓 통신 활성화');
       };
@@ -45,7 +54,7 @@ const ChatScreen: React.FC = () => {
         console.log('받은 데이터 등록 완료');
       };
       client.current.onerror = e => {
-        console.log('에러 발생 : ' + e);
+        console.log('에러 발생 : ' + e.message);
       };
       client.current.onclose = e => {
         console.log('소켓 통신 해제');
