@@ -27,7 +27,7 @@ const ChatScreen: React.FC = () => {
         content: input,
       };
       setMessages(prevMessages => [...prevMessages, newMessage]);
-      client.current.send('asdf');
+      client.current.send(JSON.stringify(newMessage));
       // setInput('');
     }
   };

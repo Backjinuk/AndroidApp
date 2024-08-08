@@ -5,10 +5,17 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
+
 @Configuration
 @EnableWebSocket
-class WebSocketConfig : WebSocketConfigurer {
+class WebSocketConfig(chatHandler: ChatHandler) : WebSocketConfigurer {
+    private val chatHandler: ChatHandler
+
+    init {
+        this.chatHandler = chatHandler
+    }
+
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(ChatHandler(), "/chat").setAllowedOrigins("*")
+        registry.addHandler(chatHandler, "/chat").setAllowedOrigins("*")
     }
 }
