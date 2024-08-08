@@ -1,5 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Linking, Text, TextInput, View, TouchableOpacity} from 'react-native';
+import React, {useState} from 'react';
+import {
+  Button,
+  Linking,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   Camera,
   NaverMapMarkerOverlay,
@@ -8,12 +15,11 @@ import {
 } from '@mj-studio/react-native-naver-map';
 import axios from 'axios';
 import Config from 'react-native-config';
-import CommunityAddForm from './CommunityComponent/CommunityAddForm.tsx';
 import MapAddModal from './MapAddModal';
 import Geolocation from '@react-native-community/geolocation';
-import axiosPost from "../../Util/AxiosUtil.ts";
 import LocationMarker from './LocationMarker';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import CommunityAddForm from "./CommunityComponent/CommunityAddForm.tsx";
 
 export default function MapMain({navigation}: any) {
   const debug = true;
@@ -24,50 +30,19 @@ export default function MapMain({navigation}: any) {
   const [keyword, setKeyword] = useState('');
   const [locations, privateSetLocations] = useState<Location[]>([]);
   const [region, setRegion] = useState<Region>();
+
   //검색 좌표들
   const setLocations = (locations: any[]) => {
-    log(locations);
+    log("locations : " + locations);
     const {array, region} = analyzeLocations(locations);
-    setRegion(undefined);
     setRegion(region);
-    log(region);
+    log("region : " + region);
     privateSetLocations(array);
     log('완료');
   };
   const [position, privateSetPosition] = useState<Position | undefined>(
-    undefined,
+      undefined,
   );
-
-  useEffect(  () => {
-
-
-    const getLocationBaseInpuery = async ()=> {
-      const myposition = await getMyPosition()
-      const radius  = 0.0;
-
-      // POST 요청을 보내기 위한 데이터 구성
-      const postData = {
-        myposition: {
-          ...myposition, // 기존의 위치 정보
-          radius // 반경 추가
-        }
-      };
-
-      axiosPost.post("/commu/getLocationBaseInquery", JSON.stringify({
-       "myposition" :  {
-         ...myposition, // 기존의 위치 정보
-         radius // 반경 추가
-        }
-      })).then((res) => {
-        console.log(res.data);
-      })
-
-      console.log(myposition)
-    }
-
-    getLocationBaseInpuery();
-  },[])
-
   //마커의 현재 위치
   const setPosition = async (position: Position) => {
     const newRegion = {
@@ -81,27 +56,27 @@ export default function MapMain({navigation}: any) {
       const info = await reverseGeocoding(position);
       const nextPosition = {...position};
       nextPosition.title = '';
-      log('start');
-      log(info.results[0]);
-      log(info.results[1]);
+      // log('start');
+      // log(info.results[0]);
+      // log(info.results[1]);
       //도로명 주소가 없을 경우
       if (info.results[1] === undefined || info.results[1].land === undefined) {
         nextPosition.address =
-          info.results[0].region.area1.name +
-          ' ' +
-          info.results[0].region.area2.name +
-          ' ' +
-          info.results[0].region.area3.name;
+            info.results[0].region.area1.name +
+            ' ' +
+            info.results[0].region.area2.name +
+            ' ' +
+            info.results[0].region.area3.name;
         //도로명 주소가 있을 경우
       } else {
         let positionAddress =
-          info.results[1].region.area1.name +
-          ' ' +
-          info.results[1].region.area2.name +
-          ' ' +
-          info.results[1].region.area3.name +
-          ' ' +
-          info.results[1].land.name;
+            info.results[1].region.area1.name +
+            ' ' +
+            info.results[1].region.area2.name +
+            ' ' +
+            info.results[1].region.area3.name +
+            ' ' +
+            info.results[1].land.name;
         positionAddress += ' ' + info.results[1].land.number1;
         if (info.results[1].land.number2 !== '') {
           positionAddress += '-' + info.results[1].land.number2;
@@ -129,7 +104,6 @@ export default function MapMain({navigation}: any) {
   // 지역 검색 결과 분석
   const analyzeLocations = (locations: any[]) => {
     const array: Location[] = [];
-    const indexSet: string[] = [];
     let minLat = 1000;
     let maxLat = 0;
     let minLon = 1000;
@@ -181,18 +155,18 @@ export default function MapMain({navigation}: any) {
   const reverseGeocoding = async (position: Camera | Position) => {
     if (position === undefined) return;
     const data = await axios.get(
-      'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc',
-      {
-        params: {
-          coords: position.longitude + ',' + position.latitude,
-          orders: 'legalcode,roadaddr,admcode',
-          output: 'json',
+        'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc',
+        {
+          params: {
+            coords: position.longitude + ',' + position.latitude,
+            orders: 'legalcode,roadaddr,admcode',
+            output: 'json',
+          },
+          headers: {
+            'X-NCP-APIGW-API-KEY-ID': naver_map_api_client_id, // 여기에 네이버 개발자 센터에서 발급받은 Client ID를 입력하세요
+            'X-NCP-APIGW-API-KEY': naver_map_api_client_secret, // 여기에 네이버 개발자 센터에서 발급받은 Client Secret을 입력하세요
+          },
         },
-        headers: {
-          'X-NCP-APIGW-API-KEY-ID': naver_map_api_client_id, // 여기에 네이버 개발자 센터에서 발급받은 Client ID를 입력하세요
-          'X-NCP-APIGW-API-KEY': naver_map_api_client_secret, // 여기에 네이버 개발자 센터에서 발급받은 Client Secret을 입력하세요
-        },
-      },
     );
     return data.data;
   };
@@ -201,38 +175,38 @@ export default function MapMain({navigation}: any) {
   const getLocations = async () => {
     // 근처 500m
     let data = await axios.get(
-      'https://dapi.kakao.com/v2/local/search/keyword.JSON',
-      {
-        params: {
-          query: keyword,
-          x: camera?.longitude,
-          y: camera?.latitude,
-          radius: 500,
-          size: 5,
-          sort: 'distance',
-        },
-        headers: {
-          Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY,
-        },
-      },
-    );
-    // 전체 거리순
-    if (data.data.meta.total_count === 0) {
-      log('데이터가 없습니다.');
-      data = await axios.get(
         'https://dapi.kakao.com/v2/local/search/keyword.JSON',
         {
           params: {
             query: keyword,
             x: camera?.longitude,
             y: camera?.latitude,
+            radius: 500,
             size: 5,
             sort: 'distance',
           },
           headers: {
-            Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY, // 여기에 네이버 개발자 센터에서 발급받은 Client ID를 입력하세요
+            Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY,
           },
         },
+    );
+    // 전체 거리순
+    if (data.data.meta.total_count === 0) {
+      log('데이터가 없습니다.');
+      data = await axios.get(
+          'https://dapi.kakao.com/v2/local/search/keyword.JSON',
+          {
+            params: {
+              query: keyword,
+              x: camera?.longitude,
+              y: camera?.latitude,
+              size: 5,
+              sort: 'distance',
+            },
+            headers: {
+              Authorization: 'KakaoAK ' + Config.KAKAO_REST_API_KEY,
+            },
+          },
       );
     }
     setLocations(data.data.documents);
@@ -261,9 +235,9 @@ export default function MapMain({navigation}: any) {
       return '';
     } else {
       return title
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
     }
   };
 
@@ -312,15 +286,15 @@ export default function MapMain({navigation}: any) {
   const getCurrentPositionAsync = (options?: any) => {
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
-        position => resolve(position),
-        error => reject(error),
-        options,
+          position => resolve(position),
+          error => reject(error),
+          options,
       );
     });
   };
 
   // (임시) 입력받은 위치 기반 500m 더미 찾기
-  const findCloseLocation = (position: Position) => {
+  const findCloseLocation = async (position: Position) => {
     const rule = 500;
     const array: Location[] = [];
     dummies.forEach(dummy => {
@@ -337,8 +311,8 @@ export default function MapMain({navigation}: any) {
     const dLat = deg2rad(start.latitude - end.latitude);
     const dLon = deg2rad(start.longitude - end.longitude);
     const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(start.latitude)) *
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(start.latitude)) *
         Math.cos(deg2rad(end.latitude)) *
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
@@ -352,173 +326,122 @@ export default function MapMain({navigation}: any) {
     return deg * (Math.PI / 180);
   }
 
-  const tapMap = () => {};
-
   return (
-    <>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
-        <TextInput
-          style={{width: '90%'}}
-          value={keyword}
-          onChangeText={setKeyword}
-        />
-        <TouchableOpacity
-          onPress={() => {
-            getLocations();
-            privateSetPosition(undefined);
-          }}
-          style={{
-            width: '10%',
-            alignItems: 'center',
-            backgroundColor: '#2196F3',
-            borderRadius: 3,
-          }}>
-          <Icon
+      <>
+        <View
             style={{
-              marginVertical: 'auto',
-            }}
-            name="search"
-            size={20}
-            color="white"
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}>
+          <TextInput
+              style={{width: '90%'}}
+              value={keyword}
+              onChangeText={setKeyword}
           />
-        </TouchableOpacity>
-      </View>
-      <Button title="위치기반 모임확인" onPress={findMoimByMyPosition} />
-      <Button title="화면기반 모임확인" onPress={findMoimByCamera} />
-      <View style={{flex: 1}}>
-        <NaverMapView
-          onInitialized={async () => {
-            log('init');
-            const position = await getMyPosition();
-            const round = 0.0025;
-            const region = {
-              latitude: position.latitude - round,
-              longitude: position.longitude - round,
-              latitudeDelta: 2 * round,
-              longitudeDelta: 2 * round,
-            };
-            setRegion(region);
-          }}
-          onCameraChanged={setCamera}
-          region={region}
-          onTapMap={params => {
-            setPosition(params);
-          }}
-          isExtentBoundedInKorea={true}
-          maxZoom={18}
-          minZoom={9}
-          style={{flex: 1}}
-          animationDuration={500}>
-          {position && (
-            <NaverMapMarkerOverlay
-              latitude={position.latitude}
-              longitude={position.longitude}
-              onTap={() => {
-                setPosition(position);
-              }}
-              anchor={{x: 0.5, y: 1}}
-            />
-          )}
-          {locations.length !== 0 &&
-            locations.map(location => (
-              <LocationMarker
-                key={location.latitude + location.longitude + location.title}
-                location={location}
-                setPosition={setPosition}
-              />
-            ))}
-        </NaverMapView>
-      </View>
-      <View>
-        {position && (
-          <>
-            <Text>{position?.title}</Text>
-            <Button title="등록" onPress={addMoim} />
-            <Button title="길찾기" onPress={() => findRoute(position)} />
-            <Button
-              title="닫기"
+          <TouchableOpacity
               onPress={() => {
+                getLocations();
                 privateSetPosition(undefined);
               }}
+              style={{
+                width: '10%',
+                alignItems: 'center',
+                backgroundColor: '#2196F3',
+                borderRadius: 3,
+              }}>
+            <Icon
+                style={{
+                  marginVertical: 'auto',
+                }}
+                name="search"
+                size={20}
+                color="white"
             />
-          </>
-        )}
-      </View>
-      <MapAddModal
-        state={state}
-        position={position}
-        closeAddForm={() => {
-          setState('find');
-        }}
-        dummies={dummies}
-        setDummies={setDummies}
-      />
-          <View style={{flex: 1}}>
-            <NaverMapView
-              maxZoom={18}
-              minZoom={9}
-              style={{flex: 1}}
-              onCameraChanged={camera => {
-                setCamera(camera);
+          </TouchableOpacity>
+        </View>
+        <Button title="위치기반 모임확인" onPress={findMoimByMyPosition} />
+
+{/*        <TouchableOpacity
+            onPress={findMoimByCamera}
+        >
+          <Text>화면기반 모임확인</Text>
+        </TouchableOpacity>*/}
+        <Button title="화면기반 모임확인" onPress={findMoimByCamera}/>
+        <View style={{backgroundColor : '#2196F3', width : '7%'}}>
+          <Icon
+              name="save"
+              size={30}
+              color="white"
+          />
+        </View>
+        <View style={{flex: 1}}>
+          <NaverMapView
+              onInitialized={async () => {
+                log('init');
+                const position = await getMyPosition();
+                const round = 0.0025;
+                const region = {
+                  latitude: position.latitude - round,
+                  longitude: position.longitude - round,
+                  latitudeDelta: 2 * round,
+                  longitudeDelta: 2 * round,
+                };
+                setRegion(region);
               }}
-              animationDuration={500}
+              onCameraChanged={setCamera}
               region={region}
               onTapMap={params => {
                 setPosition(params);
-              }}>
-              {position && (
+              }}
+              isExtentBoundedInKorea={true}
+              maxZoom={18}
+              minZoom={9}
+              style={{flex: 1}}
+              animationDuration={500}>
+            {position && (
                 <NaverMapMarkerOverlay
-                  latitude={position.latitude}
-                  longitude={position.longitude}
-                  onTap={() => {
-                    setPosition(position);
-                  }}
-                  anchor={{x: 0.5, y: 1}}
-                />
-              )}
-              {locations.length !== 0 &&
-                locations.map(location => (
-                  <NaverMapMarkerOverlay
-                    key={
-                      location.latitude + location.longitude + location.title
-                    }
-                    latitude={location.latitude}
-                    longitude={location.longitude}
+                    latitude={position.latitude}
+                    longitude={position.longitude}
                     onTap={() => {
-                      setPosition(location);
+                      setPosition(position);
                     }}
                     anchor={{x: 0.5, y: 1}}
-                  />
+                />
+            )}
+            {locations.length !== 0 &&
+                locations.map(location => (
+                    <LocationMarker
+                        key={location.latitude + location.longitude + location.title}
+                        location={location}
+                        setPosition={setPosition}
+                    />
                 ))}
-            </NaverMapView>
-          </View>
-      <View>
-        {position ? (
-            <>
-              <Text>{position?.title}</Text>
-              <Button title="등록" onPress={addMoim} />
-              <Button title="길찾기" onPress={() => findRoute(position)} />
-              <Button
-                  title="닫기"
-                  onPress={() => {
-                    privateSetPosition(undefined);
-                  }}
-              />
-            </>
-        ) : (
-            <CommunityAddForm
-                position={position}
-                setState={setState}
-                dummies={dummies}
-                setDummies={setDummies}
-            />
-        )}
-      </View>
-
-    </>
+          </NaverMapView>
+        </View>
+        <View>
+          {position && (
+              <>
+                <Text>{position?.title}</Text>
+                <Button title="등록" onPress={addMoim} />
+                <Button title="길찾기" onPress={() => findRoute(position)} />
+                <Button
+                    title="닫기"
+                    onPress={() => {
+                      privateSetPosition(undefined);
+                    }}
+                />
+              </>
+          )}
+        </View>
+        <CommunityAddForm
+            state={state}
+            position={position}
+            closeAddForm={() => {
+              setState('find');
+            }}
+            dummies={dummies}
+            setDummies={setDummies}
+        />
+      </>
   );
 }
