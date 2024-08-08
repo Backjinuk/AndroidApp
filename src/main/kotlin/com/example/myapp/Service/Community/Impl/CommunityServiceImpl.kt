@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class CommunityServiceImpl(
-    private var communityRepository: CommunityRepository,
-    private var entityManager: EntityManager,
-    private var queryFactory: QueryFactoryImpl
+    private var communityRepository: CommunityRepository
 ) : CommunityService {
 
     override fun addCommunity(community: Community): Community {

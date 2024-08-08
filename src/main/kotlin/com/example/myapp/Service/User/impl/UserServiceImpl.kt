@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserServiceImpl(
-    private val userRepository: UserRepository,
-    private val entityManager: EntityManager,
-    private val queryFactory: QueryFactoryImpl
+    private val userRepository: UserRepository
 ) : UserService {
 
     override fun userJoin(user: User?) {

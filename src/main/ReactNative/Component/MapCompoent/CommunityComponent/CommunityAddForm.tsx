@@ -15,9 +15,9 @@ export default function CommunityAddForm(props: any) {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
 
-    const [latitude, setLatitude] = useState(props.position.latitude);
-    const [longitude, setLongitude] = useState(props.position.longitude)
-    const [address, setAddress] = useState(props.position.address)
+    const [latitude, setLatitude] = useState(/*props.position.latitude*/);
+    const [longitude, setLongitude] = useState(/*props.position.longitude*/)
+    const [address, setAddress] = useState(/*props.position.address*/)
     const [totalUserCount, setTotalUserCount] = useState('');
     const navigation  = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -128,7 +128,7 @@ export default function CommunityAddForm(props: any) {
                         style={[styles.input]}
                         placeholder="위치 정보"
                         value={address}
-                        onChangeText={setAddress}
+                        /*onChangeText={setAddress}*/
                         multiline
                     />
                 </View>

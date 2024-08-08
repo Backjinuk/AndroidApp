@@ -56,19 +56,21 @@ class UserController {
 
     @PostMapping("userLogin")
     fun userLogin(@RequestBody userDto: UserDto, request: HttpServletRequest): MutableMap<String, String>? {
+
+
         val mutableMap: MutableMap<String, String> = mutableMapOf(
             "AccessToken" to  (request.getHeader("AccessToken")?.toString() ?: ""),
             "RefreshToken" to (request.getHeader("RefreshToken")?.toString() ?: ""),
             "NewRefreshToken" to (request.getHeader("RefreshToken")?.toString() ?: "")
         )
 
-        var loggedInUser: UserDto = UserDto()
+        var loggedInUser: UserDto? = userService?.userLogin(userDtoToEntity(userDto))!!;
 
         // JWT 없으면 새로 발급
         if (mutableMap["AccessToken"].isNullOrEmpty() && mutableMap["RefreshToken"].isNullOrEmpty()) {
-            loggedInUser = userService?.userLogin(userDtoToEntity(userDto))!!
-            mutableMap["AccessToken"] = loggedInUser.let { jwtUtil?.createAccessToken(it).toString() }.toString()
-            mutableMap["RefreshToken"] = loggedInUser.let { jwtUtil?.createRefreshToken(it).toString() }.toString()
+
+            mutableMap["AccessToken"] = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString()
+            mutableMap["RefreshToken"] = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString()
         }
 
         // JWT가 있으면 JWT 검증
@@ -83,10 +85,10 @@ class UserController {
         }
 
         // JWT가 없으면 insert, 있으면 Update
-        userService?.insertRefreshToken(mutableMap["RefreshToken"].toString(), mutableMap["NewRefreshToken"].toString(),loggedInUser.userSeq);
+        userService?.insertRefreshToken(mutableMap["RefreshToken"].toString(), mutableMap["NewRefreshToken"].toString(),loggedInUser?.userSeq);
 
         return try {
-            if (loggedInUser.userId != null) {
+            if (loggedInUser?.userId != null) {
                 mutableMap
             } else {
                 println("User not found or invalid credentials")
@@ -111,7 +113,7 @@ class UserController {
         var newToken : String ?= "";
         var userSeq = jwtUtil?.JwtTokenGetUserSeq(map)
         var userDto :UserDto ?= UserDto();
-        var mutableMap : MutableMap<String,Any?> = mutableMapOf() // map 초기화
+        val mutableMap : MutableMap<String,Any?> = mutableMapOf() // map 초기화
 
         // userSeq = 0 이면 토큰 만료로 판단
         if(userSeq!! <= 0L){

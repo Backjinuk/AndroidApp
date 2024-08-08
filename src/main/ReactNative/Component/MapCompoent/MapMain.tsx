@@ -496,30 +496,29 @@ export default function MapMain({navigation}: any) {
                 ))}
             </NaverMapView>
           </View>
-          <View>
-            {position && (
-              <>
-                <Text>{position?.title}</Text>
-                <Button title="등록" onPress={addMoim} />
-                <Button title="길찾기" onPress={() => findRoute(position)} />
-                <Button
+      <View>
+        {position ? (
+            <>
+              <Text>{position?.title}</Text>
+              <Button title="등록" onPress={addMoim} />
+              <Button title="길찾기" onPress={() => findRoute(position)} />
+              <Button
                   title="닫기"
                   onPress={() => {
                     privateSetPosition(undefined);
                   }}
-                />
-              </>
-            )}
-          </View>
-        </>
-      ) : (
-        <CommunityAddForm
-          position={position}
-          setState={setState}
-          dummies={dummies}
-          setDummies={setDummies}
-        />
-      )}
+              />
+            </>
+        ) : (
+            <CommunityAddForm
+                position={position}
+                setState={setState}
+                dummies={dummies}
+                setDummies={setDummies}
+            />
+        )}
+      </View>
+
     </>
   );
 }

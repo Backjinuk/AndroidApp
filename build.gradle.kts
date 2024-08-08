@@ -62,11 +62,18 @@ dependencies {
 
     // Kotlin_JDSL
     val jdslVersion = "2.2.1.RELEASE"
-    implementation("com.linecorp.kotlin-jdsl:hibernate-kotlin-jdsl-jakarta:$jdslVersion")
     implementation("org.hibernate:hibernate-core:6.2.4.Final") // up to 6
-    // if using spring-data-jpa
     implementation("com.linecorp.kotlin-jdsl:spring-data-kotlin-jdsl-starter-jakarta:$jdslVersion")
+    implementation("com.linecorp.kotlin-jdsl:hibernate-kotlin-jdsl-jakarta:$jdslVersion")
 
+    // https://mvnrepository.com/artifact/com.linecorp.kotlin-jdsl/kotlin-jdsl-reactive-core
+    // https://mvnrepository.com/artifact/com.linecorp.kotlin-jdsl/kotlin-jdsl-reactive-core-jakarta
+/*
+    implementation("com.linecorp.kotlin-jdsl:kotlin-jdsl-reactive-core:$jdslVersion")
+    implementation("com.linecorp.kotlin-jdsl:kotlin-jdsl-reactive-core-jakarta:$jdslVersion")
+
+    runtimeOnly("com.linecorp.kotlin-jdsl:kotlin-jdsl:3.5.1")
+*/
 
     //spy 설정
     implementation("p6spy:p6spy:3.9.1")
