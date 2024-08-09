@@ -6,7 +6,7 @@ export default function MapAddModal(props: any) {
     const dummies = [...props.dummies, props.position];
     props.setDummies(dummies);
     props.closeAddForm();
-    console.log(dummies);
+    // console.log(dummies);
   };
 
   return (

@@ -1,18 +1,6 @@
-import React, {useState} from 'react';
-import {
-  Button,
-  Linking,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import {
-  Camera,
-  NaverMapMarkerOverlay,
-  NaverMapView,
-  Region,
-} from '@mj-studio/react-native-naver-map';
+import React, {useEffect, useState} from 'react';
+import {Alert, Button, Linking, Text, TextInput, TouchableOpacity, View,} from 'react-native';
+import {Camera, NaverMapMarkerOverlay, NaverMapView, Region,} from '@mj-studio/react-native-naver-map';
 import axios from 'axios';
 import Config from 'react-native-config';
 import MapAddModal from './MapAddModal';
@@ -20,6 +8,9 @@ import Geolocation from '@react-native-community/geolocation';
 import LocationMarker from './LocationMarker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CommunityAddForm from "./CommunityComponent/CommunityAddForm.tsx";
+import axiosPost from "../../Util/AxiosUtil.ts";
+import CommunityMaker from "./CommunityComponent/CommunityMaker.tsx";
+import CommunityInfoView from "./CommunityComponent/CommunityInfoView.tsx";
 
 export default function MapMain({navigation}: any) {
   const debug = true;
@@ -30,6 +21,38 @@ export default function MapMain({navigation}: any) {
   const [keyword, setKeyword] = useState('');
   const [locations, privateSetLocations] = useState<Location[]>([]);
   const [region, setRegion] = useState<Region>();
+  const [radius, setRadius] = useState(0.3);
+  const [markers, setMarkers] = useState<Community[]>([])
+  const [marker, setMaker]= useState<Community | null>(null);
+  const [openModal, setOpenModal] = useState(false)
+
+
+  // 모임 위치 Search후 마킹
+  useEffect(() => {
+    const setCommuPosition = async () => {
+      try {
+        var myPosition = await getMyPosition();
+
+        // radius 값을 추가
+        myPosition = { ...myPosition, radius: radius } as { latitude: number; longitude: number; radius: number };
+
+        axiosPost.post("/commu/getLocationBaseInquery", JSON.stringify({
+          "myPosition" : myPosition
+        }))
+            .then((res) => {
+
+              setMarkers(res.data);
+
+            });
+
+      } catch (error) {
+        console.error("Error posting location:", error);
+      }
+    };
+
+    setCommuPosition();
+  }, []);
+
 
   //검색 좌표들
   const setLocations = (locations: any[]) => {
@@ -360,20 +383,17 @@ export default function MapMain({navigation}: any) {
           </TouchableOpacity>
         </View>
         <Button title="위치기반 모임확인" onPress={findMoimByMyPosition} />
-
-{/*        <TouchableOpacity
-            onPress={findMoimByCamera}
-        >
-          <Text>화면기반 모임확인</Text>
-        </TouchableOpacity>*/}
         <Button title="화면기반 모임확인" onPress={findMoimByCamera}/>
-        <View style={{backgroundColor : '#2196F3', width : '7%'}}>
+
+        {/*<View style={{backgroundColor : '#2196F3', width : '7%'}}>
+
           <Icon
               name="save"
               size={30}
               color="white"
           />
-        </View>
+        </View>*/}
+
         <View style={{flex: 1}}>
           <NaverMapView
               onInitialized={async () => {
@@ -416,6 +436,22 @@ export default function MapMain({navigation}: any) {
                         setPosition={setPosition}
                     />
                 ))}
+
+            {markers.length !== 0 &&
+                markers.map((marker, index) => (
+                  // 데이터가 유효한지 확인
+                      <CommunityMaker
+                          key = {marker?.latitude + marker?.longitude + marker?.commuTitle} // 일반적으로 index를 사용하는 것은 괜찮지만, 고유한 값을 사용하는 것이 더 좋음
+                          marker = {marker}
+                          setOpenModal={() => {
+                            console.log(11)
+                            setOpenModal(true)}}
+                          setPosition = {setPosition}
+                          setMaker={setMaker}
+                      />
+                ))}
+
+
           </NaverMapView>
         </View>
         <View>
@@ -436,12 +472,21 @@ export default function MapMain({navigation}: any) {
         <CommunityAddForm
             state={state}
             position={position}
-            closeAddForm={() => {
-              setState('find');
-            }}
+            closeAddForm={() => {setState('find');}}
             dummies={dummies}
             setDummies={setDummies}
         />
+
+
+        <CommunityInfoView
+            marker = {marker}
+            openModal = {openModal}
+            setOpenModal = {() => {setOpenModal(false)}}
+            closeAddForm={() => {
+              setOpenModal(false);
+            }}
+        />
+
       </>
   );
 }

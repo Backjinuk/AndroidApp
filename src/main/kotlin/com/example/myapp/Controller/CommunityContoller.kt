@@ -1,26 +1,21 @@
 package com.example.myapp.Controller
 
 import com.example.myapp.Dto.CommunityDTO
-import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.Community
-import com.example.myapp.Entity.User
 import com.example.myapp.Service.Community.CommunityService
 import com.example.myapp.Service.User.UserService
 import com.example.myapp.Util.JwtUtil
 import com.example.myapp.Util.ModelMapperUtil.Companion.commuDtoToEntity
+import com.example.myapp.Util.ModelMapperUtil.Companion.commuEntityToDto
 import com.example.myapp.Util.ModelMapperUtil.Companion.userDtoToEntity
-import jakarta.servlet.ServletRequest
 import jakarta.servlet.http.HttpServletRequest
-import lombok.extern.java.Log
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 @RestController
 @RequestMapping("/commu/")
@@ -67,19 +62,17 @@ class CommunityContoller  @Autowired constructor(
     }
 
     @RequestMapping("getLocationBaseInquery")
-    fun getLocationBaseInquery(@RequestBody map: MutableMap<String, Any>){
-        println("map.get(\"myposition\") = ${map.get("myposition")}")
+    fun getLocationBaseInquery(@RequestBody map: MutableMap<String, Any>) : List<CommunityDTO>{
+        println("map.get(\"myPosition\") = ${map.get("myPosition")}")
 
-        val myposition = map["myposition"] as? Map<String, Any>
+        val myPosition = map["myPosition"] as? Map<String, Double>
 
         // 'myposition' Map에서 'latitude', 'longitude', 'radius' 값을 추출합니다.
-        val latitude = myposition?.get("latitude") as? Double
-        val longitude = myposition?.get("longitude") as? Double
-        val radius = myposition?.get("radius") as? Double
+        val latitude  : Double = myPosition?.get("latitude") ?: throw IllegalArgumentException("Latitude is missing")
+        val longitude : Double = myPosition?.get("longitude") ?: throw IllegalArgumentException("Longitude is missing")
+        val radius    : Double = myPosition?.get("radius") ?: throw IllegalArgumentException("Radius is missing")
 
-        communityService.getLocationBaseInquey(latitude, longitude, radius)
-
-
+        return communityService.getLocationBaseInquey(latitude, longitude, radius).map { item ->  commuEntityToDto(item) }
     }
 
 }

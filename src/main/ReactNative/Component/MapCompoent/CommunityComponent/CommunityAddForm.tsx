@@ -29,6 +29,7 @@ export default function CommunityAddForm(props: any) {
         setAddress(props?.position?.address || '');
     }, [props?.position]); // props.position이 변경될 때마다 useEffect 실행
 
+
     const addMoim = () => {
         const dummies = [...props.dummies, props.position];
         props.setDummies(dummies);

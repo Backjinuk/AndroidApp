@@ -26,14 +26,13 @@ export default function GoogleLoginButton({styles}) {
 
     const onGoogleButtonPress = async () => {
         try {
-            console.log("Checking for Google Play Services...");
+
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-            console.log("Google Play Services available.");
-            console.log("Attempting Google Sign-In...");
+
             const { idToken } = await GoogleSignin.signIn();
-            console.log("Google Sign-In successful. ID Token: ", idToken);
+
             const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-            console.log("Google Credential created.");
+
             return auth().signInWithCredential(googleCredential);
         } catch (e) {
             console.error("Error during Google Sign-In process: ", e);

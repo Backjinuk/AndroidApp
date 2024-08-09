@@ -20,22 +20,18 @@ export default function LoginForm() {
 
 
 
-    useEffect(() => {
-        const fetchTokens = async () => {
-            const tokens = await getToken();
-            if (tokens) {
-                console.log("AccessToken: " + tokens.AccessToken);
-                console.log("RefreshToken: " + tokens.RefreshToken);
-            }
-        };
-
-
-        // AsyncStorage.setItem("AccessToken", "");
-        // AsyncStorage.setItem("RefreshToken", "");
-
-
-        fetchTokens();
-    }, []);
+    // useEffect(() => {
+    //     const fetchTokens = async () => {
+    //         const tokens = await getToken();
+    //     };
+    //
+    //
+    //     AsyncStorage.setItem("AccessToken", "");
+    //     AsyncStorage.setItem("RefreshToken", "");
+    //
+    //
+    //     fetchTokens();
+    // }, []);
 
 
 

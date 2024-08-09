@@ -10,3 +10,17 @@ interface Position {
     longitude: number;
     title: string;
   }
+  interface Community {
+      commuSeq : number
+      commuWrite : string
+      commuTitle : string
+      commuComent : string
+      totalUserCount : number
+      usercount : number
+      latitude : number
+      longitude : number
+      address : string
+      commuMeetingTime : Date
+      regDt :Date
+      upDt : Date
+  }

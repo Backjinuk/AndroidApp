@@ -25,5 +25,9 @@ class ModelMapperUtil {
             return modelMapper.map(communityDTO, Community::class.java)
         }
 
+        fun commuEntityToDto(community: Community):CommunityDTO{
+            return modelMapper.map(community, CommunityDTO::class.java)
+        }
+
     }
 }
