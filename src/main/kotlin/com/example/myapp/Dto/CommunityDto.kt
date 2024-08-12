@@ -2,8 +2,7 @@ package com.example.myapp.Dto
 
 import java.time.LocalDateTime
 
-class CommunityDTO {
-
+class CommunityDto {
     var commuSeq: Long = 0;
 
     var commuWrite: UserDto = UserDto(); // Assuming User ID is sufficient to represent User in DTO
@@ -21,6 +20,8 @@ class CommunityDTO {
     var longitude: Double = 0.0;
 
     var address: String = "";
+
+    var applyStatus:Char ?= null;
 
     var commuMeetingTime: LocalDateTime = LocalDateTime.now();
 

@@ -1,5 +1,6 @@
 package com.example.myapp.Controller
 
+import com.example.myapp.Dto.CommunityDto
 import com.example.myapp.Entity.Community
 import com.example.myapp.Service.Community.CommunityService
 import com.example.myapp.Service.User.UserService
@@ -22,10 +23,10 @@ class CommunityControllerTest {
 
     @Test
     fun getLocationBaseInquery() {
-        val commuList: List<Community> = communityService.getLocationBaseInquey(37.48838166666667, 126.90010166666667, 0.3)
+        val commuList: List<CommunityDto> = communityService.getLocationBaseInquey(37.48838166666667, 126.90010166666667, 0.3)
 
         for (community in commuList) {
-            println("Community = $community")
+            println("Community = ${community.applyStatus}")
         }
     }
 }

@@ -18,4 +18,6 @@ interface UserRepositoryCustom {
 
     fun insertRefreshToken(refreshToken: String, newRefreshToken: String, userSeq: Long?)
 
+    fun refreshTokenFindUserInfo(refreshToken: String?): UserDto
+
 }

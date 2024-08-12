@@ -1,6 +1,6 @@
 package com.example.myapp.Util
 
-import com.example.myapp.Dto.CommunityDTO
+import com.example.myapp.Dto.CommunityDto
 import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.Community
 import com.example.myapp.Entity.User
@@ -21,12 +21,22 @@ class ModelMapperUtil {
             return modelMapper.map(userDto, User::class.java)
         }
 
-        fun commuDtoToEntity(communityDTO: CommunityDTO): Community {
+        fun commuDtoToEntity(communityDTO: CommunityDto): Community {
             return modelMapper.map(communityDTO, Community::class.java)
         }
 
-        fun commuEntityToDto(community: Community):CommunityDTO{
-            return modelMapper.map(community, CommunityDTO::class.java)
+        fun commuEntityToDto(community: Community):CommunityDto{
+            return modelMapper.map(community, CommunityDto::class.java)
+        }
+
+        fun commuEntityToDto(community: Community, status: Char?): CommunityDto {
+            // Community 엔티티를 CommunityDto로 매핑
+            val communityDto = modelMapper.map(community, CommunityDto::class.java)
+
+            // applyStatus를 DTO에 설정
+            communityDto.applyStatus = status
+
+            return communityDto
         }
 
     }

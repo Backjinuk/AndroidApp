@@ -96,10 +96,6 @@ class UserRepositoryCustomImpl @Autowired constructor(
                 this.user = userSeq?.let { User().apply { this.userSeq = it } }
             }
 
-            println("userSeq = ${userSeq}")
-
-            println("userToken = ${userToken.user?.userSeq}")
-
             entityManager.persist(userToken)
         }
 
@@ -110,8 +106,33 @@ class UserRepositoryCustomImpl @Autowired constructor(
             }.executeUpdate()
         }
 
+    }
+
+    override fun refreshTokenFindUserInfo(refreshToken: String?): UserDto {
+
+         val query =  queryFactory.selectQuery<UserToken>{
+             select(entity(UserToken::class))
+             from(entity(UserToken::class))
+             where(col(UserToken::refreshUserToken).equal(refreshToken))
+         }
+
+        val userToken: UserToken? = query.resultList.firstOrNull();
+
+        val query2 = queryFactory.selectQuery<User> {
+            select(entity(User::class))
+            from(entity(User::class))
+            where(
+                and(
+                    col(User::userSeq).equal(userToken?.user?.userSeq?.toLong())
+                )
+            )
+        }
+
+        return modelMapper.map(query2.resultList.firstOrNull(), UserDto::class.java)
 
     }
+
+
 
 
 }

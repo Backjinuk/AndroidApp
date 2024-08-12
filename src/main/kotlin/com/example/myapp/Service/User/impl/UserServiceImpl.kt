@@ -41,5 +41,9 @@ class UserServiceImpl(
         return userRepository.insertRefreshToken(refreshToken, newRefreshToken,  userSeq)
     }
 
+    override fun refreshTokenFindUserInfo(refreshToken: String?): UserDto {
+        return userRepository.refreshTokenFindUserInfo(refreshToken);
+    }
+
 }
 

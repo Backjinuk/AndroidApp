@@ -14,7 +14,6 @@ export default function CommunityMaker(props: any) {
     }
 
     const setPosition = (marker: Community) => {
-        console.log("marker.commuTitle : " + marker.commuTitle);
         props.setPosition(marker);
     };
 

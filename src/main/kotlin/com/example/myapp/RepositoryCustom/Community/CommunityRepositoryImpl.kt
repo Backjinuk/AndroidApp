@@ -1,8 +1,10 @@
 package com.example.myapp.RepositoryCustom.Community
 
+import com.example.myapp.Dto.CommunityDto
 import com.example.myapp.Entity.Community
+import com.example.myapp.Entity.CommunityApply
+import com.example.myapp.Util.ModelMapperUtil.Companion.commuEntityToDto
 import com.linecorp.kotlinjdsl.QueryFactoryImpl
-import com.linecorp.kotlinjdsl.listQuery
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 import kotlin.math.atan2
@@ -15,34 +17,45 @@ class CommunityRepositoryImpl(
     private val entityManager: EntityManager,
     private val queryFactory: QueryFactoryImpl
 ) : CommunityRepositoryCustom {
+    override fun getLocationBaseInquey(latitude: Double?, longitude: Double?, radius: Double?): List<CommunityDto> {
+        if (latitude == null || longitude == null || radius == null) {
+            throw IllegalArgumentException("Latitude, Longitude, and Radius must be provided.")
+        }
 
 
-        override fun getLocationBaseInquey(latitude: Double?, longitude: Double?, radius: Double?): List<Community> {
-            if (latitude == null || longitude == null || radius == null) {
-                throw IllegalArgumentException("Latitude, Longitude, and Radius must be provided.")
-            }
-
-            val query = """
-            SELECT c 
-            FROM Community c
-            WHERE (6371 * acos(
-                    cos(radians(:latitude)) * cos(radians(latitude)) * 
-                    cos(radians(longitude) - radians(:longitude)) + 
-                    sin(radians(:latitude)) * sin(radians(latitude))
-            )) <= :radius
-            ORDER BY (6371 * acos(
+        val query = """
+        SELECT c, ca.applyStatus
+        FROM Community c
+        LEFT JOIN CommunityApply ca ON ca.applyCommuSeq = c.commuSeq
+        WHERE (6371 * acos(
                 cos(radians(:latitude)) * cos(radians(c.latitude)) * 
                 cos(radians(c.longitude) - radians(:longitude)) + 
                 sin(radians(:latitude)) * sin(radians(c.latitude))
-            ))
+        )) <= :radius
+        ORDER BY (6371 * acos(
+            cos(radians(:latitude)) * cos(radians(c.latitude)) * 
+            cos(radians(c.longitude) - radians(:longitude)) + 
+            sin(radians(:latitude)) * sin(radians(c.latitude))
+        ))
         """
 
-            return entityManager.createQuery(query, Community::class.java)
-                .setParameter("latitude", latitude)
-                .setParameter("longitude", longitude)
-                .setParameter("radius", radius)
-                .resultList
-        }
+        val resultList = entityManager.createQuery(query)
+            .setParameter("latitude", latitude)
+            .setParameter("longitude", longitude)
+            .setParameter("radius", radius)
+            .resultList
+
+        return resultList.map { result ->
+            val array = result as Array<*>
+            val community = array[0] as Community
+            val applyStatus = array[1] as Char? // Char로 캐스팅
+            commuEntityToDto(community, applyStatus)
+        }.toList()
+    }
+
+
+
+
 
 
     // Haversine 거리 계산 함수

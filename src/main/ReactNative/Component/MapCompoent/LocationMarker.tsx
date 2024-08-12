@@ -6,7 +6,6 @@ export default function LocationMarker(props: any) {
   const location: Community = props.location;
 
   const setPosition = (location: Community) => {
-      console.log("location.commuTitle : " + location.commuTitle)
       props.setPosition(location);
   };
 

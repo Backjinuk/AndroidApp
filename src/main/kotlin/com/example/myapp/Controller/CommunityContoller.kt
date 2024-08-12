@@ -1,7 +1,8 @@
 package com.example.myapp.Controller
 
-import com.example.myapp.Dto.CommunityDTO
-import com.example.myapp.Entity.Community
+import com.example.myapp.Dto.CommunityDto
+import com.example.myapp.Dto.UserDto
+import com.example.myapp.Entity.CommunityApply
 import com.example.myapp.Service.Community.CommunityService
 import com.example.myapp.Service.User.UserService
 import com.example.myapp.Util.JwtUtil
@@ -28,7 +29,7 @@ class CommunityContoller  @Autowired constructor(
     private val log = LoggerFactory.getLogger(JwtUtil::class.java)
 
     @RequestMapping("addCommunity")
-    fun addCommunity(@RequestBody communityDTO: CommunityDTO, request: HttpServletRequest): ResponseEntity<Boolean> {
+    fun addCommunity(@RequestBody communityDTO: CommunityDto, request: HttpServletRequest): ResponseEntity<Boolean> {
         // Extract tokens from request headers
         val mutableMap: MutableMap<String, String> = mutableMapOf(
             "AccessToken" to  (request.getHeader("AccessToken")?.toString() ?: ""),
@@ -62,7 +63,7 @@ class CommunityContoller  @Autowired constructor(
     }
 
     @RequestMapping("getLocationBaseInquery")
-    fun getLocationBaseInquery(@RequestBody map: MutableMap<String, Any>) : List<CommunityDTO>{
+    fun getLocationBaseInquery(@RequestBody map: MutableMap<String, Any>) : List<CommunityDto>{
         println("map.get(\"myPosition\") = ${map.get("myPosition")}")
 
         val myPosition = map["myPosition"] as? Map<String, Double>
@@ -72,7 +73,22 @@ class CommunityContoller  @Autowired constructor(
         val longitude : Double = myPosition?.get("longitude") ?: throw IllegalArgumentException("Longitude is missing")
         val radius    : Double = myPosition?.get("radius") ?: throw IllegalArgumentException("Radius is missing")
 
-        return communityService.getLocationBaseInquey(latitude, longitude, radius).map { item ->  commuEntityToDto(item) }
+        return communityService.getLocationBaseInquey(latitude, longitude, radius)
+    }
+
+    @RequestMapping("commuApplyUser")
+    fun commuApplyUser(@RequestBody communityDTO: CommunityDto){
+
+        val commuApply : CommunityApply = CommunityApply();
+
+        commuApply.applyUserSeq = communityDTO.commuWrite.userSeq;
+        commuApply.applyCommuSeq = communityDTO.commuSeq;
+        commuApply.applyStatus = 'Y';
+
+        println("commuApply = ${commuApply}")
+
+        communityService.addCommunityApply(commuApply)
+
     }
 
 }

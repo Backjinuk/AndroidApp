@@ -17,7 +17,6 @@ const getToken = async () => {
 };
 
 const setToken = (res : any) =>{
-
     AsyncStorage.setItem("AccessToken", res["AccessToken"]);
     AsyncStorage.setItem("RefreshToken", res["NewRefreshToken"] || res["RefreshToken"]);
 }

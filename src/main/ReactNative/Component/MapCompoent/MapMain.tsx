@@ -80,13 +80,16 @@ export default function MapMain({navigation}: any) {
   );
   //마커의 현재 위치
   const setPosition = async (position: Position) => {
+
     const newRegion = {
       latitude: position.latitude,
       longitude: position.longitude,
       latitudeDelta: randomNumber(),
       longitudeDelta: randomNumber(),
     };
+
     setRegion(newRegion);
+
     if (position.address == undefined) {
       const info = await reverseGeocoding(position);
       const nextPosition = {...position};
@@ -121,7 +124,9 @@ export default function MapMain({navigation}: any) {
       }
       if (nextPosition.title == '') nextPosition.title = nextPosition.address;
       privateSetPosition(nextPosition);
+
     } else {
+
       position.title = getLocationTitle(position);
       privateSetPosition(position);
     }
@@ -395,16 +400,7 @@ export default function MapMain({navigation}: any) {
         </TouchableOpacity>
       </View>
       <Button title="위치기반 모임확인" onPress={findMoimByMyPosition} />
-
-      {/*        <TouchableOpacity
-            onPress={findMoimByCamera}
-        >
-          <Text>화면기반 모임확인</Text>
-        </TouchableOpacity>*/}
       <Button title="화면기반 모임확인" onPress={findMoimByCamera} />
-      <View style={{backgroundColor: '#2196F3', width: '7%'}}>
-        <Icon name="save" size={30} color="white" />
-      </View>
       <View style={{flex: 1}}>
         <NaverMapView
           onInitialized={async () => {
@@ -423,12 +419,15 @@ export default function MapMain({navigation}: any) {
           region={region}
           onTapMap={params => {
             setPosition(params);
+            setOpenModal(false);
           }}
           isExtentBoundedInKorea={true}
           maxZoom={18}
           minZoom={9}
           style={{flex: 1}}
           animationDuration={500}>
+
+
           {position && (
             <NaverMapMarkerOverlay
               latitude={position.latitude}
@@ -454,9 +453,7 @@ export default function MapMain({navigation}: any) {
                     <CommunityMaker
                         key = {marker?.latitude + marker?.longitude + marker?.commuTitle} // 일반적으로 index를 사용하는 것은 괜찮지만, 고유한 값을 사용하는 것이 더 좋음
                         marker = {marker}
-                        setOpenModal={() => {
-                            console.log(11)
-                            setOpenModal(true)}}
+                        setOpenModal={() => {setOpenModal(true)}}
                         setPosition = {setPosition}
                         setMaker={setMaker}
                     />
@@ -465,25 +462,28 @@ export default function MapMain({navigation}: any) {
         </NaverMapView>
       </View>
       <View>
-        {position && (
-          <>
-            <Text>{position?.title}</Text>
-            <Button title="등록" onPress={addMoim} />
-            <Button title="길찾기" onPress={() => findRoute(position)} />
-            <Button
-              title="닫기"
-              onPress={() => {
-                privateSetPosition(undefined);
-              }}
-            />
-          </>
+        {position && !openModal ? (
+            <>
+              <Text>{position.title}</Text>
+              <Button title="등록" onPress={addMoim} />
+              <Button title="길찾기" onPress={() => findRoute(position)} />
+              <Button
+                  title="닫기"
+                  onPress={() => {
+                    privateSetPosition(undefined);
+                  }}
+              />
+            </>
+        ) : (
+            <CommunityInfoView marker={marker} />
         )}
-        <Button
+
+{/*        <Button
           title="채팅"
           onPress={() => {
             navigation.navigate('ChatScreen');
           }}
-        />
+        />*/}
       </View>
       <CommunityAddForm
         state={state}
@@ -495,7 +495,7 @@ export default function MapMain({navigation}: any) {
         setDummies={setDummies}
       />
 
-        <CommunityInfoView
+{/*        <CommunityInfoView
             marker = {marker}
             openModal = {openModal}
             setOpenModal = {() => {setOpenModal(false)}}
@@ -503,6 +503,7 @@ export default function MapMain({navigation}: any) {
                 setOpenModal(false);
             }}
         />
+*/}
     </>
   );
 }
