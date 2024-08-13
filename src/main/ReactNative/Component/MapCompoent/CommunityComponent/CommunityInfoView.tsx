@@ -25,7 +25,7 @@ export default function CommunityInfoView (props : any) {
                     <View style={styles.cardHeader}>
                         <Text style={styles.title}>{props.marker.commuTitle || "가게 이름"}</Text>
                         <Text style={styles.subInfo}>{props.marker.commuComent}</Text>
-                        <Text style={[styles.subInfo, {marginTop : 5}]}> 모집인원 :  {props.marker.usercount || 0} / {props.marker.totalUserCount}</Text>
+                        <Text style={[styles.subInfo, {marginTop : 5}]}> 모집인원 :  {props.marker.userCount || 0} / {props.marker.totalUserCount}</Text>
                     </View>
                     <Image
                         source={{ uri: props.marker.image || 'https://via.placeholder.com/150' }}
@@ -50,7 +50,7 @@ export default function CommunityInfoView (props : any) {
                         </TouchableOpacity>
                     )}
 
-                    <TouchableOpacity style={styles.button} onPress={() => console.log('상세')}>
+                    <TouchableOpacity style={styles.button} onPress={() => props.viewMode(props.marker)}>
                         <Text style={styles.buttonText}>상세</Text>
                     </TouchableOpacity>
 

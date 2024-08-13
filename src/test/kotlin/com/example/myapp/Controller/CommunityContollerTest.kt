@@ -1,7 +1,6 @@
 package com.example.myapp.Controller
 
 import com.example.myapp.Dto.CommunityDto
-import com.example.myapp.Entity.Community
 import com.example.myapp.Service.Community.CommunityService
 import com.example.myapp.Service.User.UserService
 import com.example.myapp.Util.JwtUtil
@@ -23,7 +22,12 @@ class CommunityControllerTest {
 
     @Test
     fun getLocationBaseInquery() {
-        val commuList: List<CommunityDto> = communityService.getLocationBaseInquey(37.48838166666667, 126.90010166666667, 0.3)
+        val commuList: List<CommunityDto> = communityService.getLocationBaseInquey(
+            37.48838166666667,
+            126.90010166666667,
+            0.3,
+            userSeq
+        )
 
         for (community in commuList) {
             println("Community = ${community.applyStatus}")

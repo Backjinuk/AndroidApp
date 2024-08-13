@@ -27,7 +27,20 @@ export default function CommunityAddForm(props: any) {
         setLatitude(props?.position?.latitude || '');
         setLongitude(props?.position?.longitude || '');
         setAddress(props?.position?.address || '');
-    }, [props?.position]); // props.position이 변경될 때마다 useEffect 실행
+
+
+        if (props.marker) {
+
+            setCommuTitle(props?.marker?.commuTitle || '');
+            setCommuComent(props?.marker?.commuComent || '');
+            setLatitude(props?.marker?.latitude || '');
+            setLongitude(props?.marker?.longitude || '');
+            setAddress(props?.marker?.address || '');
+
+            setTotalUserCount(props?.marker?.totalUserCount || 0);
+
+        }
+    })
 
 
     const addMoim = () => {
@@ -63,14 +76,6 @@ export default function CommunityAddForm(props: any) {
             <Modal
                 visible={props.state === 'add'}
                 onRequestClose={() => props.closeAddForm()}>
-
-
-{/*                {Object.entries(props?.position).map((elem: any) => (
-                    <Text key={elem[0]}>
-                        {elem[0]} : {elem[1]}
-                    </Text>
-                ))}*/}
-
 
 
                 <ScrollView style={styles.container}>
@@ -151,13 +156,15 @@ export default function CommunityAddForm(props: any) {
                         <TextInput
                             style={styles.input}
                             placeholder="최대 참여 인원"
-                            value={totalUserCount}
-                            onChangeText={setTotalUserCount}
+                            value={totalUserCount.toString()}
+                            onChangeText={text => setTotalUserCount(text)}
                             keyboardType="numeric"
                         />
                     </View>
-                    <Button title="모임 등록하기" onPress={() => addCommunity()} />
-                    <Button title="취소" onPress={() => { /* 취소 로직 */ }} />
+
+                    {!props.marker && (
+                        <Button title="모임 등록하기" onPress={() => addCommunity()} />
+                    )}
                     <Button
                         title="뒤로"
                         onPress={() => {

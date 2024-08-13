@@ -1,16 +1,18 @@
 package com.example.myapp.Entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
+import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
+@SequenceGenerator(
+    name = "community_apply_seq_generator",
+    sequenceName = "community_apply_seq",
+    allocationSize = 1
+)
 class CommunityApply {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "community_apply_seq_generator")
     @Column(name = "community_apply_seq")
     var communityApplySeq:Long ?= 0;
 

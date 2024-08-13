@@ -1,13 +1,11 @@
 package com.example.myapp.Controller
 
 import com.example.myapp.Dto.CommunityDto
-import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.CommunityApply
 import com.example.myapp.Service.Community.CommunityService
 import com.example.myapp.Service.User.UserService
 import com.example.myapp.Util.JwtUtil
 import com.example.myapp.Util.ModelMapperUtil.Companion.commuDtoToEntity
-import com.example.myapp.Util.ModelMapperUtil.Companion.commuEntityToDto
 import com.example.myapp.Util.ModelMapperUtil.Companion.userDtoToEntity
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
@@ -63,7 +61,7 @@ class CommunityContoller  @Autowired constructor(
     }
 
     @RequestMapping("getLocationBaseInquery")
-    fun getLocationBaseInquery(@RequestBody map: MutableMap<String, Any>) : List<CommunityDto>{
+    fun getLocationBaseInquery(@RequestBody map: MutableMap<String, Any>, request: HttpServletRequest) : List<CommunityDto>{
         println("map.get(\"myPosition\") = ${map.get("myPosition")}")
 
         val myPosition = map["myPosition"] as? Map<String, Double>
@@ -73,19 +71,24 @@ class CommunityContoller  @Autowired constructor(
         val longitude : Double = myPosition?.get("longitude") ?: throw IllegalArgumentException("Longitude is missing")
         val radius    : Double = myPosition?.get("radius") ?: throw IllegalArgumentException("Radius is missing")
 
-        return communityService.getLocationBaseInquey(latitude, longitude, radius)
+        val userSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
+
+
+        return communityService.getLocationBaseInquey(latitude, longitude, radius, userSeq)
     }
 
     @RequestMapping("commuApplyUser")
-    fun commuApplyUser(@RequestBody communityDTO: CommunityDto){
+    fun commuApplyUser(@RequestBody communityDTO: CommunityDto, request:HttpServletRequest){
 
         val commuApply : CommunityApply = CommunityApply();
 
-        commuApply.applyUserSeq = communityDTO.commuWrite.userSeq;
+        commuApply.applyUserSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
         commuApply.applyCommuSeq = communityDTO.commuSeq;
         commuApply.applyStatus = 'Y';
 
-        println("commuApply = ${commuApply}")
+        println("commuApply = ${commuApply.applyUserSeq}")
+        println("commuApply = ${commuApply.applyCommuSeq}")
+
 
         communityService.addCommunityApply(commuApply)
 

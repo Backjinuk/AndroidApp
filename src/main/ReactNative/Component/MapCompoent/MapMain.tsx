@@ -289,6 +289,11 @@ export default function MapMain({navigation}: any) {
     setState('add');
   };
 
+  const viewMode = (marker : Community) => {
+    setState('add');
+    setMaker(marker)
+  }
+
   // 내 위치 기반 모임 찾기
   const findMoimByMyPosition = async () => {
     log('위치기반 확인');
@@ -481,7 +486,7 @@ export default function MapMain({navigation}: any) {
               />
             </>
         ) : (
-            <CommunityInfoView marker={marker} />
+            <CommunityInfoView marker={marker}  viewMode={viewMode}/>
         )}
 
 {/*        <Button
@@ -494,6 +499,7 @@ export default function MapMain({navigation}: any) {
       <CommunityAddForm
         state={state}
         position={position}
+        marker={marker}
         closeAddForm={() => {
           setState('find');
         }}

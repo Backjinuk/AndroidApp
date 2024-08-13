@@ -10,7 +10,7 @@ interface CommunityService {
 
     fun addCommunity(commuDtoToEntity: Community): Community;
 
-    fun getLocationBaseInquey(latitude: Double?, longitude: Double?, radius: Double?): List<CommunityDto>
+    fun getLocationBaseInquey(latitude: Double?, longitude: Double?, radius: Double?, userSeq: Long): List<CommunityDto>
 
     fun addCommunityApply(commuApply: CommunityApply)
 

@@ -18,8 +18,8 @@ class CommunityServiceImpl(
         return communityRepository.save(community);
     }
 
-    override fun getLocationBaseInquey(latitude: Double?, longitude: Double?, radius: Double?) : List<CommunityDto> {
-        return communityRepository.getLocationBaseInquey(latitude, longitude, radius)
+    override fun getLocationBaseInquey(latitude: Double?, longitude: Double?, radius: Double?, userSeq: Long) : List<CommunityDto> {
+        return communityRepository.getLocationBaseInquey(latitude, longitude, radius, userSeq)
     }
 
     override fun addCommunityApply(commuApply: CommunityApply) {

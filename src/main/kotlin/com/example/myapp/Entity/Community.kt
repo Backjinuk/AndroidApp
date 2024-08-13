@@ -6,10 +6,15 @@ import java.time.LocalDateTime
 
 @Entity
 @Data
+@SequenceGenerator(
+    name = "commu_seq_generator", // 시퀀스 생성기 이름
+    sequenceName = "commu_seq", // 데이터베이스에 생성될 시퀀스 이름
+    allocationSize = 1 // 시퀀스를 한 번에 1씩 증가시킴
+)
 class Community {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "commu_seq_generator")
     @Column(name = " commu_seq")
     var commuSeq:Long = 0;
 

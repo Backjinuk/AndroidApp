@@ -1,17 +1,25 @@
 package com.example.myapp.Entity
 
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.SequenceGenerator
 import org.springframework.cglib.core.Local
 import java.time.LocalDateTime
 
 @Entity
+@SequenceGenerator(
+    name = "user_seq",
+    sequenceName = "user_seq_generator",
+    allocationSize = 1
+)
 class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq_generator")
+    @Column(name = "user_seq")
     var userSeq: Long? = 0
 
     var userId: String? = ""
