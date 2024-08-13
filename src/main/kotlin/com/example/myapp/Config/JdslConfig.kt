@@ -22,4 +22,5 @@ class JdslConfig {
         val subqueryCreator = SubqueryCreatorImpl()
         return QueryFactoryImpl(criteriaQueryCreator, subqueryCreator)
     }
+
 }

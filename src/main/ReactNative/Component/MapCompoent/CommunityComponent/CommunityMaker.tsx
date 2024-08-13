@@ -17,20 +17,36 @@ export default function CommunityMaker(props: any) {
         props.setPosition(marker);
     };
 
+    const handleMarkerTap = () => {
+        props.setPosition(marker);
+        props.setMaker(marker);
+        props.setOpenModal();
+    };
+
     return (
-        <>
             <NaverMapMarkerOverlay
-                key={marker.commuSeq} // 고유한 key 값 사용
                 latitude={marker.latitude}
                 longitude={marker.longitude}
-                onTap={() => {
-                    setPosition(marker);
-                    props.setMaker(marker)
-                    props.setOpenModal()
-                    //Alert.alert(marker.commuTitle);
-                }}
-                anchor={{ x: 0.5, y: 1 }}
+                onTap={handleMarkerTap}
+                width={30}  // 마커의 너비
+                height={40}  // 마커의 높이
+                anchor={{ x: 0.5, y: 1 }} // 앵커 포인트 설정
+
+
+                caption={marker.applyStatus === 'Y' ? {
+                    text:`${marker.commuTitle}`,
+                    align:"Top",
+                    offset:5,
+                    textSize:13
+                }: undefined}
+
+                subCaption={marker.applyStatus === 'Y' ? {
+                    text:`${marker.commuMeetingTime}`,
+                    textSize:10,
+                    color:'red'
+                }: undefined}
+
+
             />
-        </>
     );
 }

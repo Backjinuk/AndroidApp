@@ -26,4 +26,8 @@ class CommunityServiceImpl(
         communityApplyRepository.save(commuApply)
     }
 
+    override fun updateCommunityUserTotal(commuSeq: Long) {
+        communityRepository.updateCommunityUserTotal(commuSeq)
+    }
+
 }

@@ -51,7 +51,7 @@ class CommunityContoller  @Autowired constructor(
         }
 
         println("communityEntity.commuWrite.userSeq = ${communityEntity.commuWrite.userSeq}")
-        
+
         return try {
             // Add community and return appropriate response
             val savedCommunity = communityService.addCommunity(communityEntity)
@@ -88,6 +88,9 @@ class CommunityContoller  @Autowired constructor(
         println("commuApply = ${commuApply}")
 
         communityService.addCommunityApply(commuApply)
+
+        communityService.updateCommunityUserTotal(communityDTO.commuSeq);
+
 
     }
 

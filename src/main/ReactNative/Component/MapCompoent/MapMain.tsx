@@ -53,6 +53,9 @@ export default function MapMain({navigation}: any) {
         }))
             .then((res) => {
 
+              console.log("marker length : ")
+              console.log(res.data.length);
+
               setMarkers(res.data);
 
             });
@@ -447,17 +450,20 @@ export default function MapMain({navigation}: any) {
               />
             ))}
 
-            {markers.length !== 0 &&
-                markers.map((marker, index) => (
-                    // 데이터가 유효한지 확인
+          {markers.length > 0 &&
+              markers.map((marker, index) => (
+                  <View key={index}>
+                    {/* CommunityMaker 컴포넌트 */}
                     <CommunityMaker
-                        key = {marker?.latitude + marker?.longitude + marker?.commuTitle} // 일반적으로 index를 사용하는 것은 괜찮지만, 고유한 값을 사용하는 것이 더 좋음
-                        marker = {marker}
-                        setOpenModal={() => {setOpenModal(true)}}
-                        setPosition = {setPosition}
+                        key={marker?.latitude + marker?.longitude + marker?.commuTitle}
+                        marker={marker}
+                        setOpenModal={() => { setOpenModal(true) }}
+                        setPosition={setPosition}
                         setMaker={setMaker}
                     />
-                ))}
+                  </View>
+              ))
+          }
 
         </NaverMapView>
       </View>

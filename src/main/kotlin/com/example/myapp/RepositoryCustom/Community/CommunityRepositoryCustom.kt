@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository
 interface CommunityRepositoryCustom {
 
     fun getLocationBaseInquey(latitude: Double?, longitude: Double?, radius: Double?): List<CommunityDto>
+    fun updateCommunityUserTotal(commuSeq: Long)
 
 
 }

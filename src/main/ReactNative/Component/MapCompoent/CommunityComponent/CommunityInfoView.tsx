@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, Image, Modal, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {Alert, Button, Image, Modal, Text, TextInput, TouchableOpacity, View} from "react-native";
 import styles from "./styles.ts";
 import axiosPost from "../../../Util/AxiosUtil.ts";
 
@@ -10,7 +10,7 @@ export default function CommunityInfoView (props : any) {
     }
 
     const commuApplyUser = () => {
-        console.log(props.marker)
+
         axiosPost.post("commu/commuApplyUser",
             JSON.stringify(props.marker)
         ).then((res) => {
@@ -35,12 +35,25 @@ export default function CommunityInfoView (props : any) {
 
                 {/* 하단 버튼 */}
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.button} onPress={() => commuApplyUser()}>
-                        <Text style={styles.buttonText}>신청</Text>
-                    </TouchableOpacity>
+
+
+
+                    {props.marker.applyStatus === 'Y' ? (
+                        <TouchableOpacity style={[styles.button, { backgroundColor: 'red' }]} onPress={() => commuApplyUser()
+                            // Alert.alert("이미 신청하였습니다.")
+                        }>
+                            <Text style={styles.buttonText}>신청</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity style={styles.button} onPress={() => commuApplyUser()} >
+                            <Text style={styles.buttonText}>신청</Text>
+                        </TouchableOpacity>
+                    )}
+
                     <TouchableOpacity style={styles.button} onPress={() => console.log('상세')}>
                         <Text style={styles.buttonText}>상세</Text>
                     </TouchableOpacity>
+
                 </View>
             </View>
 

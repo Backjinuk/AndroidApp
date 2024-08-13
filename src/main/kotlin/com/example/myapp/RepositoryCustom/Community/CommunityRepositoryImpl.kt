@@ -2,10 +2,12 @@ package com.example.myapp.RepositoryCustom.Community
 
 import com.example.myapp.Dto.CommunityDto
 import com.example.myapp.Entity.Community
-import com.example.myapp.Entity.CommunityApply
 import com.example.myapp.Util.ModelMapperUtil.Companion.commuEntityToDto
 import com.linecorp.kotlinjdsl.QueryFactoryImpl
+import com.linecorp.kotlinjdsl.querydsl.expression.col
+import com.linecorp.kotlinjdsl.updateQuery
 import jakarta.persistence.EntityManager
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Repository
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -24,17 +26,17 @@ class CommunityRepositoryImpl(
 
 
         val query = """
-        SELECT c, ca.applyStatus
+        SELECT c, COALESCE(ca.applyStatus, 'N') AS applyStatus
         FROM Community c
         LEFT JOIN CommunityApply ca ON ca.applyCommuSeq = c.commuSeq
         WHERE (6371 * acos(
-                cos(radians(:latitude)) * cos(radians(c.latitude)) * 
-                cos(radians(c.longitude) - radians(:longitude)) + 
+                cos(radians(:latitude)) * cos(radians(c.latitude)) *
+                cos(radians(c.longitude) - radians(:longitude)) +
                 sin(radians(:latitude)) * sin(radians(c.latitude))
         )) <= :radius
         ORDER BY (6371 * acos(
-            cos(radians(:latitude)) * cos(radians(c.latitude)) * 
-            cos(radians(c.longitude) - radians(:longitude)) + 
+            cos(radians(:latitude)) * cos(radians(c.latitude)) *
+            cos(radians(c.longitude) - radians(:longitude)) +
             sin(radians(:latitude)) * sin(radians(c.latitude))
         ))
         """
@@ -53,8 +55,19 @@ class CommunityRepositoryImpl(
         }.toList()
     }
 
+    @Transactional
+    override fun updateCommunityUserTotal(commuSeq: Long) {
+        val cb = entityManager.criteriaBuilder
+        val update = cb.createCriteriaUpdate(Community::class.java)
+        val root = update.from(Community::class.java)
 
+        entityManager.createQuery(
+            update
+                .set(root.get<Int>("userCount"), cb.sum(root.get("userCount"), 1))
+                .where(cb.equal(root.get<Long>("commuSeq"), commuSeq))
+        ).executeUpdate()
 
+    }
 
 
 
