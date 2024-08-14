@@ -92,7 +92,7 @@ export default function NaverLoginButton({ styles }){
             if(res.data['searchUser'] === 'true'){
                 Alert.alert("회원가입이 완료 되었습니다.")
             }else{
-                navigation.navigate("MapMain")
+                navigation.navigate("TabNavigation")
             }
 
         })

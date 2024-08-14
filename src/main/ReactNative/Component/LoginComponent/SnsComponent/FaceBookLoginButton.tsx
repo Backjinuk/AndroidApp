@@ -66,11 +66,11 @@ export default function FaceBookLoginButton({ styles }) {
             if(res.data){
                 Alert.alert("회원가입이 완료 되었습니다.")
                 setTimeout( () => {
-                    navigation.navigate("MapMain")
+                    navigation.navigate("TabNavigation")
 
                 }, 1000 )
             }else{
-                navigation.navigate("MapMain")
+                navigation.navigate("TabNavigation")
             }
         })
     }

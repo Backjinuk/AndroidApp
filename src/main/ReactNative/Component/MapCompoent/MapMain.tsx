@@ -23,6 +23,7 @@ import CommunityAddForm from "./CommunityComponent/CommunityAddForm.tsx";
 import axiosPost from "../../Util/AxiosUtil.ts";
 import CommunityMaker from "./CommunityComponent/CommunityMaker.tsx";
 import CommunityInfoView from "./CommunityComponent/CommunityInfoView.tsx";
+import TabNavigation from "../TabComponent/TabNavigation.tsx";
 
 export default function MapMain({navigation}: any) {
   const debug = true;
@@ -38,35 +39,26 @@ export default function MapMain({navigation}: any) {
   const [marker, setMaker]= useState<Community | null>(null);
   const [openModal, setOpenModal] = useState(false)
 
-
   // 모임 위치 Search후 마킹
   useEffect(() => {
-    const setCommuPosition = async () => {
-      try {
-        var myPosition = await getMyPosition();
-
-        // radius 값을 추가
-        myPosition = { ...myPosition, radius: radius } as { latitude: number; longitude: number; radius: number };
-
-        axiosPost.post("/commu/getLocationBaseInquery", JSON.stringify({
-          "myPosition" : myPosition
-        }))
-            .then((res) => {
-
-              console.log("marker length : ")
-              console.log(res.data.length);
-
-              setMarkers(res.data);
-
-            });
-
-      } catch (error) {
-        console.error("Error posting location:", error);
-      }
-    };
-
     setCommuPosition();
   }, []);
+
+  const setCommuPosition = async () => {
+    try {
+      var myPosition = await getMyPosition();
+      // radius 값을 추가
+      myPosition = { ...myPosition, radius: radius } as { latitude: number; longitude: number; radius: number };
+      axiosPost.post("/commu/getLocationBaseInquery", JSON.stringify({
+        "myPosition" : myPosition
+      })).then((res) => {
+        setMarkers(res.data);
+      });
+
+    } catch (error) {
+      console.error("Error posting location:", error);
+    }
+  };
 
 
   //검색 좌표들
@@ -486,7 +478,11 @@ export default function MapMain({navigation}: any) {
               />
             </>
         ) : (
-            <CommunityInfoView marker={marker}  viewMode={viewMode}/>
+            <CommunityInfoView
+                marker={marker}
+                viewMode={viewMode}
+                setCommuPosition={setCommuPosition}
+            />
         )}
 
 {/*        <Button
@@ -505,6 +501,7 @@ export default function MapMain({navigation}: any) {
         }}
         dummies={dummies}
         setDummies={setDummies}
+        setCommuPosition={setCommuPosition}
       />
 
 {/*        <CommunityInfoView

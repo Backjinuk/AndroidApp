@@ -15,6 +15,7 @@ export default function CommunityInfoView (props : any) {
             JSON.stringify(props.marker)
         ).then((res) => {
             console.log(res.data);
+            props.setCommuPosition()
         })
     }
 
@@ -50,28 +51,14 @@ export default function CommunityInfoView (props : any) {
                         </TouchableOpacity>
                     )}
 
-                    <TouchableOpacity style={styles.button} onPress={() => props.viewMode(props.marker)}>
+                    <TouchableOpacity style={styles.button} onPress={() => {
+                        props.viewMode(props.marker)
+                    }}>
                         <Text style={styles.buttonText}>상세</Text>
                     </TouchableOpacity>
 
                 </View>
             </View>
-
-        /*
-
-        <Text>{props.marker.commuTitle}</Text>
-            <Button title={"신청"} onPress={props.setOpenModal}></Button>
-            <Button title={"닫기"} onPress={props.setOpenModal}></Button>
-       */
-        // <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width : '100%', height : 80 }}>
-        //         <View style={{ padding: 20, backgroundColor: 'white', borderRadius: 10 , width : '100%', height : 300}}>
-        //
-        //             {/* 다른 필요한 정보를 표시할 수 있습니다. */}
-        //
-        //             <Button title={"신청"} onPress={props.setOpenModal}></Button>
-        //             <Button title={"닫기"} onPress={props.setOpenModal}></Button>
-        //         </View>
-        // </View>
     );
 
 }

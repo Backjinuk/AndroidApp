@@ -7,22 +7,20 @@ import LoginForm from './Component/LoginComponent/LogionForm.tsx';
 import {RootStackParamList} from './CommonTypes/RootStackParamList.ts';
 import MapMain from './Component/MapCompoent/MapMain.tsx';
 import ChatScreen from './Component/ChatComponent/ChatScreen.tsx';
+import TabNavigation from "./Component/TabComponent/TabNavigation.tsx";
 
 function App(): React.JSX.Element {
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="LoginForm">
+      <Stack.Navigator initialRouteName="LoginMain">
         <Stack.Screen name="Join" component={JoinFormMain} />
         <Stack.Screen name="LoginMain" component={LoginMain} />
         <Stack.Screen name="LoginForm" component={LoginForm} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
-        <Stack.Screen
-          name="MapMain"
-          component={MapMain}
-          options={{title: '지도'}}
-        />
+        {/*<Stack.Screen name="MapMain" component={MapMain} options={{title: '지도'}} />*/}
+        <Stack.Screen name="TabNavigation" component={TabNavigation} options={{ headerShown: false }}  />
       </Stack.Navigator>
     </NavigationContainer>
   );

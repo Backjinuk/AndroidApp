@@ -10,6 +10,7 @@ import GoogleLoginButton from "./SnsComponent/GoogleLoginButton.tsx";
 import FaceBookLoginButton from "./SnsComponent/FaceBookLoginButton.tsx";
 import axiosPost from "../../Util/AxiosUtil.ts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import TabNavigation from "../TabComponent/TabNavigation.tsx";
 /*import getToken from "../../Util/JwtTokenUtil.ts";*/
 
 
@@ -65,6 +66,7 @@ export default function LoginMain(){
             <TouchableOpacity onPress={ () => { navigation.navigate("LoginForm"); }}>
                 <Text style={styles.loginText}>이미 회원이신가요? 로그인</Text>
             </TouchableOpacity>
+
         </View>
     );
 }

@@ -50,7 +50,7 @@ export default function LoginForm() {
                 setToken(res.data)
 
                 setTimeout(() => {
-                    navigation.navigate('MapMain')
+                    navigation.navigate('TabNavigation')
                 }, 1000)
 
             }

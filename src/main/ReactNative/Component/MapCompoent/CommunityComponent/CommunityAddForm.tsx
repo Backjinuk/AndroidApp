@@ -65,115 +65,112 @@ export default function CommunityAddForm(props: any) {
             if(res.data){
                 Alert.alert("등록되었습니다.")
                 props.setState('find');
+                props.setCommuPosition();
             }
         })
     }
 
     return (
-        <>
+        <Modal
+            visible={props.state === 'add'}
+            onRequestClose={() => props.closeAddForm()}>
 
 
-            <Modal
-                visible={props.state === 'add'}
-                onRequestClose={() => props.closeAddForm()}>
-
-
-                <ScrollView style={styles.container}>
-                    <View style={styles.header}>
-                        <Text style={styles.headerTitle}>모임 등록하기</Text>
-                    </View>
-                    <View style={styles.formGroup}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="모임 이름 *"
-                            value={commuTitle}
-                            onChangeText={setCommuTitle}
-                        />
-                    </View>
-                    <View style={styles.formGroup}>
-                        <TextInput
-                            style={[styles.input, styles.textArea]}
-                            placeholder="모임 설명"
-                            value={commuComent}
-                            onChangeText={setCommuComent}
-                            multiline
-                        />
-                    </View>
-                    <View style={styles.formGroup}>
-                        <Text>날짜 및 시간 *</Text>
-                        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="날짜 선택"
-                                value={commuMeetingTime.toDateString()}
-                                editable={false}
-                            />
-                        </TouchableOpacity>
-                        {showDatePicker && (
-                            <DatePicker
-                                modal
-                                open={showDatePicker}
-                                date={commuMeetingTime}
-                                onConfirm={(selectedDate) => {
-                                    setShowDatePicker(false);
-                                    setCommuMeetingTime(selectedDate);
-                                }}
-                                onCancel={() => setShowDatePicker(false)}
-                            />
-                        )}
-                        <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="시간 선택"
-                                value={commuMeetingTime.toTimeString()}
-                                editable={false}
-                            />
-                        </TouchableOpacity>
-                        {showTimePicker && (
-                            <DatePicker
-                                modal
-                                open={showTimePicker}
-                                date={commuMeetingTime}
-                                mode="time"
-                                onConfirm={(selectedDate) => {
-                                    setShowTimePicker(false);
-                                    setCommuMeetingTime(selectedDate);
-                                }}
-                                onCancel={() => setShowTimePicker(false)}
-                            />
-                        )}
-                    </View>
-                    <View style={styles.formGroup}>
-                        <TextInput
-                            style={[styles.input]}
-                            placeholder="위치 정보"
-                            value={address}
-                            /*onChangeText={setAddress}*/
-                            multiline
-                        />
-                    </View>
-                    <View style={styles.formGroup}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="최대 참여 인원"
-                            value={totalUserCount.toString()}
-                            onChangeText={text => setTotalUserCount(text)}
-                            keyboardType="numeric"
-                        />
-                    </View>
-
-                    {!props.marker && (
-                        <Button title="모임 등록하기" onPress={() => addCommunity()} />
-                    )}
-                    <Button
-                        title="뒤로"
-                        onPress={() => {
-                            props.closeAddForm();
-                        }}
+            <ScrollView style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>모임 등록하기</Text>
+                </View>
+                <View style={styles.formGroup}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="모임 이름 *"
+                        value={commuTitle}
+                        onChangeText={setCommuTitle}
                     />
-                </ScrollView>
-            </Modal>
-        </>
+                </View>
+                <View style={styles.formGroup}>
+                    <TextInput
+                        style={[styles.input, styles.textArea]}
+                        placeholder="모임 설명"
+                        value={commuComent}
+                        onChangeText={setCommuComent}
+                        multiline
+                    />
+                </View>
+                <View style={styles.formGroup}>
+                    <Text>날짜 및 시간 *</Text>
+                    <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="날짜 선택"
+                            value={commuMeetingTime.toDateString()}
+                            editable={false}
+                        />
+                    </TouchableOpacity>
+                    {showDatePicker && (
+                        <DatePicker
+                            modal
+                            open={showDatePicker}
+                            date={commuMeetingTime}
+                            onConfirm={(selectedDate) => {
+                                setShowDatePicker(false);
+                                setCommuMeetingTime(selectedDate);
+                            }}
+                            onCancel={() => setShowDatePicker(false)}
+                        />
+                    )}
+                    <TouchableOpacity onPress={() => setShowTimePicker(true)}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="시간 선택"
+                            value={commuMeetingTime.toTimeString()}
+                            editable={false}
+                        />
+                    </TouchableOpacity>
+                    {showTimePicker && (
+                        <DatePicker
+                            modal
+                            open={showTimePicker}
+                            date={commuMeetingTime}
+                            mode="time"
+                            onConfirm={(selectedDate) => {
+                                setShowTimePicker(false);
+                                setCommuMeetingTime(selectedDate);
+                            }}
+                            onCancel={() => setShowTimePicker(false)}
+                        />
+                    )}
+                </View>
+                <View style={styles.formGroup}>
+                    <TextInput
+                        style={[styles.input]}
+                        placeholder="위치 정보"
+                        value={address}
+                        /*onChangeText={setAddress}*/
+                        multiline
+                    />
+                </View>
+                <View style={styles.formGroup}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="최대 참여 인원"
+                        value={totalUserCount.toString()}
+                        onChangeText={text => setTotalUserCount(text)}
+                        keyboardType="numeric"
+                    />
+                </View>
+
+                {!props.marker && (
+                    <Button title="모임 등록하기" onPress={() => addCommunity()} />
+                )}
+                <Button
+                    title="뒤로"
+                    onPress={() => {
+                        props.closeAddForm();
+                    }}
+                />
+            </ScrollView>
+        </Modal>
     );
 }
 
