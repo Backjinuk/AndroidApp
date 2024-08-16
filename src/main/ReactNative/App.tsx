@@ -14,13 +14,13 @@ function App(): React.JSX.Element {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="LoginMain">
-        <Stack.Screen name="Join" component={JoinFormMain} />
-        <Stack.Screen name="LoginMain" component={LoginMain} />
-        <Stack.Screen name="LoginForm" component={LoginForm} />
-        <Stack.Screen name="ChatScreen" component={ChatScreen} />
+      <Stack.Navigator initialRouteName="LoginMain" screenOptions={{ headerShown: false }} >
+        <Stack.Screen name="Join" component={JoinFormMain} options={{ headerShown: false }}/>
+        <Stack.Screen name="LoginMain" component={LoginMain} options={{ headerShown: false }}/>
+        <Stack.Screen name="LoginForm" component={LoginForm} options={{ headerShown: false }}/>
+        <Stack.Screen name="ChatScreen" component={ChatScreen} options={{ headerShown: false }}/>
         {/*<Stack.Screen name="MapMain" component={MapMain} options={{title: '지도'}} />*/}
-        <Stack.Screen name="TabNavigation" component={TabNavigation} options={{ headerShown: false }}  />
+        <Stack.Screen name="TabNavigation" component={TabNavigation} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

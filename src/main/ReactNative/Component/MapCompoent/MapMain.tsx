@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {
   Button,
   Linking,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -24,6 +25,7 @@ import axiosPost from "../../Util/AxiosUtil.ts";
 import CommunityMaker from "./CommunityComponent/CommunityMaker.tsx";
 import CommunityInfoView from "./CommunityComponent/CommunityInfoView.tsx";
 import TabNavigation from "../TabComponent/TabNavigation.tsx";
+import MapSearchBar from "./MapSearchBar.tsx";
 
 export default function MapMain({navigation}: any) {
   const debug = true;
@@ -367,85 +369,52 @@ export default function MapMain({navigation}: any) {
   }
 
   return (
-    <>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
-        <TextInput
-          style={{width: '90%'}}
-          value={keyword}
-          onChangeText={setKeyword}
-        />
-        <TouchableOpacity
-          onPress={() => {
-            getLocations();
-            privateSetPosition(undefined);
-          }}
-          style={{
-            width: '10%',
-            alignItems: 'center',
-            backgroundColor: '#2196F3',
-            borderRadius: 3,
-          }}>
-          <Icon
-            style={{
-              marginVertical: 'auto',
-            }}
-            name="search"
-            size={20}
-            color="white"
-          />
-        </TouchableOpacity>
-      </View>
-      <Button title="위치기반 모임확인" onPress={findMoimByMyPosition} />
-      <Button title="화면기반 모임확인" onPress={findMoimByCamera} />
-      <View style={{flex: 1}}>
+      <View style={styles.container}>
         <NaverMapView
-          onInitialized={async () => {
-            log('init');
-            const position = await getMyPosition();
-            const round = 0.0025;
-            const region = {
-              latitude: position.latitude - round,
-              longitude: position.longitude - round,
-              latitudeDelta: 2 * round,
-              longitudeDelta: 2 * round,
-            };
-            setRegion(region);
-          }}
-          onCameraChanged={setCamera}
-          region={region}
-          onTapMap={params => {
-            setPosition(params);
-            setOpenModal(false);
-          }}
-          isExtentBoundedInKorea={true}
-          maxZoom={18}
-          minZoom={9}
-          style={{flex: 1}}
-          animationDuration={500}>
-
+            style={styles.map}
+            onInitialized={async () => {
+              console.log('init');
+              const position = await getMyPosition();
+              const round = 0.0025;
+              const region = {
+                latitude: position.latitude - round,
+                longitude: position.longitude - round,
+                latitudeDelta: 2 * round,
+                longitudeDelta: 2 * round,
+              };
+              setRegion(region);
+            }}
+            onCameraChanged={setCamera}
+            region={region}
+            onTapMap={(params) => {
+              setPosition(params);
+              setOpenModal(false);
+            }}
+            isExtentBoundedInKorea={true}
+            maxZoom={18}
+            minZoom={9}
+            animationDuration={500}
+        >
 
           {position && (
-            <NaverMapMarkerOverlay
-              latitude={position.latitude}
-              longitude={position.longitude}
-              onTap={() => {
-                setPosition(position);
-              }}
-              anchor={{x: 0.5, y: 1}}
-            />
-          )}
-          {locations.length !== 0 &&
-            locations.map(location => (
-              <LocationMarker
-                key={location.latitude + location.longitude + location.title}
-                location={location}
-                setPosition={setPosition}
+              <NaverMapMarkerOverlay
+                  latitude={position.latitude}
+                  longitude={position.longitude}
+                  onTap={() => {
+                    setPosition(position);
+                  }}
+                  anchor={{x: 0.5, y: 1}}
               />
-            ))}
+          )}
+
+          {locations.length !== 0 &&
+              locations.map(location => (
+                  <LocationMarker
+                      key={location.latitude + location.longitude + location.title}
+                      location={location}
+                      setPosition={setPosition}
+                  />
+              ))}
 
           {markers.length > 0 &&
               markers.map((marker, index) => (
@@ -462,8 +431,19 @@ export default function MapMain({navigation}: any) {
               ))
           }
 
+          <View style={styles.overlay}>
+            <MapSearchBar
+                getLocations={getLocations}
+                privateSetPosition={privateSetPosition}
+                keyword={keyword}
+                setKeyword={setKeyword}
+                findMoimByMyPosition={findMoimByMyPosition}
+                findMoimByCamera={findMoimByCamera}
+            />
+          </View>
+
         </NaverMapView>
-      </View>
+
       <View>
         {position && !openModal ? (
             <>
@@ -513,6 +493,34 @@ export default function MapMain({navigation}: any) {
             }}
         />
 */}
-    </>
+    </View>
   );
 }
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative', // 부모 뷰의 위치를 상대적으로 설정
+  },
+  searchBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2, // 검색바가 지도 위에 오도록 설정
+    backgroundColor: 'white', // 배경색을 설정하여 가시성을 높임
+  },
+  map: {
+    flex: 1,
+    zIndex: 1, // 지도는 검색바 아래에 오도록 설정
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2, // 검색바가 지도 위에 오도록 설정
+    backgroundColor: 'transparent', // 배경을 투명으로 설정
+  },
+});

@@ -13,7 +13,7 @@ export default function TabNavigation() {
         <Tab.Navigator>
             <Tab.Screen name="지도" component={MapMain} />
             <Tab.Screen name="신청목록" component={ApplyCommunityList} />
-            <Tab.Screen name="구독목록" component={SubscriptionList} />
+            <Tab.Screen name="구독목록" component={SubscriptionList} /> 
             <Tab.Screen name="캘린더" component={CommunityCalendar} />
             <Tab.Screen name="내정보" component={UserInfo} />
         </Tab.Navigator>
