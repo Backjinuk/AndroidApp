@@ -17,7 +17,7 @@ interface Position {
       commuComent : string
       totalUserCount : number
       applyStatus:string
-      usercount : number
+      userCount : number
       latitude : number
       longitude : number
       address : string

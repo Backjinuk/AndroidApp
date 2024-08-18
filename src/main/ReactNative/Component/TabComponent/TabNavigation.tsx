@@ -10,7 +10,7 @@ const Tab = createBottomTabNavigator();
 
 export default function TabNavigation() {
     return (
-        <Tab.Navigator>
+        <Tab.Navigator screenOptions={{ headerShown: false }}>
             <Tab.Screen name="지도" component={MapMain} />
             <Tab.Screen name="신청목록" component={ApplyCommunityList} />
             <Tab.Screen name="구독목록" component={SubscriptionList} /> 

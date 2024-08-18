@@ -42,31 +42,53 @@ const styles = StyleSheet.create({
         padding: 8,
         fontSize: 16,
     },
-
-
-    container2: {
-        display : "flex",
-        flexDirection: 'column',
-        justifyContent: 'center',
+    searchBox: {
+        flexDirection: 'row',
         alignItems: 'center',
-        // 추가적인 스타일링이 필요할 수 있음
-        height: '20%',
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        height: 50,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation : 20
     },
+    input2: {
+        flex: 1,
+        fontSize: 16,
+        paddingHorizontal: 10,
+        color: '#333',
+    },
+    iconButton: {
+        padding: 5,
+    },
+
+    InfoViewContainer: {
+        height: '15%',
+        width: '100%',
+        borderTopRightRadius: 10,
+        borderTopLeftRadius: 10,
+        backgroundColor: "#fff",
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 20,
+        opacity: 1, // Opacity 값은 0부터 1까지 설정해야 함
+    },
+
     infoCard: {
         display : "flex",
         position: 'absolute',
         top: 10, // 상단에 위치하도록 설정
-        width: '90%',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
-        padding: 15,
+        width: '100%',
+        padding: 20,
         flexDirection: 'row',
     },
+
     cardHeader: {
         flex: 3,
     },
@@ -88,11 +110,11 @@ const styles = StyleSheet.create({
 
     buttonContainer: {
         flexDirection : 'row',
-        left : 110,
-        width: '20%',
-        height : 45,
+        left : "390%",
+        width: '23%',
+        height : "63%",
         padding: 10,
-        top : 80,
+        top : "19%",
     },
 
     button: {
@@ -109,6 +131,15 @@ const styles = StyleSheet.create({
         fontWeight : "bold",
         textAlign: 'center',
     },
+    searchContainer: {
+        position: 'absolute',
+        top: 20,
+        left: 10,
+        right: 10,
+        zIndex: 1, // 지도보다 약간 낮은 값
+    },
+
+
 });
 
 export default styles;
