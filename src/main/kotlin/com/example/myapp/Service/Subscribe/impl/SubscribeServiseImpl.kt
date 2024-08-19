@@ -14,4 +14,8 @@ class SubscribeServiseImpl(
         return subscribeRepository.addSubscribe(subscribeDtoToEntity);
     }
 
+    override fun getSubscribe(subscribeDtoToEntity: Subscribe): Subscribe? {
+        return subscribeRepository.getSubscribe(subscribeDtoToEntity);
+    }
+
 }

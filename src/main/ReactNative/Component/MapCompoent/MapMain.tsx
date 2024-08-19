@@ -11,7 +11,6 @@ import CommunityAddForm from "../CommunityComponent/CommunityAddForm.tsx";
 import CommunityInfoView from "../CommunityComponent/CommunityInfoView.tsx";
 import Markers from "../CommunityComponent/Markers.tsx";
 import BottomSheet, {BottomSheetModal, BottomSheetModalProvider, BottomSheetView} from "@gorhom/bottom-sheet";
-import UserProfileModal from "../CommunityComponent/UserProfileModal.tsx";
 
 export default function MapMain() {
 

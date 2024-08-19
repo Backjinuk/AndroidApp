@@ -8,6 +8,9 @@ export default function CommunityInfoView (props : any) {
 
     const [marker, setMaker] = useState<Community>()
     const [openModal, setOpenModal] = useState(false);
+    const [subscribe, setSubscribe] = useState<Subscribe>()
+
+
 
     useEffect(() => {
         setMaker(props.marker);
@@ -25,6 +28,16 @@ export default function CommunityInfoView (props : any) {
             props.setCommuPosition()
         })
     }
+
+    const getSubscribe = () => {
+        axiosPost.post("/subscribe/getSubscribe", JSON.stringify({
+            'subscriberOwnerUserSeq': props.marker.commuWrite.userSeq
+        })).then(res => {
+                setSubscribe(res.data)
+            }
+        )
+    }
+
 
     return (
             <View>
@@ -59,6 +72,7 @@ export default function CommunityInfoView (props : any) {
                         )}
 
                         <TouchableOpacity style={styles.button} onPress={() => {
+                            getSubscribe();
                             setOpenModal(true)
                         }}>
                             <Text style={styles.buttonText}>신정자</Text>
@@ -71,12 +85,14 @@ export default function CommunityInfoView (props : any) {
                         </TouchableOpacity>
 
                     </View>
+
                 </View>
 
                 <UserProfileModal
                     openModal={openModal}
                     setOpenModal={setOpenModal}
                     commuWrite={props.marker.commuWrite}
+                    subscribe={subscribe}
                 />
 
             </View>

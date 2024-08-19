@@ -14,22 +14,24 @@ export default function UserProfileModal(props: any) {
 
     const [userInfo, setUserInfo] = useState<userInfo>();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const buttonBackgroundColor = props?.subscribe?.subscribeStatus === 'Y' ? 'red' : 'blue';
 
     useEffect(() => {
         setUserInfo(props.commuWrite);
     }, [])
 
     if (!userInfo) {
-        return false;
+        return null;
     }
 
 
     const addSubscribe = () => {
-        console.log(11)
         axiosPost.post("/subscribe/addSubscribe", JSON.stringify({
             'subscriberOwnerUserSeq': userInfo.userSeq, 'subscribeStatus': 'Y'
         })).then(r => console.log(11))
     }
+
+
 
     return (<SafeAreaView style={styles.UserProfileModalContainer}>
         <Modal
@@ -51,7 +53,7 @@ export default function UserProfileModal(props: any) {
                 <Text style={styles.userRole}>평점 : 0.0 / 4.5</Text>
 
                 <View style={styles.UserProfileModalButtonContainer}>
-                    <TouchableOpacity style={styles.followButton} onPress={ () => addSubscribe()}>
+                    <TouchableOpacity style={[styles.followButton, { backgroundColor: buttonBackgroundColor }]} onPress={() => addSubscribe()}>
                         <Text style={styles.UserProfileModalButtonText}>구독</Text>
                     </TouchableOpacity>
 
@@ -73,5 +75,7 @@ export default function UserProfileModal(props: any) {
                 </View>
             </View>
         </Modal>
-    </SafeAreaView>);
+    </SafeAreaView>
+
+    );
 };

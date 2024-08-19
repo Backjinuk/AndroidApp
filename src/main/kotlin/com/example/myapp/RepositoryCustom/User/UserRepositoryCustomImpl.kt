@@ -10,9 +10,16 @@ import com.linecorp.kotlinjdsl.selectQuery
 import com.linecorp.kotlinjdsl.updateQuery
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Join
+import jakarta.persistence.criteria.Root
 import jakarta.transaction.Transactional
+import kotlinx.coroutines.selects.select
+import org.aspectj.weaver.tools.cache.SimpleCacheFactory.path
 import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.jpa.domain.JpaSort.path
 import org.springframework.stereotype.Repository
 
 
@@ -90,16 +97,39 @@ class UserRepositoryCustomImpl @Autowired constructor(
         }.singleResult > 0
 
         if(!query){
+            var existingUserToken :UserToken ?= UserToken();
 
-            val userToken = UserToken().apply {
-                this.refreshUserToken = refreshToken
-                this.user = userSeq?.let { User().apply { this.userSeq = it } }
+
+            if(refreshToken != ""){
+
+                existingUserToken  = entityManager.createQuery(
+                    entityManager.criteriaBuilder.createQuery(UserToken::class.java).apply {
+                        val root: Root<UserToken> = from(UserToken::class.java)
+                        val userJoin: Join<UserToken, User> = root.join("user")
+                        select(root).where(entityManager.criteriaBuilder.equal(userJoin.get<Long>("userSeq"), userSeq))
+                    }
+                ).resultList.firstOrNull()
+
+                println("userToken?.userTokenSeq = ${existingUserToken?.userTokenSeq}")
             }
 
-            entityManager.persist(userToken)
-        }
-
-        if(query){
+            if(existingUserToken == null){
+                val userToken = UserToken().apply {
+                    this.refreshUserToken = refreshToken
+                    this.user = userSeq?.let { User().apply { this.userSeq = it } }
+                }
+                entityManager.persist(userToken)
+            }else{
+                entityManager.createQuery(
+                    entityManager.criteriaBuilder.createCriteriaUpdate(UserToken::class.java).apply {
+                        val root = from(UserToken::class.java)
+                        val userJoin = root.join<UserToken, User>("user")
+                        set(root.get("refreshUserToken"), newRefreshToken)
+                        where(entityManager.criteriaBuilder.equal(userJoin.get<Long>("userSeq"), userSeq))
+                    }
+                ).executeUpdate()
+            }
+        }else{
             queryFactory.updateQuery<UserToken> {
                 set(col(UserToken::refreshUserToken), newRefreshToken)
                 where(col(UserToken::refreshUserToken).equal(refreshToken))

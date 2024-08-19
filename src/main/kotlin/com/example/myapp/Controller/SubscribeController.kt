@@ -4,6 +4,7 @@ import com.example.myapp.Dto.SubscribeDto
 import com.example.myapp.Service.Subscribe.SubscribeService
 import com.example.myapp.Util.JwtUtil
 import com.example.myapp.Util.ModelMapperUtil.Companion.subscribeDtoToEntity
+import com.example.myapp.Util.ModelMapperUtil.Companion.subscribeEntityToDto
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,9 +23,6 @@ class SubscribeController @Autowired constructor(
 
     @RequestMapping("addSubscribe")
     fun addSubscribe(@RequestBody subscribeDto: SubscribeDto, request: HttpServletRequest) : Boolean{
-
-        println("subscribeDto = ${subscribeDto}")
-
         subscribeDto.subscriberUserSeq = jwtUtil.requestToUserSeq(request)
         val saveCheck: Boolean =  subscribeService.addSubscribe(subscribeDtoToEntity(subscribeDto))
 
@@ -32,6 +30,16 @@ class SubscribeController @Autowired constructor(
         println("saveCheck = ${saveCheck}")
 
         return saveCheck;
+    }
+
+    @RequestMapping("getSubscribe")
+    fun getSubscribe(@RequestBody subscribeDto: SubscribeDto, request: HttpServletRequest) : SubscribeDto? {
+        subscribeDto.subscriberUserSeq = jwtUtil.requestToUserSeq(request)
+
+        val subscribe = subscribeService.getSubscribe(subscribeDtoToEntity(subscribeDto))
+
+        return subscribe?.let { subscribeEntityToDto(it) };
+
     }
 
 }
