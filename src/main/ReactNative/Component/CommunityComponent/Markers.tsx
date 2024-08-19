@@ -1,5 +1,5 @@
 import {NaverMapMarkerOverlay} from "@mj-studio/react-native-naver-map";
-import LocationMarker from "../LocationMarker.tsx";
+import LocationMarker from "../MapCompoent/LocationMarker.tsx";
 import {View} from "react-native";
 import CommunityMaker from "./CommunityMaker.tsx";
 import React from "react";
@@ -34,6 +34,7 @@ export default function Markers(props : any){
                         <CommunityMaker
                             key={marker?.latitude + marker?.longitude + marker?.commuTitle}
                             marker={marker}
+                            handlePresentModalPress={props.handlePresentModalPress}
                             setOpenModal={props.setOpenModal}
                             setPosition={props.setPosition}
                             setMaker={props.setMaker}

@@ -28,27 +28,19 @@ class CommunityContoller  @Autowired constructor(
 
     @RequestMapping("addCommunity")
     fun addCommunity(@RequestBody communityDTO: CommunityDto, request: HttpServletRequest): ResponseEntity<Boolean> {
-        // Extract tokens from request headers
-        val mutableMap: MutableMap<String, String> = mutableMapOf(
-            "AccessToken" to  (request.getHeader("AccessToken")?.toString() ?: ""),
-            "RefreshToken" to (request.getHeader("RefreshToken")?.toString() ?: "")
-        )
 
         // Parse claims from the access token
-        var userSeq = jwtUtil?.parseClaims(mutableMap)?.get("userSeq")?.toString()?.toLong()
+        var userSeq = jwtUtil.requestToUserSeq(request)
 
         // Find the User entity by userSeq
         val userDto = userService.getUserInfo(userSeq) ?: return ResponseEntity(false, HttpStatus.BAD_REQUEST)
 
         println("user = ${userDto.userSeq}")
 
-
         // Convert CommunityDTO to Community entity
         val communityEntity = commuDtoToEntity(communityDTO).apply {
             commuWrite = userDtoToEntity(userDto) // Set existing User entity
         }
-
-        println("communityEntity.commuWrite.userSeq = ${communityEntity.commuWrite.userSeq}")
 
         return try {
             // Add community and return appropriate response
@@ -62,8 +54,6 @@ class CommunityContoller  @Autowired constructor(
 
     @RequestMapping("getLocationBaseInquery")
     fun getLocationBaseInquery(@RequestBody map: MutableMap<String, Any>, request: HttpServletRequest) : List<CommunityDto>{
-        println("map.get(\"myPosition\") = ${map.get("myPosition")}")
-
         val myPosition = map["myPosition"] as? Map<String, Double>
 
         // 'myposition' Map에서 'latitude', 'longitude', 'radius' 값을 추출합니다.
@@ -86,15 +76,14 @@ class CommunityContoller  @Autowired constructor(
         commuApply.applyCommuSeq = communityDTO.commuSeq;
         commuApply.applyStatus = 'Y';
 
-        println("commuApply = ${commuApply.applyUserSeq}")
-        println("commuApply = ${commuApply.applyCommuSeq}")
-
-
         communityService.addCommunityApply(commuApply)
-
         communityService.updateCommunityUserTotal(communityDTO.commuSeq);
 
 
     }
+
+
+
+
 
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import {Button, Image, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import styles from "./CommunityComponent/styles.ts";
+import styles from "../CommunityComponent/styles.ts";
 
 export default function MapSearchBar(props: any) {
     return (

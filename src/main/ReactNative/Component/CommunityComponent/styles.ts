@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 6,
-        elevation : 20
+        elevation : 10
     },
     input2: {
         flex: 1,
@@ -67,8 +67,8 @@ const styles = StyleSheet.create({
     },
 
     InfoViewContainer: {
-        height: '15%',
         width: '100%',
+        height : "100%",
         borderTopRightRadius: 10,
         borderTopLeftRadius: 10,
         backgroundColor: "#fff",
@@ -83,14 +83,15 @@ const styles = StyleSheet.create({
     infoCard: {
         display : "flex",
         position: 'absolute',
-        top: 10, // 상단에 위치하도록 설정
+        marginTop : -10, // 상단에 위치하도록 설정
         width: '100%',
-        padding: 20,
+        height : 100,
+        padding: 10,
         flexDirection: 'row',
     },
 
     cardHeader: {
-        flex: 3,
+        flex: 1,
     },
     title: {
         fontSize: 16,
@@ -103,18 +104,16 @@ const styles = StyleSheet.create({
     },
     image: {
         flex: 1,
-        height: 50,
         borderRadius: 10,
         marginLeft: 10,
     },
 
     buttonContainer: {
         flexDirection : 'row',
-        left : "390%",
-        width: '23%',
-        height : "63%",
+        width: '100%',
         padding: 10,
-        top : "19%",
+        top : "20%",
+        display : "flex",
     },
 
     button: {
@@ -137,6 +136,80 @@ const styles = StyleSheet.create({
         left: 10,
         right: 10,
         zIndex: 1, // 지도보다 약간 낮은 값
+    },
+
+
+    //UserProfileModal
+
+    UserProfileModalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    openButton: {
+        fontSize: 18,
+        color: '#007BFF',
+    },
+    modal: {
+        justifyContent: 'flex-end',
+        margin: 0,
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        alignItems: 'center',
+    },
+    profileImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        marginBottom: 10,
+    },
+    userName: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    userRole: {
+        fontSize: 16,
+        color: 'grey',
+        marginBottom: 10,
+    },
+    userAddress: {
+        fontSize: 14,
+        color: 'grey',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    UserProfileModalButtonContainer: {
+        flexDirection: 'row',
+        marginBottom: 20,
+    },
+    followButton: {
+        backgroundColor: '#007BFF',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        marginRight: 10,
+    },
+    messageButton: {
+        backgroundColor: '#28A745',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+    },
+    UserProfileModalButtonText: {
+        color: 'white',
+        fontSize: 16,
+    },
+    socialIcons: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    icon: {
+        marginHorizontal: 10,
     },
 
 

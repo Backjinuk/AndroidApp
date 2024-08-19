@@ -2,15 +2,16 @@ package com.example.myapp.Util
 
 import com.example.myapp.Dto.UserDto
 import io.jsonwebtoken.*
-import io.jsonwebtoken.security.Keys
 import io.jsonwebtoken.io.Decoders
+import io.jsonwebtoken.security.Keys
+import jakarta.servlet.http.HttpServletRequest
 import lombok.extern.slf4j.Slf4j
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.security.Key
 import java.time.ZonedDateTime
-import java.util.Date
+import java.util.*
 
 @Slf4j
 @Component
@@ -161,6 +162,15 @@ class JwtUtil(
     }
 
 
+    fun  requestToUserSeq(request: HttpServletRequest) : Long?{
+        val mutableMap: MutableMap<String, String> = mutableMapOf(
+            "AccessToken" to  (request.getHeader("AccessToken")?.toString() ?: ""),
+            "RefreshToken" to (request.getHeader("RefreshToken")?.toString() ?: "")
+        )
+
+        return parseClaims(mutableMap)?.get("userSeq")?.toString()?.toLong()
+
+    }
 
 
 

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Button, Linking, Text, View,} from 'react-native';
 import {Camera, NaverMapView, Region,} from '@mj-studio/react-native-naver-map';
 import axios from 'axios';
@@ -6,16 +6,23 @@ import Config from 'react-native-config';
 import Geolocation from '@react-native-community/geolocation';
 import axiosPost from "../../Util/AxiosUtil.ts";
 import MapSearchBar from "./MapSearchBar.tsx";
-import styles from "./CommunityComponent/styles.ts";
-import CommunityAddForm from "./CommunityComponent/CommunityAddForm.tsx";
-import CommunityInfoView from "./CommunityComponent/CommunityInfoView.tsx";
-import Markers from "./CommunityComponent/Markers.tsx";
+import styles from "../CommunityComponent/styles.ts";
+import CommunityAddForm from "../CommunityComponent/CommunityAddForm.tsx";
+import CommunityInfoView from "../CommunityComponent/CommunityInfoView.tsx";
+import Markers from "../CommunityComponent/Markers.tsx";
+import BottomSheet, {BottomSheetModal, BottomSheetModalProvider, BottomSheetView} from "@gorhom/bottom-sheet";
+import UserProfileModal from "../CommunityComponent/UserProfileModal.tsx";
 
 export default function MapMain() {
 
     const naver_map_api_client_id = Config.NAVER_MAP_API_CLIENT_ID;
     const naver_map_api_client_secret = Config.NAVER_MAP_API_CLIENT_SECRET;
 
+    // 네이버 길찾기 실행
+    const NAVER_MAP_INSTALL_LINK = 'market://details?id=com.nhn.android.nmap';
+
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const snapPoints = useMemo(() => ['23%', '50%', '90%'], []);
 
     const debug = true;
     const log = (message?: any, ...optionalParams: any[]) => {
@@ -32,6 +39,7 @@ export default function MapMain() {
 
     const [state, setState] = useState<string>('find');
     const [dummies, setDummies] = useState<Location[]>([]);
+
 
 
     // 모임 위치 Search후 마킹
@@ -122,7 +130,6 @@ export default function MapMain() {
             privateSetPosition(position);
         }
     };
-
 
     // 아주 작은 랜덤 숫자 리턴
     const randomNumber = () => {
@@ -240,8 +247,6 @@ export default function MapMain() {
         setLocations(data.data.documents);
     };
 
-    // 네이버 길찾기 실행
-    const NAVER_MAP_INSTALL_LINK = 'market://details?id=com.nhn.android.nmap';
     const findRoute = async (location: Position) => {
         const title = encodeURI(getLocationTitle(location));
         const url = `nmap://route/walk?dlat=${location.latitude}&dlng=${location.longitude}&dname=${title}&appname=com.reactnative`;
@@ -372,6 +377,22 @@ export default function MapMain() {
         setRegion(region);
     };
 
+
+    //  BottomSheet 함수
+    const handlePresentModalPress = useCallback(() => {
+        bottomSheetModalRef.current?.present();
+    }, []);
+
+    // callback when the BottomSheetModal changes
+    const handleSheetChanges = useCallback((index: number) => {
+        console.log('handleSheetChanges', index);
+    }, []);
+
+    const handleClosePress = useCallback(() => {
+        bottomSheetModalRef.current?.close();
+    }, []);
+
+
     return (
 
         <View style={{flex: 1}}>
@@ -394,7 +415,11 @@ export default function MapMain() {
                 onCameraChanged={setCamera}
                 onTapMap={(params) => {
                     setPosition(params);
+                    // handleClosePress();
                     setOpenModal(false);
+                    if(!openModal) {
+                        handlePresentModalPress();
+                    }
                 }}
                 isExtentBoundedInKorea={true}
                 maxZoom={18}
@@ -406,6 +431,7 @@ export default function MapMain() {
                     position={position}
                     locations={locations}
                     markers={markers}
+                    handlePresentModalPress={handlePresentModalPress}
                     setPosition={setPosition}
                     setOpenModal={() => {
                         setOpenModal(true)
@@ -415,29 +441,58 @@ export default function MapMain() {
 
             </NaverMapView>
 
-            {position && !openModal ? (
-                <View>
-                    <Text>{position.title}</Text>
-                    <Button title="등록" onPress={addMoim}/>
-                    <Button title="길찾기" onPress={() => findRoute(position)}/>
-                    <Button
-                        title="닫기"
-                        onPress={() => {
-                            privateSetPosition(undefined);
-                        }}
-                    />
-                </View>
-            ) : (
-                openModal && (
-                    <View style={styles.InfoViewContainer}>
-                        <CommunityInfoView
-                            marker={marker}
-                            viewMode={viewMode}
-                            setCommuPosition={setCommuPosition}
+
+            <BottomSheetModalProvider>
+                <BottomSheetModal
+                    ref={bottomSheetModalRef}
+                    index={0}
+                    snapPoints={snapPoints}
+                    onChange={handleSheetChanges}
+                    backgroundComponent={({ style }) => (
+                        <View
+                            style={[
+                                style,
+                                {
+                                    backgroundColor: '#fff',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 6,
+                                    elevation : 10,
+                                    borderRadius : 14,
+                                },
+                            ]}
                         />
-                    </View>
-                )
-            )}
+                    )}
+                >
+                    {position && !openModal ? (
+                        <View>
+                            <Text>{position.title}</Text>
+                            <Button title="등록" onPress={addMoim}/>
+                            <Button title="길찾기" onPress={() => findRoute(position)}/>
+                            <Button
+                                title="닫기"
+                                onPress={() => {
+                                    privateSetPosition(undefined);
+                                }}
+                            />
+                        </View>
+                    ) : (
+                        openModal && (
+
+                            <View style={styles.InfoViewContainer}>
+                                <CommunityInfoView
+                                    marker={marker}
+                                    viewMode={viewMode}
+                                    setCommuPosition={setCommuPosition}
+                                />
+                            </View>
+
+                        )
+                    )}
+                </BottomSheetModal>
+            </BottomSheetModalProvider>
+
 
             <CommunityAddForm
                 state={state}
@@ -450,14 +505,6 @@ export default function MapMain() {
                 setDummies={setDummies}
                 setCommuPosition={setCommuPosition}
             />
-
-
-            {/*        <Button
-                      title="채팅"
-                      onPress={() => {
-                        navigation.navigate('ChatScreen');
-                      }}
-                    />*/}
 
         </View>
 

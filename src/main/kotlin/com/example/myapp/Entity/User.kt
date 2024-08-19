@@ -1,12 +1,6 @@
 package com.example.myapp.Entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.SequenceGenerator
-import org.springframework.cglib.core.Local
+import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
@@ -15,25 +9,25 @@ import java.time.LocalDateTime
     sequenceName = "user_seq_generator",
     allocationSize = 1
 )
-class User {
+open class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq_generator")
     @Column(name = "user_seq")
-    var userSeq: Long? = 0
+    open var userSeq: Long? = 0
 
-    var userId: String? = ""
+    open var userId: String? = ""
 
-    var name: String? = ""
+    open var name: String? = ""
 
-    var passwd: String? = "" // 해당 필드를 암호화된 버전으로 교체해야 합니다.
+    open var passwd: String? = "" // 해당 필드를 암호화된 버전으로 교체해야 합니다.
 
-    var phoneNum: String? = ""
+    open var phoneNum: String? = ""
 
-    var email: String? = ""
+    open var email: String? = ""
 
-    var usertype : String?= ""
+    open var usertype : String?= ""
 
-    var crtDt :LocalDateTime? = LocalDateTime.now()
+    open var crtDt :LocalDateTime? = LocalDateTime.now()
 
 }

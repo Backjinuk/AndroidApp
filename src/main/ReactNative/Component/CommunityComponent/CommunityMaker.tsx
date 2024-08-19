@@ -21,6 +21,7 @@ export default function CommunityMaker(props: any) {
         props.setPosition(marker);
         props.setMaker(marker);
         props.setOpenModal();
+        props.handlePresentModalPress();
     };
 
     return (

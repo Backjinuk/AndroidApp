@@ -9,21 +9,21 @@ import java.time.LocalDateTime
     sequenceName = "user_token_seq",
     allocationSize = 1
 )
-class UserToken {
+open class UserToken {
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_token_generator")
     @Column(name = "user_token_seq")
-    var userTokenSeq:Long ?= 0;
+    open var userTokenSeq:Long ?= 0;
 
     @Column(columnDefinition = "TEXT")
-    var refreshUserToken: String? = ""
+    open var refreshUserToken: String? = ""
 
     @OneToOne
     @JoinColumn(name="usrSeq")
-    var user:User ?= User();
+    open var user:User ?= User();
 
-    var regDt: LocalDateTime?= LocalDateTime.now()
+    open var regDt: LocalDateTime?= LocalDateTime.now()
 
 }
