@@ -9,27 +9,44 @@ import {
   StyleSheet,
 } from 'react-native';
 import Config from 'react-native-config';
+import generateRandomString from '../../Util/generateRandomString';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/FontAwesome';
 interface Message {
   id: string;
+  chatter: string;
   content: string;
+  roomId: String;
 }
-import {getUniqueId} from 'react-native-device-info';
 
-const ChatScreen: React.FC = () => {
+const ChatScreen: React.FC = ({route, navigation}: any) => {
+  const {roomId, userId} = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
+  const [inputHeight, setInputHeight] = useState(40);
   const [input, setInput] = useState('1');
   const wsurl = Config.CHAT_URL;
   const client = useRef<WebSocket>();
+  const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    setInput(generateRandomString(10));
+    connect();
+    return () => {
+      disconnect();
+    };
+  }, []);
 
   const sendMessage = () => {
     if (input.trim() && client.current) {
       const newMessage: Message = {
-        id: new Date().toISOString(),
+        id: generateRandomString(25),
+        chatter: userId,
         content: input,
+        roomId: roomId,
       };
       setMessages(prevMessages => [...prevMessages, newMessage]);
       client.current.send(JSON.stringify(newMessage));
-      // setInput('');
+      setInput(generateRandomString(10));
     }
   };
 
@@ -37,7 +54,7 @@ const ChatScreen: React.FC = () => {
     if (wsurl) {
       const accessToken = await AsyncStorage.getItem('AccessToken');
       const refreshToken = await AsyncStorage.getItem('RefreshToken');
-      client.current = new WebSocket(wsurl, null, {
+      client.current = new WebSocket(wsurl + `?roomId=${roomId}`, null, {
         headers: {
           AccessToken: `Bearer ${accessToken}`,
           RefreshToken: `${refreshToken}`,
@@ -49,8 +66,33 @@ const ChatScreen: React.FC = () => {
       };
       client.current.onmessage = e => {
         console.log('받은 데이터 : ' + e.data);
-        const newMessage = {id: new Date().toISOString(), content: e.data};
-        setMessages(prevMessages => [...prevMessages, newMessage]);
+        const jsondata = JSON.parse(e.data);
+        if (jsondata.type === 'list') {
+          console.log(jsondata.payload.length > 0);
+          if (jsondata.payload.length > 0) {
+            console.log('list 출력');
+            const messages: Message[] = [];
+            jsondata.payload.forEach((data: any) => {
+              const newMessage = {
+                id: data.id,
+                chatter: data.chatter,
+                content: data.content,
+                roomId: data.roomId,
+              };
+              messages.push(newMessage);
+            });
+            setMessages(prevMessages => [...prevMessages, ...messages]);
+          }
+        } else {
+          const data = jsondata.payload;
+          const newMessage = {
+            id: data.id,
+            chatter: data.chatter,
+            content: data.content,
+            roomId: data.roomId,
+          };
+          setMessages(prevMessages => [...prevMessages, newMessage]);
+        }
         console.log('받은 데이터 등록 완료');
       };
       client.current.onerror = e => {
@@ -64,29 +106,82 @@ const ChatScreen: React.FC = () => {
 
   const disconnect = () => {
     client.current?.close();
+    setMessages([]);
   };
 
-  const check = () => {
-    console.log(getUniqueId());
+  const reset = () => {
+    disconnect();
+    connect();
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={messages}
-        keyExtractor={item => item.id}
-        renderItem={({item}) => <Text>{item.content}</Text>}
-      />
-      <TextInput
-        style={styles.input}
-        onChangeText={text => setInput(text)}
-        value={input}
-      />
-      <Button title="Send" onPress={sendMessage} />
-      <Button title="Connect" onPress={connect} />
-      <Button title="Disconnect" onPress={disconnect} />
-      <Button title="Check" onPress={check} />
-    </View>
+    <>
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          backgroundColor: 'white',
+          alignItems: 'center',
+        }}>
+        <Button
+          title="뒤로"
+          onPress={() => {
+            navigation.pop();
+          }}
+        />
+        <Text>{roomId}</Text>
+      </View>
+      <View style={styles.container}>
+        <FlatList
+          data={messages}
+          keyExtractor={item => item.id}
+          ref={flatListRef}
+          onContentSizeChange={() => {
+            flatListRef.current?.scrollToEnd({animated: false});
+          }}
+          renderItem={({item}) => (
+            <Text
+              style={{textAlign: item.chatter === userId ? 'right' : 'left'}}>
+              {item.chatter} : {item.content}
+            </Text>
+          )}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 10,
+          }}>
+          <TextInput
+            style={{...styles.input, flex: 8, marginBottom: 0}}
+            onChangeText={text => setInput(text)}
+            onLayout={event => {
+              const {height} = event.nativeEvent.layout;
+              console.log(height);
+              setInputHeight(height || 40); // 입력창의 높이 설정
+            }}
+            value={input}
+          />
+          <TouchableOpacity
+            style={{
+              flex: 2,
+              justifyContent: 'center',
+              alignItems: 'center',
+              alignSelf: 'center',
+              height: inputHeight,
+              width: inputHeight,
+              backgroundColor: '#2196F3',
+            }}
+            onPress={sendMessage}>
+            <Icon name="send" color="white" size={inputHeight * 0.5} />
+          </TouchableOpacity>
+        </View>
+
+        {/* <Button title="Connect" onPress={connect} /> */}
+        {/* <Button title="Disconnect" onPress={disconnect} /> */}
+        <Button title="Reset" onPress={reset} />
+      </View>
+    </>
   );
 };
 
