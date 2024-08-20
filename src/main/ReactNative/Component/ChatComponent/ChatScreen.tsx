@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import Config from 'react-native-config';
 import generateRandomString from '../../Util/generateRandomString';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/FontAwesome';
 interface Message {
   id: string;
   chatter: string;
@@ -17,9 +19,10 @@ interface Message {
   roomId: String;
 }
 
-const ChatScreen: React.FC = ({route}: any) => {
+const ChatScreen: React.FC = ({route, navigation}: any) => {
   const {roomId, userId} = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
+  const [inputHeight, setInputHeight] = useState(40);
   const [input, setInput] = useState('1');
   const wsurl = Config.CHAT_URL;
   const client = useRef<WebSocket>();
@@ -112,30 +115,73 @@ const ChatScreen: React.FC = ({route}: any) => {
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={messages}
-        keyExtractor={item => item.id}
-        ref={flatListRef}
-        onContentSizeChange={() => {
-          flatListRef.current?.scrollToEnd({animated: false});
-        }}
-        renderItem={({item}) => (
-          <Text style={{textAlign: item.chatter === userId ? 'right' : 'left'}}>
-            {item.chatter} : {item.content}
-          </Text>
-        )}
-      />
-      <TextInput
-        style={styles.input}
-        onChangeText={text => setInput(text)}
-        value={input}
-      />
-      <Button title="Send" onPress={sendMessage} />
-      {/* <Button title="Connect" onPress={connect} /> */}
-      {/* <Button title="Disconnect" onPress={disconnect} /> */}
-      <Button title="Reset" onPress={reset} />
-    </View>
+    <>
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          backgroundColor: 'white',
+          alignItems: 'center',
+        }}>
+        <Button
+          title="뒤로"
+          onPress={() => {
+            navigation.pop();
+          }}
+        />
+        <Text>{roomId}</Text>
+      </View>
+      <View style={styles.container}>
+        <FlatList
+          data={messages}
+          keyExtractor={item => item.id}
+          ref={flatListRef}
+          onContentSizeChange={() => {
+            flatListRef.current?.scrollToEnd({animated: false});
+          }}
+          renderItem={({item}) => (
+            <Text
+              style={{textAlign: item.chatter === userId ? 'right' : 'left'}}>
+              {item.chatter} : {item.content}
+            </Text>
+          )}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 10,
+          }}>
+          <TextInput
+            style={{...styles.input, flex: 8, marginBottom: 0}}
+            onChangeText={text => setInput(text)}
+            onLayout={event => {
+              const {height} = event.nativeEvent.layout;
+              console.log(height);
+              setInputHeight(height || 40); // 입력창의 높이 설정
+            }}
+            value={input}
+          />
+          <TouchableOpacity
+            style={{
+              flex: 2,
+              justifyContent: 'center',
+              alignItems: 'center',
+              alignSelf: 'center',
+              height: inputHeight,
+              width: inputHeight,
+              backgroundColor: '#2196F3',
+            }}
+            onPress={sendMessage}>
+            <Icon name="send" color="white" size={inputHeight * 0.5} />
+          </TouchableOpacity>
+        </View>
+
+        {/* <Button title="Connect" onPress={connect} /> */}
+        {/* <Button title="Disconnect" onPress={disconnect} /> */}
+        <Button title="Reset" onPress={reset} />
+      </View>
+    </>
   );
 };
 

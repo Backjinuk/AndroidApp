@@ -23,7 +23,7 @@ function App(): React.JSX.Element {
               <Stack.Screen name="Join" component={JoinFormMain} options={{ headerShown: false }}/>
               <Stack.Screen name="LoginMain" component={LoginMain} options={{ headerShown: false }}/>
               <Stack.Screen name="LoginForm" component={LoginForm} options={{ headerShown: false }}/>
-              <Stack.Screen name="ChatScreen" component={ChatScreen} options={{ headerShown: false }}/>
+              <Stack.Screen name="ChatScreen" component={ChatScreen} options={{ headerShown: false}}/>
               {/*<Stack.Screen name="MapMain" component={MapMain} options={{title: '지도'}} />*/}
               <Stack.Screen name="TabNavigation" component={TabNavigation} options={{ headerShown: false }} />
             </Stack.Navigator>

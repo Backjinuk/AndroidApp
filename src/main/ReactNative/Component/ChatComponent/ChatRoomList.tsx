@@ -11,6 +11,7 @@ interface ChatRoom {
 export default function ChatRoomList({navigation}: any) {
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [userId, setUserId] = useState<string>('');
+  const [seleted, setSelected] = useState<String>('public');
   useEffect(() => {
     getUserId();
     setUserId(generateRandomString(6));
@@ -25,6 +26,30 @@ export default function ChatRoomList({navigation}: any) {
 
   return (
     <View style={styles.container}>
+      <View
+        style={{
+          flexDirection: 'row',
+          paddingBottom: 10,
+        }}>
+        <View style={{flex: 1}}>
+          <Button
+            title="public"
+            color={seleted == 'public' ? '' : '#f194ff'}
+            onPress={() => {
+              setSelected('public');
+            }}
+          />
+        </View>
+        <View style={{flex: 1}}>
+          <Button
+            title="private"
+            color={seleted == 'private' ? '' : '#f194ff'}
+            onPress={() => {
+              setSelected('private');
+            }}
+          />
+        </View>
+      </View>
       <Button
         title="room12"
         onPress={() => {
@@ -43,14 +68,6 @@ export default function ChatRoomList({navigation}: any) {
           />
         )}
       />
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <View style={{width: '50%'}}>
-          <Button title="public" />
-        </View>
-        <View style={{width: '50%'}}>
-          <Button title="private" />
-        </View>
-      </View>
     </View>
   );
 }
