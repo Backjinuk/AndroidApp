@@ -10,6 +10,7 @@ import ChatScreen from './Component/ChatComponent/ChatScreen.tsx';
 import TabNavigation from "./Component/TabComponent/TabNavigation.tsx";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView, Text } from 'react-native';
+import ChatRoomList from './Component/ChatComponent/ChatRoomList.tsx';
 
 function App(): React.JSX.Element {
   const Stack = createNativeStackNavigator<RootStackParamList>();
