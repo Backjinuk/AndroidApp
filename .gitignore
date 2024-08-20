@@ -44,9 +44,11 @@ out/
 
 # Ignore application.yml file
 /src/main/resources/application.yml
-
+/src/main/ReactNative/package-lock.json
 /src/main/ReactNative/android/google-services.json
 /src/main/ReactNative/android/app/google-services.json
+/src/main/ReactNative/android/app/build.gradle
+
 
 /local.properties
 
