@@ -7,6 +7,7 @@ import LoginForm from './Component/LoginComponent/LogionForm.tsx';
 import {RootStackParamList} from './CommonTypes/RootStackParamList.ts';
 import MapMain from './Component/MapCompoent/MapMain.tsx';
 import ChatScreen from './Component/ChatComponent/ChatScreen.tsx';
+import ChatRoomList from './Component/ChatComponent/ChatRoomList.tsx';
 
 function App(): React.JSX.Element {
   const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -18,6 +19,7 @@ function App(): React.JSX.Element {
         <Stack.Screen name="LoginMain" component={LoginMain} />
         <Stack.Screen name="LoginForm" component={LoginForm} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen name="ChatRoomList" component={ChatRoomList} />
         <Stack.Screen
           name="MapMain"
           component={MapMain}

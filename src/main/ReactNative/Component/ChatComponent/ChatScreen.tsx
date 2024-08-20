@@ -9,27 +9,41 @@ import {
   StyleSheet,
 } from 'react-native';
 import Config from 'react-native-config';
+import generateRandomString from '../../Util/generateRandomString';
 interface Message {
   id: string;
+  chatter: string;
   content: string;
+  roomId: String;
 }
-import {getUniqueId} from 'react-native-device-info';
 
-const ChatScreen: React.FC = () => {
+const ChatScreen: React.FC = ({route}: any) => {
+  const {roomId, userId} = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('1');
   const wsurl = Config.CHAT_URL;
   const client = useRef<WebSocket>();
+  const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    setInput(generateRandomString(10));
+    connect();
+    return () => {
+      disconnect();
+    };
+  }, []);
 
   const sendMessage = () => {
     if (input.trim() && client.current) {
       const newMessage: Message = {
-        id: new Date().toISOString(),
+        id: generateRandomString(25),
+        chatter: userId,
         content: input,
+        roomId: roomId,
       };
       setMessages(prevMessages => [...prevMessages, newMessage]);
       client.current.send(JSON.stringify(newMessage));
-      // setInput('');
+      setInput(generateRandomString(10));
     }
   };
 
@@ -37,7 +51,7 @@ const ChatScreen: React.FC = () => {
     if (wsurl) {
       const accessToken = await AsyncStorage.getItem('AccessToken');
       const refreshToken = await AsyncStorage.getItem('RefreshToken');
-      client.current = new WebSocket(wsurl, null, {
+      client.current = new WebSocket(wsurl + `?roomId=${roomId}`, null, {
         headers: {
           AccessToken: `Bearer ${accessToken}`,
           RefreshToken: `${refreshToken}`,
@@ -49,8 +63,33 @@ const ChatScreen: React.FC = () => {
       };
       client.current.onmessage = e => {
         console.log('받은 데이터 : ' + e.data);
-        const newMessage = {id: new Date().toISOString(), content: e.data};
-        setMessages(prevMessages => [...prevMessages, newMessage]);
+        const jsondata = JSON.parse(e.data);
+        if (jsondata.type === 'list') {
+          console.log(jsondata.payload.length > 0);
+          if (jsondata.payload.length > 0) {
+            console.log('list 출력');
+            const messages: Message[] = [];
+            jsondata.payload.forEach((data: any) => {
+              const newMessage = {
+                id: data.id,
+                chatter: data.chatter,
+                content: data.content,
+                roomId: data.roomId,
+              };
+              messages.push(newMessage);
+            });
+            setMessages(prevMessages => [...prevMessages, ...messages]);
+          }
+        } else {
+          const data = jsondata.payload;
+          const newMessage = {
+            id: data.id,
+            chatter: data.chatter,
+            content: data.content,
+            roomId: data.roomId,
+          };
+          setMessages(prevMessages => [...prevMessages, newMessage]);
+        }
         console.log('받은 데이터 등록 완료');
       };
       client.current.onerror = e => {
@@ -64,10 +103,12 @@ const ChatScreen: React.FC = () => {
 
   const disconnect = () => {
     client.current?.close();
+    setMessages([]);
   };
 
-  const check = () => {
-    console.log(getUniqueId());
+  const reset = () => {
+    disconnect();
+    connect();
   };
 
   return (
@@ -75,7 +116,15 @@ const ChatScreen: React.FC = () => {
       <FlatList
         data={messages}
         keyExtractor={item => item.id}
-        renderItem={({item}) => <Text>{item.content}</Text>}
+        ref={flatListRef}
+        onContentSizeChange={() => {
+          flatListRef.current?.scrollToEnd({animated: false});
+        }}
+        renderItem={({item}) => (
+          <Text style={{textAlign: item.chatter === userId ? 'right' : 'left'}}>
+            {item.chatter} : {item.content}
+          </Text>
+        )}
       />
       <TextInput
         style={styles.input}
@@ -83,9 +132,9 @@ const ChatScreen: React.FC = () => {
         value={input}
       />
       <Button title="Send" onPress={sendMessage} />
-      <Button title="Connect" onPress={connect} />
-      <Button title="Disconnect" onPress={disconnect} />
-      <Button title="Check" onPress={check} />
+      {/* <Button title="Connect" onPress={connect} /> */}
+      {/* <Button title="Disconnect" onPress={disconnect} /> */}
+      <Button title="Reset" onPress={reset} />
     </View>
   );
 };

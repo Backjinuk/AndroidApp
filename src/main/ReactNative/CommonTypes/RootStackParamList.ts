@@ -5,4 +5,5 @@ export type RootStackParamList = {
   MapMain: undefined;
   Join: undefined;
   ChatScreen: undefined;
+  ChatRoomList: undefined;
 };

@@ -19,10 +19,10 @@ import MapAddModal from './MapAddModal';
 import Geolocation from '@react-native-community/geolocation';
 import LocationMarker from './LocationMarker';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import CommunityAddForm from "./CommunityComponent/CommunityAddForm.tsx";
-import axiosPost from "../../Util/AxiosUtil.ts";
-import CommunityMaker from "./CommunityComponent/CommunityMaker.tsx";
-import CommunityInfoView from "./CommunityComponent/CommunityInfoView.tsx";
+import CommunityAddForm from './CommunityComponent/CommunityAddForm.tsx';
+import axiosPost from '../../Util/AxiosUtil.ts';
+import CommunityMaker from './CommunityComponent/CommunityMaker.tsx';
+import CommunityInfoView from './CommunityComponent/CommunityInfoView.tsx';
 
 export default function MapMain({navigation}: any) {
   const debug = true;
@@ -34,10 +34,9 @@ export default function MapMain({navigation}: any) {
   const [locations, privateSetLocations] = useState<Location[]>([]);
   const [region, setRegion] = useState<Region>();
   const [radius, setRadius] = useState(0.3);
-  const [markers, setMarkers] = useState<Community[]>([])
-  const [marker, setMaker]= useState<Community | null>(null);
-  const [openModal, setOpenModal] = useState(false)
-
+  const [markers, setMarkers] = useState<Community[]>([]);
+  const [marker, setMaker] = useState<Community | null>(null);
+  const [openModal, setOpenModal] = useState(false);
 
   // 모임 위치 Search후 마킹
   useEffect(() => {
@@ -46,25 +45,29 @@ export default function MapMain({navigation}: any) {
         var myPosition = await getMyPosition();
 
         // radius 값을 추가
-        myPosition = { ...myPosition, radius: radius } as { latitude: number; longitude: number; radius: number };
+        myPosition = {...myPosition, radius: radius} as {
+          latitude: number;
+          longitude: number;
+          radius: number;
+        };
 
-        axiosPost.post("/commu/getLocationBaseInquery", JSON.stringify({
-          "myPosition" : myPosition
-        }))
-            .then((res) => {
-
-              setMarkers(res.data);
-
-            });
-
+        axiosPost
+          .post(
+            '/commu/getLocationBaseInquery',
+            JSON.stringify({
+              myPosition: myPosition,
+            }),
+          )
+          .then(res => {
+            setMarkers(res.data);
+          });
       } catch (error) {
-        console.error("Error posting location:", error);
+        console.error('Error posting location:', error);
       }
     };
 
     setCommuPosition();
   }, []);
-
 
   //검색 좌표들
   const setLocations = (locations: any[]) => {
@@ -448,20 +451,20 @@ export default function MapMain({navigation}: any) {
               />
             ))}
 
-            {markers.length !== 0 &&
-                markers.map((marker, index) => (
-                    // 데이터가 유효한지 확인
-                    <CommunityMaker
-                        key = {marker?.latitude + marker?.longitude + marker?.commuTitle} // 일반적으로 index를 사용하는 것은 괜찮지만, 고유한 값을 사용하는 것이 더 좋음
-                        marker = {marker}
-                        setOpenModal={() => {
-                            console.log(11)
-                            setOpenModal(true)}}
-                        setPosition = {setPosition}
-                        setMaker={setMaker}
-                    />
-                ))}
-
+          {markers.length !== 0 &&
+            markers.map((marker, index) => (
+              // 데이터가 유효한지 확인
+              <CommunityMaker
+                key={marker?.latitude + marker?.longitude + marker?.commuTitle} // 일반적으로 index를 사용하는 것은 괜찮지만, 고유한 값을 사용하는 것이 더 좋음
+                marker={marker}
+                setOpenModal={() => {
+                  console.log(11);
+                  setOpenModal(true);
+                }}
+                setPosition={setPosition}
+                setMaker={setMaker}
+              />
+            ))}
         </NaverMapView>
       </View>
       <View>
@@ -481,7 +484,8 @@ export default function MapMain({navigation}: any) {
         <Button
           title="채팅"
           onPress={() => {
-            navigation.navigate('ChatScreen');
+            // navigation.navigate('ChatScreen');
+            navigation.navigate('ChatRoomList');
           }}
         />
       </View>
@@ -495,14 +499,16 @@ export default function MapMain({navigation}: any) {
         setDummies={setDummies}
       />
 
-        <CommunityInfoView
-            marker = {marker}
-            openModal = {openModal}
-            setOpenModal = {() => {setOpenModal(false)}}
-            closeAddForm={() => {
-                setOpenModal(false);
-            }}
-        />
+      <CommunityInfoView
+        marker={marker}
+        openModal={openModal}
+        setOpenModal={() => {
+          setOpenModal(false);
+        }}
+        closeAddForm={() => {
+          setOpenModal(false);
+        }}
+      />
     </>
   );
 }
