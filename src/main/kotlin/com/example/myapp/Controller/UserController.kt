@@ -57,7 +57,6 @@ class UserController {
     @PostMapping("userLogin")
     fun userLogin(@RequestBody userDto: UserDto, request: HttpServletRequest): MutableMap<String, String>? {
 
-
         val mutableMap: MutableMap<String, String> = mutableMapOf(
             "AccessToken" to  (request.getHeader("AccessToken")?.toString() ?: ""),
             "RefreshToken" to (request.getHeader("RefreshToken")?.toString() ?: ""),
@@ -66,9 +65,17 @@ class UserController {
 
         var loggedInUser: UserDto? = userService?.userLogin(userDtoToEntity(userDto))!!;
 
+        //JWT에 있는 정보가 실제 회원의 정보와 같은지 검증
+        var jwtUserSeq = jwtUtil?.requestToUserSeq(request);
+
+        if(loggedInUser?.userSeq != jwtUserSeq){
+            log.info("JWT와 회원의 정보가 다름 JWT초기화 진행")
+            mutableMap["AccessToken"] = ""
+            mutableMap["RefreshToken"] = ""
+        }
+
         // JWT 없으면 새로 발급
         if (mutableMap["AccessToken"].isNullOrEmpty() && mutableMap["RefreshToken"].isNullOrEmpty()) {
-
             mutableMap["AccessToken"] = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString()
             mutableMap["RefreshToken"] = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString()
         }
@@ -77,6 +84,7 @@ class UserController {
         if (!mutableMap["AccessToken"].isNullOrEmpty() && !mutableMap["RefreshToken"].isNullOrEmpty()) {
             val accessTokenParse = jwtUtil?.parseClaims(mutableMap)
 
+            //JWT가 유효하지 않을때
             if (accessTokenParse == null) {
                 val tokenMap: Map<String, String>? = jwtUtil?.refreshAccessToken(mutableMap)
                 mutableMap["AccessToken"] = tokenMap?.get("accessToken").toString()

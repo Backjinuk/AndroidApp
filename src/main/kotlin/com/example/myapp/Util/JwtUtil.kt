@@ -48,6 +48,7 @@ class JwtUtil(
      * @return JWT String : String
      */
     fun createToken(userDto: UserDto, accessTokenExpTime: Long): String {
+
         val claims: Claims = Jwts.claims().also {
             it["userSeq"] = userDto.userSeq
             it["email"] = userDto.email
