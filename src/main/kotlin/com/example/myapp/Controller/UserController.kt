@@ -72,16 +72,20 @@ class UserController {
             log.info("JWT와 회원의 정보가 다름 JWT초기화 진행")
             mutableMap["AccessToken"] = ""
             mutableMap["RefreshToken"] = ""
+            mutableMap["NewRefreshToken"] = ""
         }
 
         // JWT 없으면 새로 발급
         if (mutableMap["AccessToken"].isNullOrEmpty() && mutableMap["RefreshToken"].isNullOrEmpty()) {
             mutableMap["AccessToken"] = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString()
             mutableMap["RefreshToken"] = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString()
-        }
 
-        // JWT가 있으면 JWT 검증
-        if (!mutableMap["AccessToken"].isNullOrEmpty() && !mutableMap["RefreshToken"].isNullOrEmpty()) {
+            println("mutableMap[\"RefreshToken\"] = ${mutableMap["AccessToken"]}")
+            println("mutableMap[\"RefreshToken\"] = ${mutableMap["RefreshToken"]}")
+
+        }else {
+
+            // JWT가 있으면 JWT 검증
             val accessTokenParse = jwtUtil?.parseClaims(mutableMap)
 
             //JWT가 유효하지 않을때

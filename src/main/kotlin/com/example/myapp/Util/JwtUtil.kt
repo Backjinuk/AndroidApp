@@ -139,6 +139,8 @@ class JwtUtil(
             val userDto = UserDto().apply {
                 userSeq = claims["userSeq"]?.toString()?.toLong()
                 email = claims["email"] as? String
+                userId = claims["userId"] as? String
+                userType = claims["userType"] as? String
             }
 
             log.info("TOKEN ReFresh 완료...")
