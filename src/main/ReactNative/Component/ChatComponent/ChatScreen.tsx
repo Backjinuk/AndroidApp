@@ -20,7 +20,7 @@ interface Message {
 }
 
 const ChatScreen: React.FC = ({route, navigation}: any) => {
-  const {roomId, userId} = route.params;
+  const {roomId, userSeq} = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputHeight, setInputHeight] = useState(40);
   const [input, setInput] = useState('1');
@@ -40,7 +40,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
     if (input.trim() && client.current) {
       const newMessage: Message = {
         id: generateRandomString(25),
-        chatter: userId,
+        chatter: userSeq,
         content: input,
         roomId: roomId,
       };
@@ -123,12 +123,20 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
           backgroundColor: 'white',
           alignItems: 'center',
         }}>
-        <Button
-          title="뒤로"
+        <TouchableOpacity
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignSelf: 'center',
+            width: 40,
+            height: 40,
+            backgroundColor: '#2196F3',
+          }}
           onPress={() => {
             navigation.pop();
-          }}
-        />
+          }}>
+          <Icon name="arrow-left" size={25} color="white" />
+        </TouchableOpacity>
         <Text>{roomId}</Text>
       </View>
       <View style={styles.container}>
@@ -141,7 +149,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
           }}
           renderItem={({item}) => (
             <Text
-              style={{textAlign: item.chatter === userId ? 'right' : 'left'}}>
+              style={{textAlign: item.chatter === userSeq ? 'right' : 'left'}}>
               {item.chatter} : {item.content}
             </Text>
           )}

@@ -45,7 +45,7 @@ class ChatHandler(
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         logger.info("Received message: ${message.payload}")
         val map = mapper.readValue<Map<String, String>>(content = message.payload)
-        val chatter = map["chatter"]
+        val chatter = map["chatter"]?.toLong()
         val content = map["content"]
         val roomId = map["roomId"]
         val chat = Chat.Builder().setChatter(chatter!!).setContent(content!!).setRoomId(roomId!!).build()

@@ -1,13 +1,16 @@
 package com.example.myapp.Service.chat.impl
 
 import com.example.myapp.Entity.Chat
+import com.example.myapp.Entity.ChatRoom
 import com.example.myapp.Repository.chat.ChatRepository
+import com.example.myapp.Repository.chat.ChatRoomRepository
 import com.example.myapp.Service.chat.ChatService
 import org.springframework.stereotype.Service
 
 @Service
 class ChatServiceImpl(
-    private var chatRepository: ChatRepository
+    private var chatRepository: ChatRepository,
+    private var chatRoomRepository: ChatRoomRepository
 ) : ChatService {
 
 
@@ -17,5 +20,9 @@ class ChatServiceImpl(
 
     override fun entrance(roomId: String): List<Chat>? {
         return chatRepository.findByRoomId(roomId)
+    }
+
+    override fun addChatRoom(chatRoom: ChatRoom) {
+        chatRoomRepository.save(chatRoom)
     }
 }

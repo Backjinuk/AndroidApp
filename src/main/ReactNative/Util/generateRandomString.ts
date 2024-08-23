@@ -10,3 +10,15 @@ export default function generateRandomString(length: number) {
 
   return result;
 }
+
+export function RNG(length: number): number {
+  const characters = '0123456789';
+  let result = '';
+  const charactersLength = characters.length;
+
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return Number(result);
+}
