@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {Button, FlatList, StyleSheet, Text, View} from 'react-native';
-import generateRandomString from '../../Util/generateRandomString';
+import {RNG} from '../../Util/generateRandomString';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from 'jwt-decode';
+import AddChatButton from './AddChatButton';
+import {TextInput} from 'react-native-gesture-handler';
 
 interface ChatRoom {
   id: string;
@@ -10,13 +12,12 @@ interface ChatRoom {
 
 export default function ChatRoomList({navigation}: any) {
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
-  const [userId, setUserId] = useState<string>('');
+  const [userSeq, setuserSeq] = useState<number>(0);
   const [seleted, setSelected] = useState<String>('public');
   useEffect(() => {
-    getUserId();
-    setUserId(generateRandomString(6));
+    getuserSeq();
   }, []);
-  const getUserId = async () => {
+  const getuserSeq = async () => {
     const accessToken = await AsyncStorage.getItem('AccessToken');
     const data = jwtDecode(accessToken!);
     console.log(data);
@@ -26,6 +27,14 @@ export default function ChatRoomList({navigation}: any) {
 
   return (
     <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        onChangeText={text => {
+          if (text.length === 0) setuserSeq(0);
+          else setuserSeq(parseInt(text));
+        }}
+        value={String(userSeq)}
+      />
       <View
         style={{
           flexDirection: 'row',
@@ -53,7 +62,7 @@ export default function ChatRoomList({navigation}: any) {
       <Button
         title="room12"
         onPress={() => {
-          navigation.navigate('ChatScreen', {roomId: 'room12', userId});
+          navigation.navigate('ChatScreen', {roomId: 'room12', userSeq});
         }}
       />
       <FlatList
@@ -63,11 +72,12 @@ export default function ChatRoomList({navigation}: any) {
           <Button
             title={item.id}
             onPress={() => {
-              navigation.navigate('ChatScreen', {roomId: item.id, userId});
+              navigation.navigate('ChatScreen', {roomId: item.id, userSeq});
             }}
           />
         )}
       />
+      <AddChatButton userSeq={userSeq} navigation={navigation} />
     </View>
   );
 }

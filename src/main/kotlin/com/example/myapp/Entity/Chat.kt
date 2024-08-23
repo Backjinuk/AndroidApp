@@ -4,7 +4,7 @@ import jakarta.persistence.Id
 import java.time.LocalDateTime
 
 class Chat private constructor(
-    val chatter: String,
+    val chatter: Long,
     val content: String,
     val unread: List<String>,
     val chatTime: LocalDateTime,
@@ -14,13 +14,13 @@ class Chat private constructor(
     @Id
     private var id: String? = null
     class Builder {
-        private var chatter: String = ""
+        private var chatter: Long = 0
         private var content: String = ""
         private var unread: List<String> = arrayListOf()
         private var chatTime: LocalDateTime = LocalDateTime.now()
         private var roomId: String = ""
 
-        fun setChatter(chatter: String) = apply { this.chatter = chatter }
+        fun setChatter(chatter: Long) = apply { this.chatter = chatter }
         fun setContent(content: String) = apply { this.content = content }
         fun setUnread(unread: List<String>) = apply { this.unread = unread }
         fun setChatTime(time: LocalDateTime) = apply { this.chatTime = chatTime }
