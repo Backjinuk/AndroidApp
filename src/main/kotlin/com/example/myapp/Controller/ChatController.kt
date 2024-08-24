@@ -22,13 +22,16 @@ class ChatController @Autowired constructor(
     @RequestMapping("addChatRoom")
     fun addChatRoom(@RequestBody chatRoomDto: ChatRoomDto, request: HttpServletRequest):String{
         val userSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
-        var chatters : List<Long> = listOf(userSeq).plus(chatRoomDto.chatters)
-        var chatRoom : ChatRoom = ChatRoom.Builder().setChatters(chatters)
+        val chatters : List<Long> = listOf(userSeq).plus(chatRoomDto.chatters)
+        val chatRoom : ChatRoom = ChatRoom.Builder().setChatters(chatters)
                                                     .setCommuSeq(chatRoomDto.commuSeq)
                                                     .setType(chatRoomDto.type)
                                                     .build()
+        val dbRoom = chatService.findPublicRoom(chatters, chatRoomDto.commuSeq)
+        if(dbRoom!=null){
+            return dbRoom.id!!
+        }
         chatService.addChatRoom(chatRoom)
-        print(chatRoom)
         return chatRoom.id!!
     }
 }

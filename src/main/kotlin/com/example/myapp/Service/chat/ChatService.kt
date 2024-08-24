@@ -8,4 +8,6 @@ interface ChatService {
     fun entrance(roomId:String) : List<Chat>?
 
     fun addChatRoom(chatRoom: ChatRoom)
+
+    fun findPublicRoom(chatters:List<Long>, commuSeq:Long): ChatRoom?
 }

@@ -25,4 +25,8 @@ class ChatServiceImpl(
     override fun addChatRoom(chatRoom: ChatRoom) {
         chatRoomRepository.save(chatRoom)
     }
+
+    override fun findPublicRoom(chatters: List<Long>, commuSeq: Long): ChatRoom? {
+        return chatRoomRepository.findByCommunityAndUsers(chatters, commuSeq)
+    }
 }

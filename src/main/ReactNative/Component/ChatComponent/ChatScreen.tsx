@@ -12,15 +12,19 @@ import Config from 'react-native-config';
 import generateRandomString from '../../Util/generateRandomString';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {jwtDecode} from 'jwt-decode';
 interface Message {
   id: string;
   chatter: string;
+  chatterId: string;
   content: string;
-  roomId: String;
+  roomId: string;
 }
 
 const ChatScreen: React.FC = ({route, navigation}: any) => {
-  const {roomId, userSeq} = route.params;
+  const {roomId} = route.params;
+  const [userSeq, setUserSeq] = useState<string>('');
+  const [userId, setUserId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputHeight, setInputHeight] = useState(40);
   const [input, setInput] = useState('1');
@@ -29,6 +33,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
+    getUserInfo();
     setInput(generateRandomString(10));
     connect();
     return () => {
@@ -36,11 +41,19 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
     };
   }, []);
 
+  const getUserInfo = async () => {
+    const accessToken = await AsyncStorage.getItem('AccessToken');
+    const data: any = jwtDecode(accessToken!);
+    setUserSeq(data.userSeq);
+    setUserId(data.userId);
+  };
+
   const sendMessage = () => {
     if (input.trim() && client.current) {
       const newMessage: Message = {
         id: generateRandomString(25),
         chatter: userSeq,
+        chatterId: userId,
         content: input,
         roomId: roomId,
       };
@@ -76,6 +89,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
               const newMessage = {
                 id: data.id,
                 chatter: data.chatter,
+                chatterId: data.chatterId,
                 content: data.content,
                 roomId: data.roomId,
               };
@@ -88,6 +102,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
           const newMessage = {
             id: data.id,
             chatter: data.chatter,
+            chatterId: data.chatterId,
             content: data.content,
             roomId: data.roomId,
           };
@@ -150,7 +165,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
           renderItem={({item}) => (
             <Text
               style={{textAlign: item.chatter === userSeq ? 'right' : 'left'}}>
-              {item.chatter} : {item.content}
+              {item.chatterId} : {item.content}
             </Text>
           )}
         />

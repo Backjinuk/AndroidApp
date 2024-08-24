@@ -1,11 +1,16 @@
 package com.example.myapp.Entity
 
 import jakarta.persistence.Id
-import java.time.LocalDateTime
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.Field
 
+@Document
 class ChatRoom private constructor(
+    @Field
     val chatters: List<Long>,
+    @Field
     val type: String,
+    @Field
     val commuSeq: Long,
 
 ) {

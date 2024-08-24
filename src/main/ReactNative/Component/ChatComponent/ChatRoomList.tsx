@@ -12,29 +12,19 @@ interface ChatRoom {
 
 export default function ChatRoomList({navigation}: any) {
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
-  const [userSeq, setuserSeq] = useState<number>(0);
+  const [userSeq, setUserSeq] = useState<number>(0);
   const [seleted, setSelected] = useState<String>('public');
   useEffect(() => {
     getuserSeq();
   }, []);
   const getuserSeq = async () => {
     const accessToken = await AsyncStorage.getItem('AccessToken');
-    const data = jwtDecode(accessToken!);
-    console.log(data);
-    const RefreshToken = await AsyncStorage.getItem('RefreshToken');
-    console.log(jwtDecode(RefreshToken!));
+    const data: any = jwtDecode(accessToken!);
+    setUserSeq(data.userSeq);
   };
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        onChangeText={text => {
-          if (text.length === 0) setuserSeq(0);
-          else setuserSeq(parseInt(text));
-        }}
-        value={String(userSeq)}
-      />
       <View
         style={{
           flexDirection: 'row',
@@ -72,11 +62,12 @@ export default function ChatRoomList({navigation}: any) {
           <Button
             title={item.id}
             onPress={() => {
-              navigation.navigate('ChatScreen', {roomId: item.id, userSeq});
+              navigation.navigate('ChatScreen', {roomId: item.id});
             }}
           />
         )}
       />
+      <Button title="token" onPress={getuserSeq} />
       <AddChatButton userSeq={userSeq} navigation={navigation} />
     </View>
   );

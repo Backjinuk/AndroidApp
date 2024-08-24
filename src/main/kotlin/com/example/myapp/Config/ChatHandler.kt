@@ -46,9 +46,10 @@ class ChatHandler(
         logger.info("Received message: ${message.payload}")
         val map = mapper.readValue<Map<String, String>>(content = message.payload)
         val chatter = map["chatter"]?.toLong()
+        val chatterId = map["chatterId"]
         val content = map["content"]
         val roomId = map["roomId"]
-        val chat = Chat.Builder().setChatter(chatter!!).setContent(content!!).setRoomId(roomId!!).build()
+        val chat = Chat.Builder().setChatter(chatter!!).setChatterId(chatterId!!).setContent(content!!).setRoomId(roomId!!).build()
         logger.info("Received message: $chat")
         chatService.chatting(chat)
         val returnMap = mutableMapOf<String, Any>()
