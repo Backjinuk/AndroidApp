@@ -13,6 +13,7 @@ import generateRandomString from '../../Util/generateRandomString';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {jwtDecode} from 'jwt-decode';
+import axiosPost from '../../Util/AxiosUtil';
 interface Message {
   id: string;
   chatter: string;
@@ -67,12 +68,16 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
     if (wsurl) {
       const accessToken = await AsyncStorage.getItem('AccessToken');
       const refreshToken = await AsyncStorage.getItem('RefreshToken');
-      client.current = new WebSocket(wsurl + `?roomId=${roomId}`, null, {
-        headers: {
-          AccessToken: `Bearer ${accessToken}`,
-          RefreshToken: `${refreshToken}`,
+      client.current = new WebSocket(
+        wsurl + `?type=chatRoom&roomId=${roomId}`,
+        null,
+        {
+          headers: {
+            AccessToken: `Bearer ${accessToken}`,
+            RefreshToken: `${refreshToken}`,
+          },
         },
-      });
+      );
       console.log(client.current);
       client.current.onopen = () => {
         console.log('소켓 통신 활성화');
@@ -80,33 +85,21 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
       client.current.onmessage = e => {
         console.log('받은 데이터 : ' + e.data);
         const jsondata = JSON.parse(e.data);
-        if (jsondata.type === 'list') {
-          console.log(jsondata.payload.length > 0);
-          if (jsondata.payload.length > 0) {
-            console.log('list 출력');
-            const messages: Message[] = [];
-            jsondata.payload.forEach((data: any) => {
-              const newMessage = {
-                id: data.id,
-                chatter: data.chatter,
-                chatterId: data.chatterId,
-                content: data.content,
-                roomId: data.roomId,
-              };
-              messages.push(newMessage);
-            });
-            setMessages(prevMessages => [...prevMessages, ...messages]);
-          }
-        } else {
-          const data = jsondata.payload;
-          const newMessage = {
-            id: data.id,
-            chatter: data.chatter,
-            chatterId: data.chatterId,
-            content: data.content,
-            roomId: data.roomId,
-          };
-          setMessages(prevMessages => [...prevMessages, newMessage]);
+        console.log(jsondata.payload.length > 0);
+        if (jsondata.payload.length > 0) {
+          console.log('list 출력');
+          const messages: Message[] = [];
+          jsondata.payload.forEach((data: any) => {
+            const newMessage = {
+              id: data.id,
+              chatter: data.chatter,
+              chatterId: data.chatterId,
+              content: data.content,
+              roomId: data.roomId,
+            };
+            messages.push(newMessage);
+          });
+          setMessages(prevMessages => [...prevMessages, ...messages]);
         }
         console.log('받은 데이터 등록 완료');
       };
@@ -122,11 +115,6 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
   const disconnect = () => {
     client.current?.close();
     setMessages([]);
-  };
-
-  const reset = () => {
-    disconnect();
-    connect();
   };
 
   return (
@@ -152,7 +140,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
           }}>
           <Icon name="arrow-left" size={25} color="white" />
         </TouchableOpacity>
-        <Text>{roomId}</Text>
+        <Text>뭐 넣지</Text>
       </View>
       <View style={styles.container}>
         <FlatList
@@ -199,10 +187,6 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
             <Icon name="send" color="white" size={inputHeight * 0.5} />
           </TouchableOpacity>
         </View>
-
-        {/* <Button title="Connect" onPress={connect} /> */}
-        {/* <Button title="Disconnect" onPress={disconnect} /> */}
-        <Button title="Reset" onPress={reset} />
       </View>
     </>
   );

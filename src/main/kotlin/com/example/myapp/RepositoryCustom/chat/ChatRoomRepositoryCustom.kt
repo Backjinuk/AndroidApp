@@ -8,4 +8,6 @@ interface ChatRoomRepositoryCustom {
 
     fun findByCommunityAndUsers(chatters : List<Long>, commuSeq:Long) : ChatRoom?
 
+    fun findByUserSeq(userSeq:Long) : List<ChatRoom>?
+
 }

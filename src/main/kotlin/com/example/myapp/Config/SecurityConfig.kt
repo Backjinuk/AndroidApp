@@ -34,7 +34,7 @@ class SecurityConfig(private val jwtUtil: JwtUtil) {
             .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .authorizeHttpRequests { authorize ->
-                authorize.requestMatchers("/user/userJoin", "/", "/user/userLogin", "/user/JwtTokenGetUserSeq", "/chat").permitAll()
+                authorize.requestMatchers("/user/userJoin", "/", "/user/userLogin", "/user/JwtTokenGetUserSeq", "/chat/test").permitAll()
                     .anyRequest().authenticated()
             }
             .logout { logout ->

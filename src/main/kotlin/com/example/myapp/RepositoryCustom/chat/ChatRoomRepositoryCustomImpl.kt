@@ -16,4 +16,11 @@ class ChatRoomRepositoryCustomImpl @Autowired constructor(
             .matching(query).oneValue()
         return re
     }
+
+    override fun findByUserSeq(userSeq: Long): List<ChatRoom>? {
+        val query = Query(Criteria.where("chatters").`is`(userSeq))
+        val re = template.query(ChatRoom::class.java)
+            .matching(query).all()
+        return re
+    }
 }
