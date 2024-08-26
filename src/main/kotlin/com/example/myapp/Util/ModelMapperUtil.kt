@@ -1,9 +1,11 @@
 package com.example.myapp.Util
 
+import com.example.myapp.Dto.CommunityApplyDto
 import com.example.myapp.Dto.CommunityDto
 import com.example.myapp.Dto.SubscribeDto
 import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.Community
+import com.example.myapp.Entity.CommunityApply
 import com.example.myapp.Entity.Subscribe
 import com.example.myapp.Entity.User
 import org.modelmapper.ModelMapper
@@ -37,6 +39,14 @@ class ModelMapperUtil {
 
         fun subscribeDtoToEntity(subscribeDto: SubscribeDto):Subscribe{
             return modelMapper.map(subscribeDto, Subscribe::class.java)
+        }
+
+        fun communityApplyDtoToEntity(communityApplyDto: CommunityApplyDto) : CommunityApply{
+            return modelMapper.map(communityApplyDto, CommunityApply::class.java);
+        }
+
+        fun communityApplyEntityToDto(communityApply: CommunityApply) : CommunityApplyDto{
+            return modelMapper.map(communityApply, CommunityApplyDto::class.java)
         }
 
         fun commuEntityToDto(community: Community, status: Char?): CommunityDto {

@@ -10,16 +10,11 @@ import com.linecorp.kotlinjdsl.selectQuery
 import com.linecorp.kotlinjdsl.updateQuery
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Join
 import jakarta.persistence.criteria.Root
 import jakarta.transaction.Transactional
-import kotlinx.coroutines.selects.select
-import org.aspectj.weaver.tools.cache.SimpleCacheFactory.path
 import org.modelmapper.ModelMapper
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.jpa.domain.JpaSort.path
 import org.springframework.stereotype.Repository
 
 
@@ -55,6 +50,7 @@ class UserRepositoryCustomImpl @Autowired constructor(
                 )
             )
         }
+
         return modelMapper.map(query.resultList.firstOrNull(), UserDto::class.java)
     }
 

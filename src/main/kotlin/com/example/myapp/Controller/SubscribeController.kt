@@ -25,10 +25,6 @@ class SubscribeController @Autowired constructor(
     fun addSubscribe(@RequestBody subscribeDto: SubscribeDto, request: HttpServletRequest) : Boolean{
         subscribeDto.subscriberUserSeq = jwtUtil.requestToUserSeq(request)
         val saveCheck: Boolean =  subscribeService.addSubscribe(subscribeDtoToEntity(subscribeDto))
-
-
-        println("saveCheck = ${saveCheck}")
-
         return saveCheck;
     }
 
@@ -41,5 +37,19 @@ class SubscribeController @Autowired constructor(
         return subscribe?.let { subscribeEntityToDto(it) };
 
     }
+
+    @RequestMapping("getSubscribeList")
+    fun getSubscribeList(@RequestBody subscribeDto: SubscribeDto, request: HttpServletRequest) : MutableMap<String, List<SubscribeDto>>? {
+        val mutableMap: MutableMap<String, List<SubscribeDto>>? = null;
+        subscribeDto.subscriberUserSeq = jwtUtil.requestToUserSeq(request)
+
+        val subscribeDtoList:List<SubscribeDto> = subscribeService.getSubscribeList(subscribeDtoToEntity(subscribeDto));
+
+        mutableMap?.set("subscriberDtoList", subscribeDtoList);
+
+        return mutableMap;
+    }
+
+
 
 }

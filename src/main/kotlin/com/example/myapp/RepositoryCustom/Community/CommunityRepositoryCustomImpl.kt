@@ -13,7 +13,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 @Repository
-class CommunityRepositoryImpl(
+class CommunityRepositoryCustomImpl(
     private val entityManager: EntityManager,
     private val queryFactory: QueryFactoryImpl
 ) : CommunityRepositoryCustom {

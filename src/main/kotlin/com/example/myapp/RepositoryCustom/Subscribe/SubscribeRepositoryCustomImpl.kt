@@ -1,9 +1,10 @@
 package com.example.myapp.RepositoryCustom.Subscribe
 
+import com.example.myapp.Dto.SubscribeDto
 import com.example.myapp.Entity.Subscribe
+import com.example.myapp.Util.ModelMapperUtil.Companion.subscribeEntityToDto
 import com.linecorp.kotlinjdsl.QueryFactoryImpl
 import com.linecorp.kotlinjdsl.querydsl.expression.col
-import com.linecorp.kotlinjdsl.querydsl.expression.count
 import com.linecorp.kotlinjdsl.selectQuery
 import com.linecorp.kotlinjdsl.updateQuery
 import jakarta.persistence.EntityManager
@@ -56,9 +57,8 @@ class SubscribeRepositoryCustomImpl @Autowired constructor(
 
         }
 
-
-
         return exists;
+
     }
 
     override fun getSubscribe(subscribe: Subscribe): Subscribe? {
@@ -71,4 +71,21 @@ class SubscribeRepositoryCustomImpl @Autowired constructor(
             )
         }.resultList.firstOrNull()
     }
+
+    override fun getSubscribeList(subscribe: Subscribe): List<SubscribeDto> {
+
+        return queryFactory.selectQuery<Subscribe> {
+            select(entity(Subscribe::class))
+            from(entity(Subscribe::class))
+            where(
+                col(Subscribe::subscriberUserSeq).equal(subscribe.subscriberUserSeq)
+            )
+        }.resultList
+            .map { subscribe -> subscribeEntityToDto(subscribe) }
+            .toList()
+    }
+
+
+
+
 }

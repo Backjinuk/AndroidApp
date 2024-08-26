@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/commu/")
-class CommunityContoller  @Autowired constructor(
+class CommunityController  @Autowired constructor(
     private var communityService:CommunityService,
     private var userService: UserService,
     private var jwtUtil: JwtUtil
