@@ -25,3 +25,11 @@ interface Position {
       regDt :Date
       upDt : Date
   }
+
+  interface Subscribe{
+      subscribeSeq : number
+      subscriberOwnerUserSeq : number
+      subscriberUserSeq : number
+      subscribeStatus : string
+      refDt : Date
+  }

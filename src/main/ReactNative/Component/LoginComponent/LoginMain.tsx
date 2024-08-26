@@ -3,7 +3,7 @@ import React, {useEffect} from "react";
 import createStyles from "./styles.ts";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
+import {RootStackParamList} from "../../Types/RootStackParamList.ts";
 import NaverLoginButton from "./SnsComponent/NaverLoginButton.tsx";
 import KakaoLoginButton from "./SnsComponent/KakaoLoginButton.tsx";
 import GoogleLoginButton from "./SnsComponent/GoogleLoginButton.tsx";

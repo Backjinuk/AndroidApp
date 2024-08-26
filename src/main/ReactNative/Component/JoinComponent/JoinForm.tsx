@@ -6,7 +6,7 @@ import axios from "axios";
 import Config from "react-native-config";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
+import {RootStackParamList} from "../../Types/RootStackParamList.ts";
 
 interface JoinFormProps {
     joinEvent: boolean,

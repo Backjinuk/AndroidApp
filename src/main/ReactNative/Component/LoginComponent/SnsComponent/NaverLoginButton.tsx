@@ -4,7 +4,7 @@ import Config from "react-native-config";
 import NaverLogin, {GetProfileResponse, NaverLoginResponse} from "@react-native-seoul/naver-login";
 import axios from "axios";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../../CommonTypes/RootStackParamList.ts";
+import {RootStackParamList} from "../../../Types/RootStackParamList.ts";
 import {useNavigation} from "@react-navigation/native";
 import axiosPost from "../../../Util/AxiosUtil.ts";
 import {setToken} from "../../../Util/JwtTokenUtil.ts";

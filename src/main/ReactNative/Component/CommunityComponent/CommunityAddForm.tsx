@@ -5,7 +5,7 @@ import DatePicker from "react-native-date-picker";
 import axiosPost from "../../Util/AxiosUtil.ts";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
+import {RootStackParamList} from "../../Types/RootStackParamList.ts";
 
 export default function CommunityAddForm(props: any) {
 

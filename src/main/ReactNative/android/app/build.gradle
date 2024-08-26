@@ -30,12 +30,13 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('C:/Users/admin/.android/debug.keystore')
+            storeFile file('C:/Users/user/.android/debug.keystore')
             storePassword 'android'
             keyAlias 'new_androiddebugkey'
             keyPassword 'android'
         }
     }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug

@@ -23,7 +23,6 @@ export default function MapSearchBar(props: any) {
                 onPress={() => {
                     props.getLocations();
                     props.privateSetPosition(undefined);
-                    console.log(11)
                 }}
                 style={styles.iconButton}
             >

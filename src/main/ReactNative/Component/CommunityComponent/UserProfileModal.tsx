@@ -3,10 +3,10 @@ import {Image, Text, TouchableOpacity, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Modal from 'react-native-modal';
-import {userInfo} from "../../CommonTypes/userInfo.ts";
+import {userInfo} from "../../Types/userInfo.ts";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
+import {RootStackParamList} from "../../Types/RootStackParamList.ts";
 import styles from "./styles.ts";
 import axiosPost from "../../Util/AxiosUtil.ts";
 

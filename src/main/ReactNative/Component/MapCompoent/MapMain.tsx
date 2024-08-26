@@ -407,6 +407,7 @@ export default function MapMain() {
                 />
             </View>
 
+
             <NaverMapView
                 style={{flex: 1}}
                 onInitialized={initializeMap}

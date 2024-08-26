@@ -5,8 +5,8 @@ import axios from "axios";
 import Config from "react-native-config";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../../CommonTypes/RootStackParamList.ts";
-import {userInfo} from "../../../CommonTypes/userInfo.ts";
+import {RootStackParamList} from "../../../Types/RootStackParamList.ts";
+import {userInfo} from "../../../Types/userInfo.ts";
 
 // @ts-ignore
 export default function FaceBookLoginButton({ styles }) {
