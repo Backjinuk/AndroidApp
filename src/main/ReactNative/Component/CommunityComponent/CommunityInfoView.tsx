@@ -4,6 +4,7 @@ import styles from "./styles.ts";
 import axiosPost from "../../Util/AxiosUtil.ts";
 import UserProfileModal from "./UserProfileModal.tsx";
 
+
 export default function CommunityInfoView (props : any) {
 
     const [marker, setMaker] = useState<Community>()

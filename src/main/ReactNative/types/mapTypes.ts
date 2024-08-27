@@ -4,12 +4,14 @@ interface Position {
     latitude: number;
     longitude: number;
   }
+
   interface Location {
     address: string;
     latitude: number;
     longitude: number;
     title: string;
   }
+
   interface Community {
       commuSeq : number
       commuWrite : string
@@ -30,14 +32,18 @@ interface Position {
       subscribeSeq : number
       subscriberOwnerUserSeq : number
       subscriberUserSeq : number
+      subscribeUser : userInfo
       subscribeStatus : string
       regDt : Date
   }
 
-  interface Subscribe{
-      subscribeSeq : number
-      subscriberOwnerUserSeq : number
-      subscriberUserSeq : number
-      subscribeStatus : string
-      refDt : Date
-  }
+
+    interface userInfo  {
+        userSeq:number;
+        userId: string;
+        name: string;
+        phoneNum: string;
+        email: string;
+        usertype : string;
+        passwd : string;
+    }
