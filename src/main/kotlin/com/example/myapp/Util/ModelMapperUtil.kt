@@ -25,6 +25,10 @@ class ModelMapperUtil {
             return modelMapper.map(userDto, User::class.java)
         }
 
+        fun userEntityToDto(user : User) : UserDto{
+            return modelMapper.map(user, UserDto::class.java)
+        }
+
         fun commuDtoToEntity(communityDTO: CommunityDto): Community {
             return modelMapper.map(communityDTO, Community::class.java)
         }

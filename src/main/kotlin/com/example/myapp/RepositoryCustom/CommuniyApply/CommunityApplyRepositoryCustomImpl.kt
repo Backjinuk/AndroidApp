@@ -1,32 +1,33 @@
-package com.example.myapp.RepositoryCustom.CommuniyApply
+package com.example.myapp.RepositoryCustom.CommunityApply
 
 import com.example.myapp.Dto.CommunityApplyDto
 import com.example.myapp.Entity.CommunityApply
+import com.example.myapp.Entity.QCommunityApply
+import com.example.myapp.RepositoryCustom.CommuniyApply.CommunityApplyRepositoryCustom
 import com.example.myapp.Util.ModelMapperUtil.Companion.communityApplyEntityToDto
-import com.linecorp.kotlinjdsl.QueryFactoryImpl
-import com.linecorp.kotlinjdsl.querydsl.expression.col
-import com.linecorp.kotlinjdsl.selectQuery
+import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 @Repository
-class CommunityApplyRepositoryCustomImpl @Autowired constructor(
-    @PersistenceContext private val entityManager : EntityManager,
-    private val queryFactory : QueryFactoryImpl
-): CommunityApplyRepositoryCustom{
+class CommunityApplyRepositoryCustomImpl(
+    private val entityManager: EntityManager,
+    private val queryFactory: JPAQueryFactory
+) : CommunityApplyRepositoryCustom {
 
-
+    @Transactional(readOnly = true)
     override fun getCommunityApplyList(communityApply: CommunityApply): List<CommunityApplyDto> {
-        return queryFactory.selectQuery<CommunityApply> {
-            select(entity(CommunityApply::class))
-            from(entity(CommunityApply::class))
-            where( col(CommunityApply::applyUserSeq).equal(communityApply.applyUserSeq) )
-        }.resultList
-            .map { communityApply -> communityApplyEntityToDto(communityApply) }
-            .toList()
+        // Q 클래스 인스턴스 생성
+        val qCommunityApply = QCommunityApply.communityApply
+
+        // QueryDSL 쿼리 작성
+        val results = queryFactory
+            .selectFrom(qCommunityApply)
+            .where(qCommunityApply.applyUserSeq.eq(communityApply.applyUserSeq))
+            .fetch()
+
+        // 결과를 DTO로 변환하여 반환
+        return results.map { communityApplyEntityToDto(it) }
     }
-
-
 }

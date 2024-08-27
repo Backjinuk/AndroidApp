@@ -31,5 +31,13 @@ interface Position {
       subscriberOwnerUserSeq : number
       subscriberUserSeq : number
       subscribeStatus : string
+      regDt : Date
+  }
+
+  interface Subscribe{
+      subscribeSeq : number
+      subscriberOwnerUserSeq : number
+      subscriberUserSeq : number
+      subscribeStatus : string
       refDt : Date
   }

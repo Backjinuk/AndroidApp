@@ -4,8 +4,6 @@ import com.example.myapp.Dto.UserDto
 import com.example.myapp.Entity.User
 import com.example.myapp.Repository.User.UserRepository
 import com.example.myapp.Service.User.UserService
-import com.linecorp.kotlinjdsl.QueryFactoryImpl
-import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Service
 
 @Service
