@@ -1,7 +1,6 @@
 package com.example.myapp.Controller
 
 import com.example.myapp.Dto.CommunityDto
-import com.example.myapp.Entity.CommunityApply
 import com.example.myapp.Service.Community.CommunityService
 import com.example.myapp.Service.User.UserService
 import com.example.myapp.Util.JwtUtil
@@ -67,20 +66,7 @@ class CommunityController  @Autowired constructor(
         return communityService.getLocationBaseInquey(latitude, longitude, radius, userSeq)
     }
 
-    @RequestMapping("commuApplyUser")
-    fun commuApplyUser(@RequestBody communityDTO: CommunityDto, request:HttpServletRequest){
 
-        val commuApply : CommunityApply = CommunityApply();
-
-        commuApply.applyUserSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
-        commuApply.applyCommuSeq = communityDTO.commuSeq;
-        commuApply.applyStatus = 'Y';
-
-        communityService.addCommunityApply(commuApply)
-        communityService.updateCommunityUserTotal(communityDTO.commuSeq);
-
-
-    }
 
 
 

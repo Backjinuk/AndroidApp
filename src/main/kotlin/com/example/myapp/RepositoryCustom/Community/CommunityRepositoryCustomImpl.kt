@@ -21,14 +21,8 @@ class CommunityRepositoryCustomImpl(
         }
 
         val query = """
-            SELECT c, 
-            COALESCE(
-                (SELECT ca.applyStatus 
-                 FROM CommunityApply ca 
-                 WHERE ca.applyUserSeq = :userSeq AND ca.applyCommuSeq = c.commuSeq
-                ), 'N') AS applyStatus
+            SELECT c
             FROM Community c
-            LEFT JOIN CommunityApply ca ON ca.applyCommuSeq = c.commuSeq AND ca.applyUserSeq = :userSeq
             WHERE (6371 * acos(
                     cos(radians(:latitude)) * cos(radians(c.latitude)) *
                     cos(radians(c.longitude) - radians(:longitude)) +
@@ -41,19 +35,17 @@ class CommunityRepositoryCustomImpl(
             ))
         """
 
-        val resultList = entityManager.createQuery(query)
+        // 쿼리 실행 후 결과를 Community 타입으로 직접 변환
+        val resultList = entityManager.createQuery(query, Community::class.java)
             .setParameter("latitude", latitude)
             .setParameter("longitude", longitude)
             .setParameter("radius", radius)
-            .setParameter("userSeq", userSeq)
             .resultList
 
-        return resultList.map { result ->
-            val array = result as Array<*>
-            val community = array[0] as Community
-            val applyStatus = array[1] as Char? // Char로 캐스팅
-            commuEntityToDto(community, applyStatus)
-        }.toList()
+        // 결과 리스트를 DTO로 변환
+        return resultList.map { community ->
+            commuEntityToDto(community)
+        }
     }
 
     @Transactional

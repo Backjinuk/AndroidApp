@@ -14,4 +14,11 @@ class CommunityApplyServiceImpl @Autowired constructor(
         return communityApplyRepository.getCommunityApplyList(communityApply);
     }
 
+    override fun getCommuApplyUser(communityApplyDtoToEntity: CommunityApply): CommunityApplyDto {
+        return communityApplyRepository.getCommunityApplyUser(communityApplyDtoToEntity)
+    }
+
+    override fun addCommunityApply(commuApply: CommunityApply): Boolean {
+        return communityApplyRepository.addCommunityApply(commuApply);
+    }
 }
