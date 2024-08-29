@@ -13,7 +13,6 @@ import generateRandomString from '../../Util/generateRandomString';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {jwtDecode} from 'jwt-decode';
-import axiosPost from '../../Util/AxiosUtil';
 interface Message {
   id: string;
   chatter: string;
@@ -23,6 +22,10 @@ interface Message {
 }
 
 const ChatScreen: React.FC = ({route, navigation}: any) => {
+  const debug = false;
+  const log = (message?: any, ...optionalParams: any[]) => {
+    if (debug) console.log(message, ...optionalParams);
+  };
   const {roomId} = route.params;
   const [userSeq, setUserSeq] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
@@ -59,7 +62,9 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
         roomId: roomId,
       };
       setMessages(prevMessages => [...prevMessages, newMessage]);
-      client.current.send(JSON.stringify(newMessage));
+      client.current.send(
+        JSON.stringify({type: 'message', payload: JSON.stringify(newMessage)}),
+      );
       setInput(generateRandomString(10));
     }
   };
@@ -78,16 +83,16 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
           },
         },
       );
-      console.log(client.current);
+      log(client.current);
       client.current.onopen = () => {
-        console.log('소켓 통신 활성화');
+        log('소켓 통신 활성화');
       };
       client.current.onmessage = e => {
-        console.log('받은 데이터 : ' + e.data);
+        log('받은 데이터 : ' + e.data);
         const jsondata = JSON.parse(e.data);
-        console.log(jsondata.payload.length > 0);
+        log(jsondata.payload.length > 0);
         if (jsondata.payload.length > 0) {
-          console.log('list 출력');
+          log('list 출력');
           const messages: Message[] = [];
           jsondata.payload.forEach((data: any) => {
             const newMessage = {
@@ -101,13 +106,13 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
           });
           setMessages(prevMessages => [...prevMessages, ...messages]);
         }
-        console.log('받은 데이터 등록 완료');
+        log('받은 데이터 등록 완료');
       };
       client.current.onerror = e => {
-        console.log('에러 발생 : ' + e.message);
+        log('에러 발생 : ' + e.message);
       };
       client.current.onclose = e => {
-        console.log('소켓 통신 해제');
+        log('소켓 통신 해제');
       };
     }
   };
@@ -168,7 +173,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
             onChangeText={text => setInput(text)}
             onLayout={event => {
               const {height} = event.nativeEvent.layout;
-              console.log(height);
+              log(height);
               setInputHeight(height || 40); // 입력창의 높이 설정
             }}
             value={input}

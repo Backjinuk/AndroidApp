@@ -22,6 +22,10 @@ class ChatServiceImpl(
         return chatRepository.findByRoomId(roomId)
     }
 
+    override fun findLastChatByRoomId(roomId: String): Chat? {
+        return chatRepository.findLastChatByRoomId(roomId)
+    }
+
     override fun findByRoomId(roomId: String): ChatRoom? {
         return chatRoomRepository.findById(roomId).orElse(null)
     }
@@ -30,11 +34,15 @@ class ChatServiceImpl(
         chatRoomRepository.save(chatRoom)
     }
 
+    override fun updateChatRoom(chatRoom: ChatRoom) {
+        chatRoomRepository.save(chatRoom)
+    }
+
     override fun findPublicRoom(chatters: List<Long>, commuSeq: Long): ChatRoom? {
         return chatRoomRepository.findByCommunityAndUsers(chatters, commuSeq)
     }
 
-    override fun findMyRooms(userSeq: Long): List<ChatRoom>? {
-        return chatRoomRepository.findByUserSeq(userSeq)
+    override fun findByUserSeq(userSeq: Long, roomType:String): List<ChatRoom>? {
+        return chatRoomRepository.findByUserSeqAndRoomType(userSeq, roomType)
     }
 }

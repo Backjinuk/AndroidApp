@@ -23,7 +23,8 @@ class ChatHandler(
 
     private val logger = LoggerFactory.getLogger(ChatHandler::class.java)
     private val sessionsForCount = mutableMapOf<Long, WebSocketSession>()//userSeq, session
-    private val sessionsForRoomList = mutableMapOf<Long, WebSocketSession>()//userSeq, session
+    private val sessionsForPublicRoomList = mutableMapOf<Long, WebSocketSession>()//userSeq, session
+    private val sessionsForPrivateRoomList = mutableMapOf<Long, WebSocketSession>()//userSeq, session
     private val sessionsForChat = mutableMapOf<Long, WebSocketSession>()//userSeq, session
     private val rooms = mutableMapOf<String, ArrayList<WebSocketSession>>()//roomId, sessions
     private val mapper = ObjectMapper()
@@ -53,37 +54,60 @@ class ChatHandler(
             "chatRoomList"->{
                 logger.info("Connected to session: chatRoomList")
                 val userSeq = inputMap["userSeq"]!!.toLong()
+                val roomType = inputMap["roomType"]!!
                 val returnMap = mutableMapOf<String, Any?>()
                 returnMap["type"] = "rooms"
-                returnMap["payload"] = chatService.findMyRooms(userSeq)
+                returnMap["payload"] = chatController.findMyChatRooms(userSeq, roomType)
                 session.sendMessage(messageFrom(returnMap))
-                sessionsForRoomList[userSeq] = session
+                when(roomType){
+                    "public"->sessionsForPublicRoomList[userSeq] = session
+                    "private"->sessionsForPrivateRoomList[userSeq] = session
+                }
             }
         }
     }
 
-    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        logger.info("Received message: ${message.payload}")
-        val map = mapper.readValue<Map<String, String>>(content = message.payload)
-        val chatter = map["chatter"]?.toLong()
-        val chatterId = map["chatterId"]
-        val content = map["content"]
-        val roomId = map["roomId"]!!
-        if(chatService.findByRoomId(roomId)==null){
-            chatController.saveTempRoom(roomId)
-        }
-        val chat = Chat.Builder().setChatter(chatter!!).setChatterId(chatterId!!).setContent(content!!).setRoomId(roomId!!).build()
-        logger.info("Received message: $chat")
-        chatService.chatting(chat)
-        val returnMap = mutableMapOf<String, Any>()
-        returnMap["type"] = "message"
-        returnMap["payload"] = listOf(chat)
-        logger.info("Received message: $chat")
-        val room = rooms[roomId]!!
-        for(roomSession in room){
-            if(roomSession == session)continue
-            if(roomSession.isOpen) roomSession.sendMessage(messageFrom(returnMap))
-            else room.remove(roomSession)
+    override fun handleTextMessage(session: WebSocketSession, data: TextMessage) {
+        logger.info("Received message: ${data.payload}")
+        val inputMap = mapper.readValue<Map<String, Any?>>(content = data.payload)
+        when(inputMap["type"]){
+            "message"->{
+                val map = mapper.readValue<Map<String, String>>(content = "${inputMap["payload"]}")
+                val chatter = map["chatter"]?.toLong()
+                val chatterId = map["chatterId"]
+                val content = map["content"]
+                val roomId = map["roomId"]!!
+                var chatRoom = chatService.findByRoomId(roomId)
+                if(chatRoom==null){
+                    chatRoom = chatController.saveTempRoom(roomId)
+                }
+                val chat = Chat.Builder().setChatter(chatter!!).setChatterId(chatterId!!).setContent(content!!).setRoomId(roomId!!).build()
+                chatRoom.chatTime = chat.chatTime
+                chatRoom.content = chat.content
+                chatService.updateChatRoom(chatRoom)
+                chatService.chatting(chat)
+                logger.info("Received message: $chat")
+                val returnMap = mutableMapOf<String, Any>()
+                returnMap["type"] = "message"
+                returnMap["payload"] = listOf(chat)
+                logger.info("Received message: $chat")
+                val room = rooms[roomId]!!
+                for(roomSession in room){
+                    if(roomSession == session)continue
+                    if(roomSession.isOpen) roomSession.sendMessage(messageFrom(returnMap))
+                    else room.remove(roomSession)
+                }
+
+                returnMap["payload"] = listOf(chatRoom)
+                var sessionsForRoomList = sessionsForPublicRoomList
+                if(chatRoom.type == "private") sessionsForRoomList = sessionsForPrivateRoomList
+                for(userSeq in chatRoom.chatters){
+                    sessionsForRoomList[userSeq]?.sendMessage(messageFrom(returnMap))
+                }
+            }
+            "read"->{
+
+            }
         }
     }
 
@@ -102,7 +126,8 @@ class ChatHandler(
             }
             "chatRoomList"->{
                 val userSeq = inputMap["userSeq"]!!.toLong()
-                sessionsForRoomList.remove(userSeq)
+                sessionsForPublicRoomList.remove(userSeq)
+                sessionsForPrivateRoomList.remove(userSeq)
             }
         }
 

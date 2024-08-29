@@ -1,34 +1,53 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button, FlatList, StyleSheet, Text, View} from 'react-native';
-import {RNG} from '../../Util/generateRandomString';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from 'jwt-decode';
 import AddChatButton from './AddChatButton';
-import {TextInput} from 'react-native-gesture-handler';
 import Config from 'react-native-config';
 
 interface ChatRoom {
   id: string;
+  chatTime: string;
+  chatters: string[];
+  type: string;
 }
 
 export default function ChatRoomList({navigation}: any) {
+  const debug = false;
+  const log = (message?: any, ...optionalParams: any[]) => {
+    if (debug) console.log(message, ...optionalParams);
+  };
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
-  const [userSeq, setUserSeq] = useState<number>(0);
-  const [seleted, setSelected] = useState<String>('public');
+  const [selected, setPrivateSelected] = useState<String>('public');
+  const setSelected = (type: string) => {
+    setPrivateSelected(type);
+  };
+  const updateRooms = (newRooms: ChatRoom[]) => {
+    setRooms(prevRooms => {
+      const roomIds: string[] = newRooms.map(room => room.id);
+
+      const updatedRooms = newRooms.concat(
+        prevRooms.filter(room => !roomIds.includes(room.id)),
+      );
+
+      updatedRooms.sort((comp1, comp2) => {
+        const date1 = new Date(comp1.chatTime).getTime();
+        const date2 = new Date(comp2.chatTime).getTime();
+
+        return date2 - date1;
+      });
+
+      return updatedRooms;
+    });
+  };
   const wsurl = Config.CHAT_URL;
   const client = useRef<WebSocket>();
   useEffect(() => {
-    getuserSeq();
     connect();
     return () => {
       disconnect();
     };
-  }, []);
-  const getuserSeq = async () => {
-    const accessToken = await AsyncStorage.getItem('AccessToken');
-    const data: any = jwtDecode(accessToken!);
-    setUserSeq(data.userSeq);
-  };
+  }, [selected]);
 
   const connect = async () => {
     if (wsurl) {
@@ -36,7 +55,8 @@ export default function ChatRoomList({navigation}: any) {
       const accessTokenData: any = jwtDecode(accessToken!);
       const refreshToken = await AsyncStorage.getItem('RefreshToken');
       client.current = new WebSocket(
-        wsurl + `?type=chatRoomList&userSeq=${accessTokenData.userSeq}`,
+        wsurl +
+          `?type=chatRoomList&userSeq=${accessTokenData.userSeq}&roomType=${selected}`,
         null,
         {
           headers: {
@@ -45,36 +65,48 @@ export default function ChatRoomList({navigation}: any) {
           },
         },
       );
-      console.log(client.current);
+      log(client.current);
       client.current.onopen = () => {
-        console.log('소켓 통신 활성화');
+        log('소켓 통신 활성화');
       };
       client.current.onmessage = e => {
-        console.log('받은 데이터 : ' + e.data);
+        log('받은 데이터 : ' + e.data);
         const jsondata = JSON.parse(e.data);
-        console.log(jsondata.payload.length > 0);
-        if (jsondata.payload.length > 0) {
-          console.log('list 출력');
-          const rooms: any[] = [];
-          jsondata.payload.forEach((data: any) => {
-            const newRoom = {
-              id: data.id,
-              chatters: data.chatters,
-              commuSeq: data.commuSeq,
-              type: data.type,
-            };
-            rooms.push(newRoom);
-          });
-          setRooms(prevRooms => [...prevRooms, ...rooms]);
+        switch (jsondata.type) {
+          case 'rooms':
+            onRooms(jsondata.payload);
+            break;
+          case 'message':
+            onRooms(jsondata.payload);
+            break;
         }
-        console.log('받은 데이터 등록 완료');
+        log('받은 데이터 등록 완료');
       };
       client.current.onerror = e => {
-        console.log('에러 발생 : ' + e.message);
+        log('에러 발생 : ' + e.message);
       };
       client.current.onclose = e => {
-        console.log('소켓 통신 해제');
+        log('소켓 통신 해제');
       };
+    }
+  };
+
+  const onRooms = (datas: any[]) => {
+    if (datas.length > 0) {
+      log('list 출력');
+      const newRooms: ChatRoom[] = [];
+      datas.forEach((data: any) => {
+        const newRoom: any = {
+          id: data.id,
+          chatTime: data.chatTime,
+          content: data.content,
+          chatters: data.chatters,
+          commuSeq: data.commuSeq,
+          type: data.type,
+        };
+        newRooms.push(newRoom);
+      });
+      updateRooms(newRooms);
     }
   };
 
@@ -98,7 +130,7 @@ export default function ChatRoomList({navigation}: any) {
         <View style={{flex: 1}}>
           <Button
             title="public"
-            color={seleted == 'public' ? '' : '#f194ff'}
+            color={selected == 'public' ? '' : '#f194ff'}
             onPress={() => {
               setSelected('public');
             }}
@@ -107,33 +139,33 @@ export default function ChatRoomList({navigation}: any) {
         <View style={{flex: 1}}>
           <Button
             title="private"
-            color={seleted == 'private' ? '' : '#f194ff'}
+            color={selected == 'private' ? '' : '#f194ff'}
             onPress={() => {
               setSelected('private');
             }}
           />
         </View>
       </View>
-      <Button
-        title="room12"
-        onPress={() => {
-          navigation.navigate('ChatScreen', {roomId: 'room12', userSeq});
-        }}
-      />
       <FlatList
         data={rooms}
         keyExtractor={item => item.id}
         renderItem={({item}) => (
-          <Button
-            title={item.id}
-            onPress={() => {
-              navigation.navigate('ChatScreen', {roomId: item.id});
-            }}
-          />
+          <View style={{marginBottom: 5}}>
+            <Button
+              title={`roomId : ${item.id} \n\n chatters : ${item.chatters} \n\n chatTime : ${item.chatTime} \n\n type : ${item.type}`}
+              onPress={() => {
+                navigation.navigate('ChatScreen', {roomId: item.id});
+              }}
+            />
+          </View>
         )}
       />
-      <Button title="token" onPress={getuserSeq} />
-      <AddChatButton navigation={navigation} />
+      <AddChatButton navigation={navigation} userSeq={2} commuSeq={1} />
+      <AddChatButton navigation={navigation} userSeq={3} commuSeq={1} />
+      <AddChatButton navigation={navigation} userSeq={4} commuSeq={1} />
+      <AddChatButton navigation={navigation} userSeq={2} />
+      <AddChatButton navigation={navigation} userSeq={3} />
+      <AddChatButton navigation={navigation} userSeq={4} />
       <Button title="Reset" onPress={reset} />
     </View>
   );

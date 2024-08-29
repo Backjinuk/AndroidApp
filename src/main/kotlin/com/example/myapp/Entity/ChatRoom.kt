@@ -3,6 +3,7 @@ package com.example.myapp.Entity
 import jakarta.persistence.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.Field
+import java.time.LocalDateTime
 
 @Document
 class ChatRoom private constructor(
@@ -17,6 +18,8 @@ class ChatRoom private constructor(
 
     @Id
     var id: String? = null
+    var content : String? = null
+    var chatTime : LocalDateTime? = null
 
     class Builder {
         private var type: String = ""

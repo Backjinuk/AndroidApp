@@ -2,15 +2,22 @@ import React, {useState} from 'react';
 import {Button} from 'react-native';
 import {addChatRoomForOneToOne} from './chatUtils';
 
-export default function AddChatButton({navigation}: any) {
+export default function AddChatButton({navigation, commuSeq, userSeq}: any) {
+  const isPrivate = commuSeq === undefined;
   const handleAddChat = async () => {
-    const roomId = await addChatRoomForOneToOne(2, 1);
+    const roomId = isPrivate
+      ? await addChatRoomForOneToOne(userSeq)
+      : await addChatRoomForOneToOne(userSeq, commuSeq);
     navigation.navigate('ChatScreen', {roomId});
   };
 
   return (
     <Button
-      title="addChat(모임번호:1, 상대유저:user02)"
+      title={
+        isPrivate
+          ? `addChat(상대유저:user0${userSeq})`
+          : `addChat(모임번호:${commuSeq}, 상대유저:user0${userSeq})`
+      }
       onPress={handleAddChat}
     />
   );
