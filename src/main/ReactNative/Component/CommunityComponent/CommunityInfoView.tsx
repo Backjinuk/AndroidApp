@@ -6,7 +6,7 @@ import UserProfileModal from "./UserProfileModal.tsx";
 import CommunityAddForm from "./CommunityAddForm.tsx";
 
 export default function CommunityInfoView(props: any) {
-    const [marker, setMaker] = useState<Community | null>(null);
+    const [marker, setMarker] = useState<Community | null>(null);
     const [openModal, setOpenModal] = useState(false);
     const [subscribe, setSubscribe] = useState<Subscribe | null>(null);
     const [communityApply, setCommunityApply] = useState<CommunityApply | null>(null);
@@ -14,37 +14,43 @@ export default function CommunityInfoView(props: any) {
 
     // API 호출하여 communityApply 상태를 설정
     const getCommuApplyUser = () => {
-        if (marker) {
-            axiosPost.post("/communityApply/getCommuApplyUser", JSON.stringify(marker))
-                .then((res) => {
-                    setCommunityApply(res.data.applyStatus);
-                })
-                .catch((err) => {
-                    console.error("Error fetching community apply data:", err);
-                });
-        }
+
+        axiosPost.post("/communityApply/getCommuApplyUser", JSON.stringify(marker))
+            .then((res) => {
+                setCommunityApply(res.data.applyStatus);
+            })
+            .catch((err) => {
+                console.error("Error fetching community apply data:", err);
+            });
+
     };
 
     // API 호출하여 subscribe 상태를 설정
     const getSubscribe = () => {
-        if (props.marker) {
-            axiosPost.post("/subscribe/getSubscribe", JSON.stringify({
-                'subscriberOwnerUserSeq': props.marker.commuWrite.userSeq
-            }))
-                .then(res => {
-                    setSubscribe(res.data);
-                })
-                .catch(err => {
-                    console.error("Error fetching subscribe data:", err);
-                });
-        }
+        axiosPost.post("/subscribe/getSubscribe", JSON.stringify({
+            'subscriberOwnerUserSeq': props.marker.commuWrite.userSeq
+        }))
+        .then(res => {
+            setSubscribe(res.data);
+        })
+        .catch(err => {
+            console.error("Error fetching subscribe data:", err);
+        });
     };
 
+    const getCommunityInfo = () => {
+        axiosPost.post("/commu/getCommunityInfo", JSON.stringify({
+            "commuSeq" : props.marker.commuSeq
+        })).then(  res => {
+            console.log(res.data)
+        })
+    }
+
     useEffect(() => {
-        setMaker(props.marker);
+        setMarker(props.marker);
+        getCommunityInfo();
         getCommuApplyUser();
-        getSubscribe();
-    }, [props.marker, rander]);
+    }, [props.marker]);
 
     if (!marker ||  communityApply == null) {
         return <Text>Loading...</Text>; // 로딩 중 표시
@@ -53,11 +59,8 @@ export default function CommunityInfoView(props: any) {
     const commuApplyUser = () => {
         axiosPost.post("/communityApply/commuApplyUser", JSON.stringify(marker))
             .then((res) => {
-
+                console.log(res.data.applyChack)
                 props.setCommuPosition();
-                if(res.data.applyChack != null){
-                    setRander(!rander)
-                }
 
             })
             .catch((err) => {

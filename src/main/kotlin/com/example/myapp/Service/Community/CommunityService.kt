@@ -13,5 +13,7 @@ interface CommunityService {
 
     fun updateCommunityUserTotal(commuSeq: Long)
 
+    fun getCommunityInfo(communityDTO: CommunityDto): MutableMap<String, Any>
+
 
 }

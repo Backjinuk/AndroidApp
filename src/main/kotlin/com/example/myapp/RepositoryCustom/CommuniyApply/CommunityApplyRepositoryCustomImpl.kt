@@ -2,6 +2,7 @@ package com.example.myapp.RepositoryCustom.CommunityApply
 
 import com.example.myapp.Dto.CommunityApplyDto
 import com.example.myapp.Entity.CommunityApply
+import com.example.myapp.Entity.QCommunity
 import com.example.myapp.Entity.QCommunityApply
 import com.example.myapp.RepositoryCustom.CommuniyApply.CommunityApplyRepositoryCustom
 import com.example.myapp.Util.ModelMapperUtil.Companion.communityApplyEntityToDto
@@ -19,6 +20,8 @@ class CommunityApplyRepositoryCustomImpl(
 
     // Q 클래스 인스턴스 생성
     val qCommunityApply = QCommunityApply.communityApply
+
+    val qCommunity = QCommunity.community
 
     @Transactional(readOnly = true)
     override fun getCommunityApplyList(communityApply: CommunityApply): List<CommunityApplyDto> {
@@ -54,8 +57,7 @@ class CommunityApplyRepositoryCustomImpl(
     @Transactional
     override fun addCommunityApply(commuApply: CommunityApply): Boolean {
 
-        // 초기 상태 설정
-        var applyCheck: Boolean = false
+
 
         // 기존 레코드 확인
         val result = queryFactory
@@ -65,9 +67,17 @@ class CommunityApplyRepositoryCustomImpl(
                     .and(qCommunityApply.applyCommuSeq.eq(commuApply.applyCommuSeq))
             ).fetchOne()
 
-        if (result != null) {
+        // 변수 초기화 및 설정
+        val (userCount, applyStatus, applyCheck) = if (result != null) {
+            val updatedStatus = if (result.applyStatus == 'Y') 'N' else 'Y'
+            val countChange = if (result.applyStatus == 'Y') -1 else 1
+            val applyCheck = result.applyStatus != 'Y'
+            Triple(countChange, updatedStatus, applyCheck)
+        } else {
+            Triple(1, 'Y', true)
+        }
 
-            val applyStatus = if (result.applyStatus == 'Y') 'N' else 'Y'
+        if (result != null) {
 
             // 레코드가 존재하면 업데이트
             queryFactory
@@ -79,9 +89,6 @@ class CommunityApplyRepositoryCustomImpl(
                         .and(qCommunityApply.applyCommuSeq.eq(commuApply.applyCommuSeq))
                 )
                 .execute()
-
-
-            applyCheck = false
 
         } else {
             // 레코드가 존재하지 않으면 삽입
@@ -102,9 +109,15 @@ class CommunityApplyRepositoryCustomImpl(
                     'Y' // Char 사용
                 )
                 .execute()
-
-            applyCheck = true
         }
+
+        println("userCount = ${userCount}")
+
+        queryFactory
+            .update(qCommunity)
+            .set(qCommunity.userCount, qCommunity.userCount.add(userCount))
+            .where(qCommunity.commuSeq.eq(commuApply.applyCommuSeq))
+            .execute()
 
         return applyCheck
     }

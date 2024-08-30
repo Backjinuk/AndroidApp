@@ -46,8 +46,6 @@ class CommunityApplyController @Autowired constructor(
 
         val applyChack : Boolean =  communityApplyService.addCommunityApply(commuApply)
 
-        if(applyChack) communityService.updateCommunityUserTotal(communityDTO.commuSeq);
-
         return mutableMapOf("applyChack" to applyChack)
 
     }

@@ -26,5 +26,7 @@ class CommunityServiceImpl(
         communityRepository.updateCommunityUserTotal(commuSeq)
     }
 
-
+    override fun getCommunityInfo(communityDTO: CommunityDto): MutableMap<String, Any> {
+        return communityRepository.getCommunityInfo(communityDTO)
+    }
 }

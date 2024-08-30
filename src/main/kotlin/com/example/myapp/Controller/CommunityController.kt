@@ -57,13 +57,32 @@ class CommunityController  @Autowired constructor(
 
         // 'myposition' Map에서 'latitude', 'longitude', 'radius' 값을 추출합니다.
         val latitude  : Double = myPosition?.get("latitude") ?: throw IllegalArgumentException("Latitude is missing")
-        val longitude : Double = myPosition?.get("longitude") ?: throw IllegalArgumentException("Longitude is missing")
-        val radius    : Double = myPosition?.get("radius") ?: throw IllegalArgumentException("Radius is missing")
+        val longitude : Double = myPosition["longitude"] ?: throw IllegalArgumentException("Longitude is missing")
+        val radius    : Double = myPosition["radius"] ?: throw IllegalArgumentException("Radius is missing")
 
         val userSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
 
 
         return communityService.getLocationBaseInquey(latitude, longitude, radius, userSeq)
+    }
+
+    @RequestMapping("getCommunityInfo")
+    fun getCommunityInfo(@RequestBody communityDTO: CommunityDto, request: HttpServletRequest): MutableMap<String, Any?> {
+
+        communityDTO.commuWrite.userSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
+
+        val map : MutableMap<String, Any> = communityService.getCommunityInfo(communityDTO);
+
+        println("map[\"community\"] = ${map["community"]}")
+        println("map[\"applyStatus\"] = ${map["applyStatus"]}")
+
+
+        return mutableMapOf(
+                "community" to map["community"],
+                "applyStatus" to map["applyStatus"]
+            )
+
+
     }
 
 
