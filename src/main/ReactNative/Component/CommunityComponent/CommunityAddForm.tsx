@@ -5,7 +5,7 @@ import DatePicker from "react-native-date-picker";
 import axiosPost from "../../Util/AxiosUtil.ts";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
+import {RootStackParamList} from "../../Types/RootStackParamList.ts";
 
 export default function CommunityAddForm(props: any) {
 
@@ -43,13 +43,6 @@ export default function CommunityAddForm(props: any) {
     })
 
 
-    const addMoim = () => {
-        const dummies = [...props.dummies, props.position];
-        props.setDummies(dummies);
-        props.closeAddForm();
-        //console.log(dummies);
-    };
-
     const addCommunity = () => {
         axiosPost.post("/commu/addCommunity", JSON.stringify({
                 commuTitle,
@@ -61,11 +54,10 @@ export default function CommunityAddForm(props: any) {
                 totalUserCount: parseInt(totalUserCount, 10) // Convert to integer
             })
         ).then((res) => {
-
             if(res.data){
                 Alert.alert("등록되었습니다.")
-                props.setState('find');
                 props.setCommuPosition();
+                props.closeAddForm();
             }
         })
     }

@@ -61,17 +61,19 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
     //Kotlin JDSL
-    val jdslVersion = "2.2.1.RELEASE"
-    implementation("org.hibernate:hibernate-core:6.2.4.Final")
-    implementation("com.linecorp.kotlin-jdsl:spring-data-kotlin-jdsl-starter-jakarta:$jdslVersion")
-    implementation("com.linecorp.kotlin-jdsl:hibernate-kotlin-jdsl-jakarta:$jdslVersion")
+//    val jdslVersion = "2.2.1.RELEASE"
+//    implementation("org.hibernate:hibernate-core:6.2.4.Final")
+//    implementation("com.linecorp.kotlin-jdsl:spring-data-kotlin-jdsl-starter-jakarta:$jdslVersion")
+//    implementation("com.linecorp.kotlin-jdsl:hibernate-kotlin-jdsl-jakarta:$jdslVersion")
 
-//     val queryDslVersion = "5.0.0"
-//    implementation("com.querydsl:querydsl-core:$queryDslVersion")
-//    implementation("com.querydsl:querydsl-jpa:$queryDslVersion:jakarta") // JPA Jakarta 버전
-//
-//    // Annotation Processor 설정 (Jakarta 버전 사용 시)
-//    kapt("com.querydsl:querydsl-apt:$queryDslVersion:jakarta") // `kapt`를 사용해 QueryDSL QClass 생성
+     val queryDslVersion = "5.0.0"
+    implementation("com.querydsl:querydsl-core:$queryDslVersion")
+    implementation("com.querydsl:querydsl-jpa:$queryDslVersion:jakarta") // JPA Jakarta 버전
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+
+    // Annotation Processor 설정 (Jakarta 버전 사용 시)
+    kapt("com.querydsl:querydsl-apt:$queryDslVersion:jakarta") // `kapt`를 사용해 QueryDSL QClass 생성
 
      // Spy settings
      implementation("p6spy:p6spy:3.9.1")

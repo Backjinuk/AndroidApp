@@ -25,10 +25,6 @@ class SubscribeController @Autowired constructor(
     fun addSubscribe(@RequestBody subscribeDto: SubscribeDto, request: HttpServletRequest) : Boolean{
         subscribeDto.subscriberUserSeq = jwtUtil.requestToUserSeq(request)
         val saveCheck: Boolean =  subscribeService.addSubscribe(subscribeDtoToEntity(subscribeDto))
-
-
-        println("saveCheck = ${saveCheck}")
-
         return saveCheck;
     }
 
@@ -41,5 +37,26 @@ class SubscribeController @Autowired constructor(
         return subscribe?.let { subscribeEntityToDto(it) };
 
     }
+
+    @RequestMapping("getSubscribeList")
+    fun getSubscribeList(request: HttpServletRequest): MutableMap<String, List<SubscribeDto>> {
+        // 구독 정보를 담을 DTO를 생성합니다.
+        val subscribeDto = SubscribeDto()
+
+        // JWT를 통해 사용자 ID를 설정합니다.
+        subscribeDto.subscriberUserSeq = jwtUtil.requestToUserSeq(request)
+
+        // 구독 리스트를 가져옵니다.
+        val subscribeDtoList: List<SubscribeDto> = subscribeService.getSubscribeList(subscribeDtoToEntity(subscribeDto))
+
+        // Map을 초기화하고 데이터를 설정합니다.
+        val mutableMap: MutableMap<String, List<SubscribeDto>> = mutableMapOf(
+            "subscriberDtoList" to subscribeDtoList // 'to' 키워드를 사용해 Map에 키-값 쌍을 추가합니다.
+        )
+
+        return mutableMap
+    }
+
+
 
 }

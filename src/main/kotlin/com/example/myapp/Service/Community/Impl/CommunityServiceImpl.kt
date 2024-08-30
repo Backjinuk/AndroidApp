@@ -2,7 +2,6 @@ package com.example.myapp.Service.Community.Impl
 
 import com.example.myapp.Dto.CommunityDto
 import com.example.myapp.Entity.Community
-import com.example.myapp.Entity.CommunityApply
 import com.example.myapp.Repository.Community.CommunityApplyRepository
 import com.example.myapp.Repository.Community.CommunityRepository
 import com.example.myapp.Service.Community.CommunityService
@@ -22,12 +21,12 @@ class CommunityServiceImpl(
         return communityRepository.getLocationBaseInquey(latitude, longitude, radius, userSeq)
     }
 
-    override fun addCommunityApply(commuApply: CommunityApply) {
-        communityApplyRepository.save(commuApply)
-    }
 
     override fun updateCommunityUserTotal(commuSeq: Long) {
         communityRepository.updateCommunityUserTotal(commuSeq)
     }
 
+    override fun getCommunityInfo(communityDTO: CommunityDto): MutableMap<String, Any> {
+        return communityRepository.getCommunityInfo(communityDTO)
+    }
 }

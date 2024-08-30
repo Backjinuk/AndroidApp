@@ -1,7 +1,6 @@
 package com.example.myapp.Controller
 
 import com.example.myapp.Dto.CommunityDto
-import com.example.myapp.Entity.CommunityApply
 import com.example.myapp.Service.Community.CommunityService
 import com.example.myapp.Service.User.UserService
 import com.example.myapp.Util.JwtUtil
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/commu/")
-class CommunityContoller  @Autowired constructor(
+class CommunityController  @Autowired constructor(
     private var communityService:CommunityService,
     private var userService: UserService,
     private var jwtUtil: JwtUtil
@@ -58,8 +57,8 @@ class CommunityContoller  @Autowired constructor(
 
         // 'myposition' Map에서 'latitude', 'longitude', 'radius' 값을 추출합니다.
         val latitude  : Double = myPosition?.get("latitude") ?: throw IllegalArgumentException("Latitude is missing")
-        val longitude : Double = myPosition?.get("longitude") ?: throw IllegalArgumentException("Longitude is missing")
-        val radius    : Double = myPosition?.get("radius") ?: throw IllegalArgumentException("Radius is missing")
+        val longitude : Double = myPosition["longitude"] ?: throw IllegalArgumentException("Longitude is missing")
+        val radius    : Double = myPosition["radius"] ?: throw IllegalArgumentException("Radius is missing")
 
         val userSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
 
@@ -67,20 +66,26 @@ class CommunityContoller  @Autowired constructor(
         return communityService.getLocationBaseInquey(latitude, longitude, radius, userSeq)
     }
 
-    @RequestMapping("commuApplyUser")
-    fun commuApplyUser(@RequestBody communityDTO: CommunityDto, request:HttpServletRequest){
+    @RequestMapping("getCommunityInfo")
+    fun getCommunityInfo(@RequestBody communityDTO: CommunityDto, request: HttpServletRequest): MutableMap<String, Any?> {
 
-        val commuApply : CommunityApply = CommunityApply();
+        communityDTO.commuWrite.userSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
 
-        commuApply.applyUserSeq = jwtUtil.JwtTokenGetUserSeq(mapOf("AccessToken" to request.getHeader("AccessToken")))
-        commuApply.applyCommuSeq = communityDTO.commuSeq;
-        commuApply.applyStatus = 'Y';
+        val map : MutableMap<String, Any> = communityService.getCommunityInfo(communityDTO);
 
-        communityService.addCommunityApply(commuApply)
-        communityService.updateCommunityUserTotal(communityDTO.commuSeq);
+        println("map[\"community\"] = ${map["community"]}")
+        println("map[\"applyStatus\"] = ${map["applyStatus"]}")
+
+
+        return mutableMapOf(
+                "community" to map["community"],
+                "applyStatus" to map["applyStatus"]
+            )
 
 
     }
+
+
 
 
 

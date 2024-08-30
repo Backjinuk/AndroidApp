@@ -4,7 +4,7 @@ import LoginMain from './Component/LoginComponent/LoginMain.tsx';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LoginForm from './Component/LoginComponent/LogionForm.tsx';
-import {RootStackParamList} from './CommonTypes/RootStackParamList.ts';
+import {RootStackParamList} from './Types/RootStackParamList.ts';
 import MapMain from './Component/MapCompoent/MapMain.tsx';
 import ChatScreen from './Component/ChatComponent/ChatScreen.tsx';
 import TabNavigation from "./Component/TabComponent/TabNavigation.tsx";

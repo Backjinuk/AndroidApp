@@ -3,7 +3,7 @@ import {Alert, Image, Text, TextInput, TouchableOpacity, View} from "react-nativ
 import React, {useEffect, useState} from "react";
 import {useNavigation, useNavigationState} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../CommonTypes/RootStackParamList.ts";
+import {RootStackParamList} from "../../Types/RootStackParamList.ts";
 import Config from "react-native-config";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';

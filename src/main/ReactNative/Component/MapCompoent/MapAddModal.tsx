@@ -2,6 +2,7 @@ import React from 'react';
 import {Button, Modal, Text} from 'react-native';
 
 export default function MapAddModal(props: any) {
+
   const addMoim = () => {
     const dummies = [...props.dummies, props.position];
     props.setDummies(dummies);

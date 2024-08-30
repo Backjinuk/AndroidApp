@@ -65,8 +65,12 @@ class UserController {
 
         var loggedInUser: UserDto? = userService?.userLogin(userDtoToEntity(userDto))!!;
 
-        //JWT에 있는 정보가 실제 회원의 정보와 같은지 검증
-        var jwtUserSeq = jwtUtil?.requestToUserSeq(request);
+        var jwtUserSeq : Long ?= 0;
+        if(!mutableMap["AccessToken"].equals("") || !mutableMap["RefreshToken"].equals("")){
+            //JWT에 있는 정보가 실제 회원의 정보와 같은지 검증
+            jwtUserSeq = jwtUtil?.requestToUserSeq(request);
+        }
+
 
         if(loggedInUser?.userSeq != jwtUserSeq){
             log.info("JWT와 회원의 정보가 다름 JWT초기화 진행")

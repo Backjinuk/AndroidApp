@@ -5,7 +5,7 @@ import Config from "react-native-config";
 import axios from "axios";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {RootStackParamList} from "../../../CommonTypes/RootStackParamList.ts";
+import {RootStackParamList} from "../../../Types/RootStackParamList.ts";
 import {jwtDecode} from "jwt-decode";
 
 // @ts-ignore

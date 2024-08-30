@@ -8,7 +8,9 @@ class SubscribeDto {
 
     var subscriberOwnerUserSeq : Long ?= 0
 
-    var subscriberUserSeq: Long ?= 0
+    var subscriberUserSeq: Long ?= 0;
+
+    var subscribeUser : UserDto ?= UserDto();
 
     var subscribeStatus:Char ?= null
 

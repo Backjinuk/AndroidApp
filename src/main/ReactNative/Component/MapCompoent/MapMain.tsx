@@ -23,7 +23,7 @@ export default function MapMain() {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const snapPoints = useMemo(() => ['23%', '50%', '90%'], []);
 
-    const debug = true;
+    const debug = false;
     const log = (message?: any, ...optionalParams: any[]) => {
         if (debug) console.log(message, ...optionalParams);
     };
@@ -45,7 +45,8 @@ export default function MapMain() {
     useEffect(() => {
         setOpenModal(false);
         setCommuPosition();
-    }, []);
+
+    }, [state]);
 
     const setCommuPosition = async () => {
         try {
@@ -382,14 +383,16 @@ export default function MapMain() {
         bottomSheetModalRef.current?.present();
     }, []);
 
-    // callback when the BottomSheetModal changes
-    const handleSheetChanges = useCallback((index: number) => {
-        console.log('handleSheetChanges', index);
-    }, []);
-
     const handleClosePress = useCallback(() => {
         bottomSheetModalRef.current?.close();
     }, []);
+
+    // callback when the BottomSheetModal changes
+    const handleSheetChanges = useCallback((index: number) => {
+        //console.log('handleSheetChanges', index);
+    }, []);
+
+
 
 
     return (
@@ -406,6 +409,7 @@ export default function MapMain() {
                     findMoimByCamera={findMoimByCamera}
                 />
             </View>
+
 
             <NaverMapView
                 style={{flex: 1}}
