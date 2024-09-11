@@ -1,6 +1,7 @@
 package com.example.myapp.Controller;
 
 import com.example.myapp.Dto.ChatRoomDto
+import com.example.myapp.Entity.Chat
 import com.example.myapp.Entity.ChatRoom
 import com.example.myapp.Service.chat.ChatService;
 import com.example.myapp.Util.JwtUtil
@@ -66,6 +67,10 @@ class ChatController @Autowired constructor(
             roomDtoList.add(chatRoomDto)
         }
         return roomDtoList
+    }
+
+    fun readMessage(userSeq:Long, roomId:String):List<Chat>{
+        return chatService.readMessage(userSeq, roomId)
     }
 
     @RequestMapping("test")

@@ -9,27 +9,38 @@ import {
   StyleSheet,
 } from 'react-native';
 import Config from 'react-native-config';
-import generateRandomString from '../../Util/generateRandomString';
+import generateRandomString, {
+  randomUUID,
+} from '../../Util/generateRandomString';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {jwtDecode} from 'jwt-decode';
 interface Message {
   id: string;
-  chatter: string;
+  chatter: number;
   chatterId: string;
   content: string;
   roomId: string;
 }
+interface MessageState {
+  ids: string[];
+  datas: {id: string; data: Message}[];
+}
+
+const emptyMessageState = {
+  ids: [],
+  datas: [],
+};
 
 const ChatScreen: React.FC = ({route, navigation}: any) => {
-  const debug = false;
+  const debug = true;
   const log = (message?: any, ...optionalParams: any[]) => {
     if (debug) console.log(message, ...optionalParams);
   };
-  const {roomId} = route.params;
-  const [userSeq, setUserSeq] = useState<string>('');
+  const {roomId, totalChatters, chatter} = route.params;
+  const [userSeq, setUserSeq] = useState<number>(chatter);
   const [userId, setUserId] = useState<string>('');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageState>(emptyMessageState);
   const [inputHeight, setInputHeight] = useState(40);
   const [input, setInput] = useState('1');
   const wsurl = Config.CHAT_URL;
@@ -52,21 +63,103 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
     setUserId(data.userId);
   };
 
+  const updateMessage = (messages: Message[]) => {
+    setMessages(prevMessages => {
+      let nextMessageState = {...prevMessages};
+      messages.forEach(message => {
+        if (nextMessageState.ids.includes(message.id)) {
+          const index = nextMessageState.datas.findIndex(
+            data => data.id === message.id,
+          );
+          nextMessageState.datas[index].data = message;
+        } else {
+          nextMessageState.ids.push(message.id);
+          nextMessageState.datas.push({
+            id: message.id,
+            data: message,
+          });
+        }
+      });
+      return nextMessageState;
+    });
+  };
+
   const sendMessage = () => {
     if (input.trim() && client.current) {
-      const newMessage: Message = {
-        id: generateRandomString(25),
+      const newMessage = {
+        id: randomUUID(),
         chatter: userSeq,
         chatterId: userId,
         content: input,
         roomId: roomId,
+        unread: totalChatters - 1,
       };
-      setMessages(prevMessages => [...prevMessages, newMessage]);
+      setMessages(prevMessages => {
+        let nextMessageState = {...prevMessages};
+        nextMessageState.ids.push(newMessage.id);
+        nextMessageState.datas.push({
+          id: newMessage.id,
+          data: newMessage,
+        });
+        return nextMessageState;
+      });
       client.current.send(
         JSON.stringify({type: 'message', payload: JSON.stringify(newMessage)}),
       );
       setInput(generateRandomString(10));
     }
+  };
+
+  const readMessage = () => {
+    if (client.current) {
+      const readInfo = {
+        reader: userSeq,
+        roomId: roomId,
+      };
+      client.current.send(
+        JSON.stringify({
+          type: 'read',
+          payload: JSON.stringify(readInfo),
+        }),
+      );
+    }
+  };
+
+  const onMessage = (payload: any) => {
+    let readCheck = false;
+    if (payload.length > 0) {
+      log('list 출력');
+      const messages: Message[] = [];
+      payload.forEach((data: any) => {
+        let unread = data.unread;
+        log('?????');
+        log('?????');
+        log('?????');
+        log('?????');
+        log(userSeq);
+        log(data.unread);
+        log(data.unread.includes(userSeq));
+        log('?????');
+        log('?????');
+        log('?????');
+        log('?????');
+        if (data.unread.includes(userSeq)) {
+          readCheck = true;
+          unread = data.unread.filter((user: number) => user !== userSeq);
+        }
+        const newMessage = {
+          id: data.id,
+          chatter: data.chatter,
+          chatterId: data.chatterId,
+          content: data.content,
+          roomId: data.roomId,
+          unread: unread.length,
+        };
+        messages.push(newMessage);
+      });
+      updateMessage(messages);
+    }
+    if (readCheck) readMessage();
   };
 
   const connect = async () => {
@@ -89,22 +182,25 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
       };
       client.current.onmessage = e => {
         log('받은 데이터 : ' + e.data);
-        const jsondata = JSON.parse(e.data);
-        log(jsondata.payload.length > 0);
-        if (jsondata.payload.length > 0) {
-          log('list 출력');
-          const messages: Message[] = [];
-          jsondata.payload.forEach((data: any) => {
-            const newMessage = {
-              id: data.id,
-              chatter: data.chatter,
-              chatterId: data.chatterId,
-              content: data.content,
-              roomId: data.roomId,
-            };
-            messages.push(newMessage);
-          });
-          setMessages(prevMessages => [...prevMessages, ...messages]);
+        const data = JSON.parse(e.data);
+        switch (data.type) {
+          case 'message':
+            onMessage(data.payload);
+            break;
+          case 'read':
+            log('read');
+            log('read');
+            log('read');
+            log('read');
+            log('read');
+            log(data.payload);
+            log('read');
+            log('read');
+            log('read');
+            log('read');
+            log('read');
+            onMessage(data.payload);
+            break;
         }
         log('받은 데이터 등록 완료');
       };
@@ -119,7 +215,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
 
   const disconnect = () => {
     client.current?.close();
-    setMessages([]);
+    setMessages(emptyMessageState);
   };
 
   return (
@@ -149,18 +245,23 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
       </View>
       <View style={styles.container}>
         <FlatList
-          data={messages}
+          data={messages.datas}
           keyExtractor={item => item.id}
           ref={flatListRef}
           onContentSizeChange={() => {
             flatListRef.current?.scrollToEnd({animated: false});
           }}
-          renderItem={({item}) => (
-            <Text
-              style={{textAlign: item.chatter === userSeq ? 'right' : 'left'}}>
-              {item.chatterId} : {item.content}
-            </Text>
-          )}
+          renderItem={({item}) => {
+            const message = item.data;
+            return (
+              <Text
+                style={{
+                  textAlign: message.chatter === userSeq ? 'right' : 'left',
+                }}>
+                {message.unread} : {message.chatterId} : {message.content}
+              </Text>
+            );
+          }}
         />
         <View
           style={{

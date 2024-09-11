@@ -1,12 +1,12 @@
 package com.example.myapp.RepositoryCustom.chat
 
 import com.example.myapp.Entity.Chat
-import com.example.myapp.Entity.ChatRoom
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
 
 class ChatRepositoryCustomImpl @Autowired constructor(
     private val template: MongoTemplate
@@ -15,6 +15,12 @@ class ChatRepositoryCustomImpl @Autowired constructor(
         val query = Query(Criteria.where("roomId").`is`(roomId)).with(Sort.by(Sort.Direction.DESC, "chatTime"))
         val re = template.query(Chat::class.java)
             .matching(query).firstValue()
+        return re
+    }
+
+    override fun findUnreadMessage(userSeq: Long, roomId: String): List<Chat> {
+        val query = Query(Criteria.where("roomId").`is`(roomId).and("unread").`is`(userSeq))
+        val re = template.query(Chat::class.java).matching(query).all()
         return re
     }
 }

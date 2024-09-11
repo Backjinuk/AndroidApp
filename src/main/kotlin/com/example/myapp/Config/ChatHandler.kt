@@ -77,11 +77,16 @@ class ChatHandler(
                 val chatterId = map["chatterId"]
                 val content = map["content"]
                 val roomId = map["roomId"]!!
+                val chatId = map["id"]!!
                 var chatRoom = chatService.findByRoomId(roomId)
                 if(chatRoom==null){
                     chatRoom = chatController.saveTempRoom(roomId)
                 }
-                val chat = Chat.Builder().setChatter(chatter!!).setChatterId(chatterId!!).setContent(content!!).setRoomId(roomId!!).build()
+                var unread = mutableListOf<Long>()
+                for(userSeq in chatRoom.chatters){
+                    if(userSeq!=chatter) unread.add(userSeq)
+                }
+                val chat = Chat.Builder().setId(chatId).setChatter(chatter!!).setChatterId(chatterId!!).setContent(content!!).setUnread(unread).setRoomId(roomId!!).build()
                 chatRoom.chatTime = chat.chatTime
                 chatRoom.content = chat.content
                 chatService.updateChatRoom(chatRoom)
@@ -93,7 +98,6 @@ class ChatHandler(
                 logger.info("Received message: $chat")
                 val room = rooms[roomId]!!
                 for(roomSession in room){
-                    if(roomSession == session)continue
                     if(roomSession.isOpen) roomSession.sendMessage(messageFrom(returnMap))
                     else room.remove(roomSession)
                 }
@@ -106,7 +110,26 @@ class ChatHandler(
                 }
             }
             "read"->{
+                val map = mapper.readValue<Map<String, String>>(content = "${inputMap["payload"]}")
+                val reader = map["reader"]!!.toLong()
+                val roomId = map["roomId"]!!
+                val returnMap = mutableMapOf<String, Any?>()
+                returnMap["type"] = "read"
+                returnMap["payload"] = chatController.readMessage(reader, roomId)
 
+                val room = rooms[roomId]!!
+                for(roomSession in room){
+                    if(roomSession == session)continue
+                    if(roomSession.isOpen) roomSession.sendMessage(messageFrom(returnMap))
+                    else room.remove(roomSession)
+                }
+
+//                returnMap["payload"] = listOf(chatRoom)
+//                var sessionsForRoomList = sessionsForPublicRoomList
+//                if(chatRoom.type == "private") sessionsForRoomList = sessionsForPrivateRoomList
+//                for(userSeq in chatRoom.chatters){
+//                    sessionsForRoomList[userSeq]?.sendMessage(messageFrom(returnMap))
+//                }
             }
         }
     }
