@@ -7,6 +7,8 @@ import java.time.LocalDateTime
 
 @Document
 class Chat private constructor(
+    @Id
+    private var id: String?,
     @Field
     val chatter: Long,
     @Field
@@ -14,32 +16,32 @@ class Chat private constructor(
     @Field
     val content: String,
     @Field
-    val unread: List<String>,
+    val unread: MutableList<Long>,
     @Field
     val chatTime: LocalDateTime,
     @Field
     val roomId: String
 
 ) {
-    @Id
-    private var id: String? = null
     class Builder {
+        private var id:String? = null
         private var chatter: Long = 0
         private var chatterId: String = ""
         private var content: String = ""
-        private var unread: List<String> = arrayListOf()
+        private var unread: MutableList<Long> = arrayListOf()
         private var chatTime: LocalDateTime = LocalDateTime.now()
         private var roomId: String = ""
 
+        fun setId(id:String) = apply{this.id = id}
         fun setChatter(chatter: Long) = apply { this.chatter = chatter }
         fun setChatterId(chatterId: String) = apply { this.chatterId = chatterId }
         fun setContent(content: String) = apply { this.content = content }
-        fun setUnread(unread: List<String>) = apply { this.unread = unread }
-        fun setChatTime(time: LocalDateTime) = apply { this.chatTime = chatTime }
+        fun setUnread(unread: MutableList<Long>) = apply { this.unread = unread }
+        fun setChatTime(chatTime: LocalDateTime) = apply { this.chatTime = chatTime }
         fun setRoomId(roomId: String) = apply { this.roomId = roomId }
 
         fun build(): Chat {
-            return Chat(chatter= chatter, chatterId=chatterId, content=content, unread=unread, chatTime=chatTime, roomId = roomId)
+            return Chat(id=id, chatter= chatter, chatterId=chatterId, content=content, unread=unread, chatTime=chatTime, roomId = roomId)
         }
     }
 

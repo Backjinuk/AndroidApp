@@ -10,6 +10,7 @@ interface ChatService {
     fun findLastChatByRoomId(roomId: String): Chat?
     fun addChatRoom(chatRoom: ChatRoom)
     fun updateChatRoom(chatRoom: ChatRoom)
+    fun readMessage(userSeq: Long, roomId: String):List<Chat>
 
     fun findPublicRoom(chatters:List<Long>, commuSeq:Long): ChatRoom?
 

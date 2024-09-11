@@ -19,6 +19,7 @@ export default function ChatRoomList({navigation}: any) {
   };
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [selected, setPrivateSelected] = useState<String>('public');
+  const [userSeq, setUserSeq] = useState<number>(0);
   const setSelected = (type: string) => {
     setPrivateSelected(type);
   };
@@ -54,6 +55,7 @@ export default function ChatRoomList({navigation}: any) {
       const accessToken = await AsyncStorage.getItem('AccessToken');
       const accessTokenData: any = jwtDecode(accessToken!);
       const refreshToken = await AsyncStorage.getItem('RefreshToken');
+      setUserSeq(accessTokenData.userSeq);
       client.current = new WebSocket(
         wsurl +
           `?type=chatRoomList&userSeq=${accessTokenData.userSeq}&roomType=${selected}`,
@@ -154,7 +156,11 @@ export default function ChatRoomList({navigation}: any) {
             <Button
               title={`roomId : ${item.id} \n\n chatters : ${item.chatters} \n\n chatTime : ${item.chatTime} \n\n type : ${item.type}`}
               onPress={() => {
-                navigation.navigate('ChatScreen', {roomId: item.id});
+                navigation.navigate('ChatScreen', {
+                  roomId: item.id,
+                  totalChatters: item.chatters.length,
+                  chatter: userSeq,
+                });
               }}
             />
           </View>

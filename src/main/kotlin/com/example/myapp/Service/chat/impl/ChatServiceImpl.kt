@@ -38,6 +38,12 @@ class ChatServiceImpl(
         chatRoomRepository.save(chatRoom)
     }
 
+    override fun readMessage(userSeq: Long, roomId: String): List<Chat> {
+        val chatList = chatRepository.findUnreadMessage(userSeq, roomId)
+        chatList.forEach { chat -> chat.unread.remove(userSeq) }
+        return chatRepository.saveAll(chatList)
+    }
+
     override fun findPublicRoom(chatters: List<Long>, commuSeq: Long): ChatRoom? {
         return chatRoomRepository.findByCommunityAndUsers(chatters, commuSeq)
     }
