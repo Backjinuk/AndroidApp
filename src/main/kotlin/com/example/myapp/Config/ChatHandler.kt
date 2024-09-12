@@ -1,12 +1,14 @@
 package com.example.myapp.Config
 
 import com.example.myapp.Controller.ChatController
+import com.example.myapp.Dto.ChatRoomDto
 import com.example.myapp.Entity.Chat
 import com.example.myapp.Service.chat.ChatService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.modelmapper.ModelMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
@@ -28,6 +30,7 @@ class ChatHandler(
     private val sessionsForChat = mutableMapOf<Long, WebSocketSession>()//userSeq, session
     private val rooms = mutableMapOf<String, ArrayList<WebSocketSession>>()//roomId, sessions
     private val mapper = ObjectMapper()
+    private val modelMapper: ModelMapper = ModelMapper()
 
     init {
         mapper.registerModule(JavaTimeModule())
@@ -102,10 +105,12 @@ class ChatHandler(
                     else room.remove(roomSession)
                 }
 
-                returnMap["payload"] = listOf(chatRoom)
+                val chatRoomDto = modelMapper.map(chatRoom, ChatRoomDto::class.java)
                 var sessionsForRoomList = sessionsForPublicRoomList
                 if(chatRoom.type == "private") sessionsForRoomList = sessionsForPrivateRoomList
                 for(userSeq in chatRoom.chatters){
+                    chatRoomDto.unreadMessages = chatService.countUnreadRoomMessage(userSeq, roomId)
+                    returnMap["payload"] = listOf(chatRoomDto)
                     sessionsForRoomList[userSeq]?.sendMessage(messageFrom(returnMap))
                 }
             }
@@ -124,12 +129,9 @@ class ChatHandler(
                     else room.remove(roomSession)
                 }
 
-//                returnMap["payload"] = listOf(chatRoom)
-//                var sessionsForRoomList = sessionsForPublicRoomList
-//                if(chatRoom.type == "private") sessionsForRoomList = sessionsForPrivateRoomList
-//                for(userSeq in chatRoom.chatters){
-//                    sessionsForRoomList[userSeq]?.sendMessage(messageFrom(returnMap))
-//                }
+                returnMap["payload"] = roomId
+                sessionsForPublicRoomList[reader]?.sendMessage(messageFrom(returnMap))
+                sessionsForPrivateRoomList[reader]?.sendMessage(messageFrom(returnMap))
             }
         }
     }

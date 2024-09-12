@@ -7,4 +7,6 @@ interface ChatRepositoryCustom {
     fun findLastChatByRoomId(roomId:String):Chat?
 
     fun findUnreadMessage(userSeq:Long, roomId:String):List<Chat>
+
+    fun countUnreadMessage(userSeq: Long, roomId: String):Long
 }

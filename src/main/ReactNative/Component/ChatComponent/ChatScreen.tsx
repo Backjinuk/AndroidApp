@@ -27,9 +27,8 @@ interface MessageState {
   datas: {id: string; data: Message}[];
 }
 
-const emptyMessageState = {
-  ids: [],
-  datas: [],
+const emptyMessageState = () => {
+  return {ids: [], datas: []};
 };
 
 const ChatScreen: React.FC = ({route, navigation}: any) => {
@@ -40,7 +39,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
   const {roomId, totalChatters, chatter} = route.params;
   const [userSeq, setUserSeq] = useState<number>(chatter);
   const [userId, setUserId] = useState<string>('');
-  const [messages, setMessages] = useState<MessageState>(emptyMessageState);
+  const [messages, setMessages] = useState<MessageState>(emptyMessageState());
   const [inputHeight, setInputHeight] = useState(40);
   const [input, setInput] = useState('1');
   const wsurl = Config.CHAT_URL;
@@ -193,7 +192,7 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
 
   const disconnect = () => {
     client.current?.close();
-    setMessages(emptyMessageState);
+    setMessages(emptyMessageState());
   };
 
   return (

@@ -64,6 +64,7 @@ class ChatController @Autowired constructor(
         val roomDtoList = mutableListOf<ChatRoomDto>()
         for(room in roomList){
             val chatRoomDto = chatRoomToDto(room)
+            chatRoomDto.unreadMessages = chatService.countUnreadRoomMessage(userSeq, chatRoomDto.id!!)
             roomDtoList.add(chatRoomDto)
         }
         return roomDtoList

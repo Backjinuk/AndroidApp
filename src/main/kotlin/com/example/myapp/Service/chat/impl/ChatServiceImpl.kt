@@ -44,6 +44,10 @@ class ChatServiceImpl(
         return chatRepository.saveAll(chatList)
     }
 
+    override fun countUnreadRoomMessage(userSeq: Long, roomId: String): Long {
+        return chatRepository.countUnreadMessage(userSeq, roomId)
+    }
+
     override fun findPublicRoom(chatters: List<Long>, commuSeq: Long): ChatRoom? {
         return chatRoomRepository.findByCommunityAndUsers(chatters, commuSeq)
     }

@@ -9,6 +9,7 @@ interface ChatRoom {
   id: string;
   chatTime: string;
   chatters: string[];
+  unread: number;
   type: string;
 }
 
@@ -81,6 +82,9 @@ export default function ChatRoomList({navigation}: any) {
           case 'message':
             onRooms(jsondata.payload);
             break;
+          case 'read':
+            onRead(jsondata.payload);
+            break;
         }
         log('받은 데이터 등록 완료');
       };
@@ -104,12 +108,22 @@ export default function ChatRoomList({navigation}: any) {
           content: data.content,
           chatters: data.chatters,
           commuSeq: data.commuSeq,
+          unread: data.unreadMessages,
           type: data.type,
         };
         newRooms.push(newRoom);
       });
       updateRooms(newRooms);
     }
+  };
+
+  const onRead = (roomId: string) => {
+    setRooms(prev => {
+      let next = [...prev];
+      const index = next.findIndex(item => item.id === roomId);
+      next[index].unread = 0;
+      return next;
+    });
   };
 
   const disconnect = () => {
@@ -154,7 +168,7 @@ export default function ChatRoomList({navigation}: any) {
         renderItem={({item}) => (
           <View style={{marginBottom: 5}}>
             <Button
-              title={`roomId : ${item.id} \n\n chatters : ${item.chatters} \n\n chatTime : ${item.chatTime} \n\n type : ${item.type}`}
+              title={`roomId : ${item.id} \n\n chatters : ${item.chatters} \n\n chatTime : ${item.chatTime} \n\n type : ${item.type} \n\n unread : ${item.unread}`}
               onPress={() => {
                 navigation.navigate('ChatScreen', {
                   roomId: item.id,
