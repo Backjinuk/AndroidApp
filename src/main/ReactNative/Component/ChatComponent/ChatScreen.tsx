@@ -132,17 +132,6 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
       const messages: Message[] = [];
       payload.forEach((data: any) => {
         let unread = data.unread;
-        log('?????');
-        log('?????');
-        log('?????');
-        log('?????');
-        log(userSeq);
-        log(data.unread);
-        log(data.unread.includes(userSeq));
-        log('?????');
-        log('?????');
-        log('?????');
-        log('?????');
         if (data.unread.includes(userSeq)) {
           readCheck = true;
           unread = data.unread.filter((user: number) => user !== userSeq);
@@ -188,17 +177,6 @@ const ChatScreen: React.FC = ({route, navigation}: any) => {
             onMessage(data.payload);
             break;
           case 'read':
-            log('read');
-            log('read');
-            log('read');
-            log('read');
-            log('read');
-            log(data.payload);
-            log('read');
-            log('read');
-            log('read');
-            log('read');
-            log('read');
             onMessage(data.payload);
             break;
         }
