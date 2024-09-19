@@ -67,6 +67,15 @@ class ChatHandler(
                     "private"->sessionsForPrivateRoomList[userSeq] = session
                 }
             }
+            "countMessages"->{
+                logger.info("Connected to session: countMessages")
+                val userSeq = inputMap["userSeq"]!!.toLong()
+                val returnMap = mutableMapOf<String, Any?>()
+                returnMap["type"] = "count"
+                returnMap["payload"] = chatController.countMyMessages(userSeq)
+                session.sendMessage(messageFrom(returnMap))
+                sessionsForCount[userSeq] = session
+            }
         }
     }
 
@@ -111,7 +120,9 @@ class ChatHandler(
                 for(userSeq in chatRoom.chatters){
                     chatRoomDto.unreadMessages = chatService.countUnreadRoomMessage(userSeq, roomId)
                     returnMap["payload"] = listOf(chatRoomDto)
-                    sessionsForRoomList[userSeq]?.sendMessage(messageFrom(returnMap))
+                    val message = messageFrom(returnMap)
+                    sessionsForRoomList[userSeq]?.sendMessage(message)
+                    sessionsForCount[userSeq]?.sendMessage(message)
                 }
             }
             "read"->{
@@ -120,7 +131,8 @@ class ChatHandler(
                 val roomId = map["roomId"]!!
                 val returnMap = mutableMapOf<String, Any?>()
                 returnMap["type"] = "read"
-                returnMap["payload"] = chatController.readMessage(reader, roomId)
+                val list = chatController.readMessage(reader, roomId)
+                returnMap["payload"] = list
 
                 val room = rooms[roomId]!!
                 for(roomSession in room){
@@ -129,9 +141,20 @@ class ChatHandler(
                     else room.remove(roomSession)
                 }
 
+                returnMap["payload"] = list.size
+                sessionsForCount[reader]?.sendMessage(messageFrom(returnMap))
+
                 returnMap["payload"] = roomId
-                sessionsForPublicRoomList[reader]?.sendMessage(messageFrom(returnMap))
-                sessionsForPrivateRoomList[reader]?.sendMessage(messageFrom(returnMap))
+                val message = messageFrom(returnMap)
+                sessionsForPublicRoomList[reader]?.sendMessage(message)
+                sessionsForPrivateRoomList[reader]?.sendMessage(message)
+            }
+            "count"->{
+                val userSeq = parseUri(session.uri)["userSeq"]!!.toLong()
+                val returnMap = mutableMapOf<String, Any?>()
+                returnMap["type"] = "count"
+                returnMap["payload"] = chatController.countMyMessages(userSeq)
+                session.sendMessage(messageFrom(returnMap))
             }
         }
     }
@@ -153,6 +176,10 @@ class ChatHandler(
                 val userSeq = inputMap["userSeq"]!!.toLong()
                 sessionsForPublicRoomList.remove(userSeq)
                 sessionsForPrivateRoomList.remove(userSeq)
+            }
+            "countMessages"->{
+                val userSeq = inputMap["userSeq"]!!.toLong()
+                sessionsForCount.remove(userSeq)
             }
         }
 

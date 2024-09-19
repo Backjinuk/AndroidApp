@@ -59,6 +59,11 @@ class ChatController @Autowired constructor(
         log.info("temp Room deleted")
     }
 
+    @RequestMapping("countMyMessages")
+    fun countMyMessages(@RequestBody userSeq:Long) : Long{
+        return chatService.countUnreadMessage(userSeq)
+    }
+
     fun findMyChatRooms(userSeq:Long, roomType:String):List<ChatRoomDto>{
         val roomList = chatService.findByUserSeq(userSeq, roomType)!!
         val roomDtoList = mutableListOf<ChatRoomDto>()

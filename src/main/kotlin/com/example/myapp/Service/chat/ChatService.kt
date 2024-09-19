@@ -12,6 +12,7 @@ interface ChatService {
     fun updateChatRoom(chatRoom: ChatRoom)
     fun readMessage(userSeq: Long, roomId: String):List<Chat>
     fun countUnreadRoomMessage(userSeq: Long, roomId: String):Long
+    fun countUnreadMessage(userSeq: Long):Long
 
     fun findPublicRoom(chatters:List<Long>, commuSeq:Long): ChatRoom?
 

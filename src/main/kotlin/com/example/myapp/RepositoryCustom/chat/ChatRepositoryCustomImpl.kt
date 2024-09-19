@@ -30,4 +30,10 @@ class ChatRepositoryCustomImpl @Autowired constructor(
         val re = template.query(Chat::class.java).matching(query).count()
         return re
     }
+
+    override fun countUnreadMessage(userSeq: Long): Long {
+        val query = Query(Criteria.where("unread").`is`(userSeq))
+        val re = template.query(Chat::class.java).matching(query).count()
+        return re
+    }
 }
