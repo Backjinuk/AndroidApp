@@ -56,6 +56,14 @@ class ChatServiceImpl(
         return chatRoomRepository.findByCommunityAndUsers(chatters, commuSeq)
     }
 
+    override fun findPrivateRoom(chatters: List<Long>): ChatRoom? {
+        return chatRoomRepository.findPrivateRoomByUsers(chatters)
+    }
+
+    override fun findGroupRoom(commuSeq: Long): ChatRoom? {
+        return chatRoomRepository.findGroupByCommunity(commuSeq)
+    }
+
     override fun findByUserSeq(userSeq: Long, roomType:String): List<ChatRoom>? {
         return chatRoomRepository.findByUserSeqAndRoomType(userSeq, roomType)
     }

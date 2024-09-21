@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from 'jwt-decode';
 import AddChatButton from './AddChatButton';
 import Config from 'react-native-config';
+import AddMemberButton from './AddMemberButton';
 
 interface ChatRoom {
   id: string;
@@ -180,12 +181,10 @@ export default function ChatRoomList({navigation}: any) {
           </View>
         )}
       />
+      <AddChatButton commuSeq={1} />
+      <AddMemberButton commuSeq={1} />
       <AddChatButton navigation={navigation} userSeq={2} commuSeq={1} />
-      <AddChatButton navigation={navigation} userSeq={3} commuSeq={1} />
-      <AddChatButton navigation={navigation} userSeq={4} commuSeq={1} />
       <AddChatButton navigation={navigation} userSeq={2} />
-      <AddChatButton navigation={navigation} userSeq={3} />
-      <AddChatButton navigation={navigation} userSeq={4} />
       <Button title="Reset" onPress={reset} />
     </View>
   );

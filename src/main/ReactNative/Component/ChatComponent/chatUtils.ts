@@ -16,3 +16,21 @@ export const addChatRoomForOneToOne = async (
   console.log(res.data);
   return res.data;
 };
+
+export const addChatRoomForGroup = (commuSeq: number) => {
+  axiosPost.post(
+    '/chat/addGroupRoom',
+    JSON.stringify({
+      commuSeq: commuSeq,
+    }),
+  );
+};
+
+export const addMember = (commuSeq: number) => {
+  axiosPost.post(
+    '/chat/addMember',
+    JSON.stringify({
+      commuSeq: commuSeq,
+    }),
+  );
+};

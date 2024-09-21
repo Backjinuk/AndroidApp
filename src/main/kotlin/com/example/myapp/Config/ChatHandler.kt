@@ -35,6 +35,8 @@ class ChatHandler(
     init {
         mapper.registerModule(JavaTimeModule())
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        chatController.sessionsForPublicRoomList = sessionsForPublicRoomList
+        chatController.mapper = mapper
     }
 
     override fun afterConnectionEstablished(session: WebSocketSession) {

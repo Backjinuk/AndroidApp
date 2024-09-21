@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 @Document
 class ChatRoom private constructor(
     @Field
-    val chatters: List<Long>,
+    val chatters: MutableList<Long>,
     @Field
     val type: String,
     @Field
@@ -23,12 +23,12 @@ class ChatRoom private constructor(
 
     class Builder {
         private var type: String = ""
-        private var chatters: List<Long> = listOf()
+        private var chatters: MutableList<Long> = mutableListOf()
         private var commuSeq: Long = 0
 
         fun setType(type: String) = apply { this.type = type }
         fun setCommuSeq(commuSeq: Long) = apply { this.commuSeq = commuSeq }
-        fun setChatters(chatters: List<Long>) = apply { this.chatters = chatters }
+        fun setChatters(chatters: MutableList<Long>) = apply { this.chatters = chatters }
 
         fun build(): ChatRoom {
             return ChatRoom(chatters=chatters, type = type, commuSeq=commuSeq)

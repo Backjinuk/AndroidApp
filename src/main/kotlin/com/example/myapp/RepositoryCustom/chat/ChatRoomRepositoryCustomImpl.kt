@@ -17,8 +17,33 @@ class ChatRoomRepositoryCustomImpl @Autowired constructor(
         return re
     }
 
+    override fun findPrivateRoomByUsers(chatters: List<Long>): ChatRoom? {
+        val query = Query(Criteria.where("chatters").`is`(chatters).and("type").`is`("private"))
+        val re = template.query(ChatRoom::class.java)
+            .matching(query).oneValue()
+        return re
+    }
+
+    override fun findGroupByCommunity(commuSeq: Long): ChatRoom? {
+        val query = Query(Criteria.where("commuSeq").`is`(commuSeq).and("type").`is`("group"))
+        val re = template.query(ChatRoom::class.java)
+            .matching(query).oneValue()
+        return re
+    }
+
     override fun findByUserSeqAndRoomType(userSeq: Long, roomType: String): List<ChatRoom>? {
-        val query = Query(Criteria.where("chatters").`is`(userSeq).and("type").`is`(roomType))
+        val query = when(roomType){
+            "private"->{
+                Query(Criteria.where("chatters").`is`(userSeq).and("type").`is`(roomType))
+            }
+            else -> {
+                Query(Criteria.where("chatters").`is`(userSeq)
+                    .orOperator(
+                        Criteria.where("type").`is`("group"),
+                        Criteria.where("type").`is`("public")
+                    ))
+            }
+        }
         val re = template.query(ChatRoom::class.java)
             .matching(query).all()
         return re

@@ -15,6 +15,8 @@ interface ChatService {
     fun countUnreadMessage(userSeq: Long):Long
 
     fun findPublicRoom(chatters:List<Long>, commuSeq:Long): ChatRoom?
+    fun findPrivateRoom(chatters:List<Long>): ChatRoom?
+    fun findGroupRoom(commuSeq:Long): ChatRoom?
 
     fun findByUserSeq(userSeq:Long, roomType:String):List<ChatRoom>?
 }
