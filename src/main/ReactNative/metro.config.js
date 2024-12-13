@@ -1,20 +1,18 @@
-
-
-/**
- * Metro configuration
- * https://reactnative.dev/docs/metro
- *
- * @type {import('metro-config').MetroConfig}
- */
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const path = require('path');
 
-const config = {};
-// transformer: {
-//     babelTransformerPath: require.resolve('react-native-reanimated/plugin'),
-// },
-// resolver: {
-//     sourceExts: ['js', 'json', 'ts', 'tsx', 'cjs'], // 확장자 설정
-// },
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+module.exports = (async () => {
+    const defaultConfig = await getDefaultConfig(__dirname);
 
+    const config = {
+        resolver: {
+            assetExts: defaultConfig.resolver.assetExts.filter(ext => ext !== 'svg'),
+            sourceExts: [...defaultConfig.resolver.sourceExts, 'jsx', 'js', 'ts', 'tsx'],
+        },
+        transformer: {
+            // 필요 시 추가 설정
+        },
+    };
 
+    return mergeConfig(defaultConfig, config);
+})();

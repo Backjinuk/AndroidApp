@@ -99,11 +99,13 @@ export default function LoginForm() {
 
             <Text style={styles.simpleLoginText}>간편로그인</Text>
             <View style={styles.socialIconsContainer}>
+
                 <Image source={require('./assets/naver.png')} style={styles.icon} />
                 <Image source={require('./assets/kakao.png')} style={styles.icon} />
                 <Image source={require('./assets/google.png')} style={styles.icon} />
                 <Image source={require('./assets/apple.png')} style={styles.icon} />
                 <Image source={require('./assets/facebook.png')} style={styles.icon} />
+
             </View>
         </View>
     )
