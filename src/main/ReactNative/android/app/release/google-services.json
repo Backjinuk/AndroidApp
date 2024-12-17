@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "272806776906",
+    "project_id": "mogakco-f4587",
+    "storage_bucket": "mogakco-f4587.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:272806776906:android:3063d5fc90d5fcec3c56b3",
+        "android_client_info": {
+          "package_name": "com.reactnative"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "272806776906-jeiesdtol5c4210ch3nc9ehdunvsualc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGgJkcT8urAosAQmUDb9wBVbKsr5PxXHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "272806776906-jeiesdtol5c4210ch3nc9ehdunvsualc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

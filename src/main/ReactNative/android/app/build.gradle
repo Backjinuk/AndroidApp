@@ -9,6 +9,8 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+apply plugin: 'com.google.gms.google-services'
+
 
 react {
     // React Native 관련 설정 (생략 가능)
@@ -30,7 +32,7 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('C:/Users/admin/.android/debug.keystore')
+            storeFile file('/Users/mac/.android/debug.keystore')
             storePassword 'android'
             keyAlias 'new_androiddebugkey'
             keyPassword 'android'

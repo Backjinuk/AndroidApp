@@ -44,6 +44,7 @@ export default function GoogleLoginButton({styles}) {
 
     return (
         <TouchableOpacity style={styles.socialButton} onPress={() => onGoogleButtonPress()}>
+
             <Image source={require('../assets/google.png')} style={styles.icon} />
         </TouchableOpacity>
     )

@@ -71,7 +71,9 @@ export default function KakaoLoginButton({ styles }){
 
     return (
         <TouchableOpacity style={styles.socialButton} onPress={() => signInWithKakao()}>
+
             <Image source={require('../assets/kakao.png')} style={styles.icon} />
+
         </TouchableOpacity>
     );
 };

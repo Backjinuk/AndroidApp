@@ -102,7 +102,9 @@ export default function NaverLoginButton({ styles }){
 
     return (
         <TouchableOpacity style={styles.socialButton} onPress={() => login()}>
+
             <Image source={require('../assets/naver.png')} style={styles.icon} />
+
         </TouchableOpacity>
     );
 };
