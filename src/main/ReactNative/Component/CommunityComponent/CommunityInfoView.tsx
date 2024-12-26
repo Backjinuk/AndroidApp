@@ -30,6 +30,8 @@ export default function CommunityInfoView(props: any) {
         axiosPost.post("/subscribe/getSubscribe", JSON.stringify({
             'subscriberOwnerUserSeq': props.marker.commuWrite.userSeq
         }))
+
+	 
         .then(res => {
             setSubscribe(res.data);
         })
