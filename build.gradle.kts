@@ -50,6 +50,7 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("io.mockk:mockk:1.13.7") // 최신 버전 확인
 
     //벨리데이션 라이브러리
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")
@@ -70,7 +71,7 @@ dependencies {
 //    implementation("com.linecorp.kotlin-jdsl:spring-data-kotlin-jdsl-starter-jakarta:$jdslVersion")
 //    implementation("com.linecorp.kotlin-jdsl:hibernate-kotlin-jdsl-jakarta:$jdslVersion")
 
-     val queryDslVersion = "5.0.0"
+    val queryDslVersion = "5.0.0"
     implementation("com.querydsl:querydsl-core:$queryDslVersion")
     implementation("com.querydsl:querydsl-jpa:$queryDslVersion:jakarta") // JPA Jakarta 버전
     annotationProcessor("jakarta.annotation:jakarta.annotation-api")
@@ -79,9 +80,9 @@ dependencies {
     // Annotation Processor 설정 (Jakarta 버전 사용 시)
     kapt("com.querydsl:querydsl-apt:$queryDslVersion:jakarta") // `kapt`를 사용해 QueryDSL QClass 생성
 
-     // Spy settings
-     implementation("p6spy:p6spy:3.9.1")
-     implementation("com.github.gavlyukovskiy:datasource-decorator-spring-boot-autoconfigure:1.9.0")
+    // Spy settings
+    implementation("p6spy:p6spy:3.9.1")
+    implementation("com.github.gavlyukovskiy:datasource-decorator-spring-boot-autoconfigure:1.9.0")
 
 }
 
