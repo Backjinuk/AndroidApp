@@ -2,6 +2,7 @@ package com.example.myapp.user.userProfile.service
 
 import com.example.myapp.user.userProfile.domain.dto.SocialMediaPlatFormDto
 import com.example.myapp.user.userProfile.domain.dto.UserProfileDto
+import com.example.myapp.user.userProfile.domain.entity.SocialMediaPlatFormEntity
 import com.example.myapp.user.userProfile.domain.entity.UserProfileEntity
 import com.example.myapp.user.userProfile.infra.repository.UserProfileRepository
 import io.mockk.confirmVerified
@@ -63,7 +64,7 @@ class UserProfileServiceUnitTest {
         every { modelMapper.map(userProfileEntity, UserProfileDto::class.java) } returns userProfileDto
 
         // When
-        val savedProfile = userProfileService.userProfitableSetting(userProfileDto)
+        val savedProfile = userProfileService.userProfileTableSetting(userProfileDto)
 
         // Then
         assertNotNull(savedProfile)
@@ -112,7 +113,7 @@ class UserProfileServiceUnitTest {
         every { modelMapper.map(userProfileEntity, UserProfileDto::class.java) } returns userProfileDto
 
         // When
-        val savedProfile = userProfileService.userProfitableSetting(userProfileDto)
+        val savedProfile = userProfileService.userProfileTableSetting(userProfileDto)
 
         // Then
         assertNotNull(savedProfile)
@@ -155,14 +156,14 @@ class UserProfileServiceUnitTest {
 
         every { validator.validate(userProfileDto) } returns setOf(validation)
 
-        val exception = assertThrows(IllegalArgumentException::class.java){
-            userProfileService.userProfitableSetting(userProfileDto)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            userProfileService.userProfileTableSetting(userProfileDto)
         }
 
         assertTrue(exception.message!!.contains("유효성 검증 실패: 유저 시퀸스는 양수여야 합니다."))
 
-        verify(exactly = 1) {validator.validate(userProfileDto)  }
-        verify(exactly = 0) {userProfileRepository.userProfitableSetting(userProfileEntity)}
+        verify(exactly = 1) { validator.validate(userProfileDto) }
+        verify(exactly = 0) { userProfileRepository.userProfitableSetting(userProfileEntity) }
     }
 
 
@@ -192,7 +193,7 @@ class UserProfileServiceUnitTest {
 
         // When & Then
         val exception = assertThrows<IllegalArgumentException> {
-            userProfileService.userProfitableSetting(userProfileDto)
+            userProfileService.userProfileTableSetting(userProfileDto)
         }
 
         // 예외 메시지에 두 개의 검증 실패 메시지가 포함되어 있는지 확인
@@ -210,19 +211,165 @@ class UserProfileServiceUnitTest {
     }
 
 
-/*
     @Test
-    fun `등록 성공 - 유효한 SocialMediaPlatForm은 등록에 성공한다.`(){
-        val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply{
-            userProfileSeq = 100
-            platFormName = "GITHUB"
-            platFormUrl = "https://github@github.com"
+    fun `등록 성공 - 유효한 SocialMediaPlatForm은 db에 저장되어야 한다`() {
+        // Givne
+        val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
+            userProfileSeq = 50
+            platFormName = "Github"
+            platFormUrl = "https://github/test"
         }
 
 
-    }
-*/
+        val socialMediaPlatFormEntity = SocialMediaPlatFormEntity().apply {
+            userProfileSeq = socialMediaPlatFormDto.userProfileSeq
+            platFormName = socialMediaPlatFormDto.platFormName
+            platFormUrl = socialMediaPlatFormDto.platFormUrl
+        }
 
+        every { validator.validate(socialMediaPlatFormDto) } returns emptySet()
+
+        every {
+            modelMapper.map(
+                socialMediaPlatFormDto,
+                SocialMediaPlatFormEntity::class.java
+            )
+        } returns socialMediaPlatFormEntity
+
+        every {
+            modelMapper.map(
+                socialMediaPlatFormEntity,
+                SocialMediaPlatFormDto::class.java
+            )
+        } returns socialMediaPlatFormDto
+
+        every { userProfileRepository.socialMediaPlatFromByUserProfile(socialMediaPlatFormEntity) } returns socialMediaPlatFormEntity
+
+        //Then
+        val savedValue = userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
+
+        //When
+        assertEquals(savedValue.userProfileSeq, socialMediaPlatFormDto.userProfileSeq)
+        assertEquals(savedValue.platFormName, socialMediaPlatFormDto.platFormName)
+        assertEquals(savedValue.platFormUrl, socialMediaPlatFormDto.platFormUrl)
+    }
+
+
+    @Test
+    fun `등록 실패 - 유효하지 않은 userProfileSeq는 db에 저장되지 않아야 한다`() {
+        // Givne
+        val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
+            userProfileSeq = -1
+            platFormName = "Github"
+            platFormUrl = "https://github/test"
+        }
+
+        val validationUserprofileSeq: ConstraintViolation<SocialMediaPlatFormDto> = mockk {
+            every { message } returns "유저 프로필의 시퀸스는 0이상이여야 합니다."
+            every { propertyPath.toString() } returns "userProfileSeq"
+        }
+
+        every { validator.validate(socialMediaPlatFormDto) } returns setOf(validationUserprofileSeq)
+
+        //When
+        val exception = assertThrows<IllegalArgumentException> {
+            userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
+        }
+
+
+        //Then
+        assertTrue(exception.message!!.contains("유저 프로필의 시퀸스는 0이상이여야 합니다."))
+        verify(exactly = 0) { userProfileRepository.socialMediaPlatFromByUserProfile(any()) }
+        verify(exactly = 1) { validator.validate(socialMediaPlatFormDto) }
+
+    }
+
+
+    @Test
+    fun `등록 실패 - 유효하지 않은 platFormName은 db에 저장되지 않아야 한다`() {
+        //Given
+        val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
+            userProfileSeq = 100
+            platFormName = ""
+            platFormUrl = "https://github/test"
+        }
+
+        val validationPlatFormName: ConstraintViolation<SocialMediaPlatFormDto> = mockk {
+            every { message } returns "플랫폼 이름은 비어있을수 없습니다."
+            every { propertyPath.toString() } returns "platFormName"
+        }
+
+        every { validator.validate(socialMediaPlatFormDto) } returns setOf(validationPlatFormName)
+
+        //When
+        val exception = assertThrows<IllegalArgumentException> {
+            userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
+        }
+
+        //Then
+        assertTrue(exception.message!!.contains("플랫폼 이름은 비어있을수 없습니다."))
+        verify(exactly = 0) { userProfileRepository.socialMediaPlatFromByUserProfile(any()) }
+        verify(exactly = 1) { validator.validate(socialMediaPlatFormDto) }
+    }
+
+   @Test
+   fun `등록 실패 - 유효하지 않은 platFormUrl은 db에 저장되지 않아야 한다`() {
+       //Given
+       val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
+           userProfileSeq = 100
+           platFormName = "Github"
+           platFormUrl = ""
+       }
+
+      val validationPlatFormUrl : ConstraintViolation<SocialMediaPlatFormDto>  = mockk {
+          every { message } returns "url은 비어있을수 없습니다."
+          every { propertyPath.toString() } returns "platFormUrl"
+      }
+
+      every { validator.validate(socialMediaPlatFormDto) } returns setOf(validationPlatFormUrl)
+
+      //When
+      val exception = assertThrows<IllegalArgumentException> {
+          userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
+      }
+
+       //Then
+       assertTrue(exception.message!!.contains("url은 비어있을수 없습니다."))
+
+       verify(exactly = 0){ userProfileRepository.socialMediaPlatFromByUserProfile(any())}
+       verify(exactly = 1){ validator.validate(socialMediaPlatFormDto)  }
+
+   }
+
+
+    @Test
+    fun `등록 실패 - 유효하지 않은 platFormUrl(주소 형식)은 db에 저장되지 않아야 한다`() {
+        //Given
+        val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
+            userProfileSeq = 100
+            platFormName = "Github"
+            platFormUrl = "test_url"
+        }
+
+        val validationPlatFormUrl : ConstraintViolation<SocialMediaPlatFormDto>  = mockk {
+            every { message } returns "유효한 url이여야 합니다."
+            every { propertyPath.toString() } returns "platFormUrl"
+        }
+
+        every { validator.validate(socialMediaPlatFormDto) } returns setOf(validationPlatFormUrl)
+
+        //When
+        val exception = assertThrows<IllegalArgumentException> {
+            userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
+        }
+
+        //Then
+        assertTrue(exception.message!!.contains("유효한 url이여야 합니다."))
+
+        verify(exactly = 0){ userProfileRepository.socialMediaPlatFromByUserProfile(any())}
+        verify(exactly = 1){ validator.validate(socialMediaPlatFormDto)  }
+
+    }
 
 
 }

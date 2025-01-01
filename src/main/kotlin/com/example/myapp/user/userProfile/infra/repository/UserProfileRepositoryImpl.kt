@@ -1,6 +1,7 @@
 package com.example.myapp.user.userProfile.infra.repository
 
 import com.example.myapp.user.userProfile.domain.entity.QUserProfileEntity
+import com.example.myapp.user.userProfile.domain.entity.SocialMediaPlatFormEntity
 import com.example.myapp.user.userProfile.domain.entity.UserProfileEntity
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
@@ -10,14 +11,20 @@ import org.springframework.stereotype.Repository
 @Repository
 class UserProfileRepositoryImpl(
     private val entityManager: EntityManager,
-    private val queryFactory : JPAQueryFactory
+    private val queryFactory: JPAQueryFactory
 ) : UserProfileRepository {
 
-    private val qUserProfile : QUserProfileEntity = QUserProfileEntity.userProfileEntity
+    private val qUserProfile: QUserProfileEntity = QUserProfileEntity.userProfileEntity
 
     @Transactional
     override fun userProfitableSetting(userProfile: UserProfileEntity): UserProfileEntity {
         entityManager.persist(userProfile)
         return userProfile
+    }
+
+    @Transactional
+    override fun socialMediaPlatFromByUserProfile(socialMediaPlatFormEntity: SocialMediaPlatFormEntity): SocialMediaPlatFormEntity {
+        entityManager.persist(socialMediaPlatFormEntity)
+        return socialMediaPlatFormEntity
     }
 }

@@ -1,6 +1,8 @@
 package com.example.myapp.user.userProfile.service
 
+import com.example.myapp.user.userProfile.domain.dto.SocialMediaPlatFormDto
 import com.example.myapp.user.userProfile.domain.dto.UserProfileDto
+import com.example.myapp.user.userProfile.domain.entity.SocialMediaPlatFormEntity
 import com.example.myapp.user.userProfile.domain.entity.UserProfileEntity
 import com.example.myapp.user.userProfile.infra.repository.UserProfileRepository
 import jakarta.validation.Validator
@@ -14,7 +16,7 @@ class UserProfileService(
     private val validator: Validator
 
 ) {
-    fun userProfitableSetting(userProfileDto: UserProfileDto): UserProfileDto? {
+    fun userProfileTableSetting(userProfileDto: UserProfileDto): UserProfileDto? {
 
         val violations = validator.validate(userProfileDto)
         if (violations.isNotEmpty()) {
@@ -26,5 +28,18 @@ class UserProfileService(
 
         val returnValue = userProfileRepository.userProfitableSetting(modelMapper.map(userProfileDto, UserProfileEntity::class.java))
         return modelMapper.map(returnValue, UserProfileDto::class.java)
+    }
+
+    fun socialMediaPlatFromByUserProfile(socialMediaPlatFormDto: SocialMediaPlatFormDto) : SocialMediaPlatFormDto {
+        val violations = validator.validate(socialMediaPlatFormDto)
+        if (violations.isNotEmpty()) {
+            // 예외 처리 로직
+            throw IllegalArgumentException(
+                "유효성 검증 실패: " + violations.joinToString { it.message }
+            )
+        }
+
+       val returnValue = userProfileRepository.socialMediaPlatFromByUserProfile(modelMapper.map(socialMediaPlatFormDto, SocialMediaPlatFormEntity::class.java))
+       return modelMapper.map(returnValue, SocialMediaPlatFormDto::class.java)
     }
 }
