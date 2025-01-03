@@ -8,15 +8,13 @@ import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
 
 @Service
-class UserSettingService {
+class UserSettingService(
+    private val userSettingRepository: UserSettingRepository,
+    private val modelMapper: ModelMapper,
+    private val validator: Validator
+) {
 
-    private lateinit var userSettingRepository: UserSettingRepository
-
-    private lateinit var modelMapper: ModelMapper
-
-    private lateinit var validator: Validator
-
-    fun userSettingTableSetting(userSettingDto: UserSettingDto) : UserSettingEntity {
+    fun userSettingTableSetting(userSettingDto: UserSettingDto) : UserSettingDto {
         val violations = validator.validate(userSettingDto)
         if (violations.isNotEmpty()) {
             // 예외 처리 로직
@@ -25,7 +23,8 @@ class UserSettingService {
             )
         }
 
-       val returnValue = userSettingRepository.userSettingTableSetting(modelMapper.map(userSettingDto, UserSettingEntity::class.java))
-       return modelMapper.map(returnValue, UserSettingEntity::class.java)
+        val mappedEntity = modelMapper.map(userSettingDto, UserSettingEntity::class.java)
+        val returnValue = userSettingRepository.userSettingTableSetting(mappedEntity)
+        return modelMapper.map(returnValue, UserSettingDto::class.java)
     }
 }
