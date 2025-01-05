@@ -1,12 +1,12 @@
-package com.example.myapp.user.user.domain.dto
+package com.example.myapp.user.user.domain.entity
 
 import com.example.myapp.user.user.domain.UserJoinType
 import com.example.myapp.user.user.domain.UserRole
-import com.example.myapp.user.user.domain.entity.UserEntity
+import jakarta.validation.ConstraintViolation
 import jakarta.validation.Validation
 import jakarta.validation.Validator
-import jakarta.validation.ConstraintViolation
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

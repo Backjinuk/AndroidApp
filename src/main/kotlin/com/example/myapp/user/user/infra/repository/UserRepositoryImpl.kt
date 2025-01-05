@@ -2,6 +2,7 @@ package com.example.myapp.user.user.infra.repository
 
 import com.example.myapp.user.user.domain.entity.QUserEntity
 import com.example.myapp.user.user.domain.entity.UserEntity
+import com.example.myapp.user.user.domain.entity.UserTokenEntity
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
@@ -26,5 +27,10 @@ class UserRepositoryImpl(
     override fun userJoin(user: UserEntity): UserEntity {
         entityManager.persist(user)
         return user
+    }
+
+    override fun addUserTokenByUserSeq(userTokenEntity: UserTokenEntity) : UserTokenEntity {
+        entityManager.persist(userTokenEntity)
+        return userTokenEntity
     }
 }
