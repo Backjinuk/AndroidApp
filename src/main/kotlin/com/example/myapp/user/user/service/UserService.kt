@@ -16,7 +16,7 @@ class UserService(
     private val validator: Validator,
 ) {
 
-    fun userJoin(userDto: UserDto): UserDto {
+    fun registerUser(userDto: UserDto): UserDto {
         val violations = validator.validate(userDto)
         if (violations.isNotEmpty()) {
             // 예외 처리 로직

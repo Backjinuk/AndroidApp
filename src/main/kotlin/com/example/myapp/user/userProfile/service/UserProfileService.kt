@@ -16,7 +16,7 @@ class UserProfileService(
     private val validator: Validator
 
 ) {
-    fun userProfileTableSetting(userProfileDto: UserProfileDto): UserProfileDto? {
+    fun createDefaultUserProfile(userProfileDto: UserProfileDto): UserProfileDto? {
 
         val violations = validator.validate(userProfileDto)
         if (violations.isNotEmpty()) {

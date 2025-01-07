@@ -14,7 +14,7 @@ class UserSettingService(
     private val validator: Validator
 ) {
 
-    fun userSettingTableSetting(userSettingDto: UserSettingDto) : UserSettingDto {
+    fun createDefaultUserSettings(userSettingDto: UserSettingDto) : UserSettingDto {
         val violations = validator.validate(userSettingDto)
         if (violations.isNotEmpty()) {
             // 예외 처리 로직

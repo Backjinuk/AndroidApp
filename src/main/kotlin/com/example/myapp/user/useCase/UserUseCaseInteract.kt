@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class UserUseCase(
+class UserUseCaseInteract(
     private var userService: UserService,
     private var userSettingService: UserSettingService,
     private var userProfileService: UserProfileService,
     private var modelMapper: ModelMapper
-) {
+) : UserUseCase{
 
-    fun registerUser(userDto: UserDto): UserDto {
+    override fun registerUser(userDto: UserDto): UserDto {
         // 1. 회원 정보 등록
         val registeredUser = userService.registerUser(userDto)
 
