@@ -31,7 +31,7 @@ class UserProfileServiceIntegrationTest @Autowired constructor(
         } //실제로는 없는 회원
 
         //when
-        val savedUserProfile = userProfileService.userProfileTableSetting(userProfileDto);
+        val savedUserProfile = userProfileService.createDefaultUserProfile(userProfileDto);
 
         //than
         assertNotNull(savedUserProfile)
@@ -50,7 +50,7 @@ class UserProfileServiceIntegrationTest @Autowired constructor(
         }
 
         // When
-        val savedProfile = userProfileService.userProfileTableSetting(userProfileDto)
+        val savedProfile = userProfileService.createDefaultUserProfile(userProfileDto)
 
         // Then
         assertNotNull(savedProfile)
@@ -73,7 +73,7 @@ class UserProfileServiceIntegrationTest @Autowired constructor(
 
         // When & Then
         val exception = assertThrows<IllegalArgumentException> {
-            userProfileService.userProfileTableSetting(userProfileDto)
+            userProfileService.createDefaultUserProfile(userProfileDto)
         }
 
         // 예외 메시지 출력 (디버깅 용도)

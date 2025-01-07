@@ -30,7 +30,7 @@ class UserServiceIntegrationTest @Autowired constructor(
             joinType = UserJoinType.GITHUB
         }
 
-        val joinedUser = userService.userJoin(userDto)
+        val joinedUser = userService.registerUser(userDto)
 
         // then
         assertNotNull(joinedUser.userSeq)  // 정상적으로 저장되어 id가 발급되었는지 확인
@@ -55,7 +55,7 @@ class UserServiceIntegrationTest @Autowired constructor(
         }
 
         // when
-        val joinedUser = userService.userJoin(userDto)
+        val joinedUser = userService.registerUser(userDto)
 
         val exists = userService.userIsExistsByEmail(userDto)
 
@@ -98,7 +98,7 @@ class UserServiceIntegrationTest @Autowired constructor(
 
         // when & then
         val exception = assertThrows<IllegalArgumentException> {
-            userService.userJoin(invalidUserDto)
+            userService.registerUser(invalidUserDto)
         }
 
         // 예외 메시지 검증
@@ -121,7 +121,7 @@ class UserServiceIntegrationTest @Autowired constructor(
         }
 
         // 사용자 등록
-        val joinedUser = userService.userJoin(userDto)
+        val joinedUser = userService.registerUser(userDto)
 
         val userTokenDto = UserTokenDto().apply {
             userSeq = joinedUser.userSeq

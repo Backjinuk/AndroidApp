@@ -64,7 +64,7 @@ class UserProfileServiceUnitTest {
         every { modelMapper.map(userProfileEntity, UserProfileDto::class.java) } returns userProfileDto
 
         // When
-        val savedProfile = userProfileService.userProfileTableSetting(userProfileDto)
+        val savedProfile = userProfileService.createDefaultUserProfile(userProfileDto)
 
         // Then
         assertNotNull(savedProfile)
@@ -113,7 +113,7 @@ class UserProfileServiceUnitTest {
         every { modelMapper.map(userProfileEntity, UserProfileDto::class.java) } returns userProfileDto
 
         // When
-        val savedProfile = userProfileService.userProfileTableSetting(userProfileDto)
+        val savedProfile = userProfileService.createDefaultUserProfile(userProfileDto)
 
         // Then
         assertNotNull(savedProfile)
@@ -157,7 +157,7 @@ class UserProfileServiceUnitTest {
         every { validator.validate(userProfileDto) } returns setOf(validation)
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            userProfileService.userProfileTableSetting(userProfileDto)
+            userProfileService.createDefaultUserProfile(userProfileDto)
         }
 
         assertTrue(exception.message!!.contains("유효성 검증 실패: 유저 시퀸스는 양수여야 합니다."))
@@ -193,7 +193,7 @@ class UserProfileServiceUnitTest {
 
         // When & Then
         val exception = assertThrows<IllegalArgumentException> {
-            userProfileService.userProfileTableSetting(userProfileDto)
+            userProfileService.createDefaultUserProfile(userProfileDto)
         }
 
         // 예외 메시지에 두 개의 검증 실패 메시지가 포함되어 있는지 확인

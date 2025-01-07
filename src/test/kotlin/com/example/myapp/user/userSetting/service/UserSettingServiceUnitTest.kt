@@ -65,7 +65,7 @@ class UserSettingServiceUnitTest {
         every { modelMapper.map(savedEntity, UserSettingDto::class.java) } returns userSettingDto
 
         // When
-        val savedValue = userSettingService.userSettingTableSetting(userSettingDto)
+        val savedValue = userSettingService.createDefaultUserSettings(userSettingDto)
 
         // Then
         assertEquals(userSettingDto.userSeq, savedValue.userSeq, "userSeq가 일치해야 합니다.")
@@ -94,7 +94,7 @@ class UserSettingServiceUnitTest {
 
         // When & Then
         val exception = assertThrows<IllegalArgumentException> {
-            userSettingService.userSettingTableSetting(userSettingDto)
+            userSettingService.createDefaultUserSettings(userSettingDto)
         }
 
         assertTrue(exception.message!!.contains("유저의 시퀸스는 양수여야 합니다."))

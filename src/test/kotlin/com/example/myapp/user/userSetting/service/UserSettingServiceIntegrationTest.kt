@@ -29,7 +29,7 @@ class UserSettingServiceIntegrationTest @Autowired constructor(
         }
 
         //When
-        val savedDto = userSettingService.userSettingTableSetting(userSettingDto)
+        val savedDto = userSettingService.createDefaultUserSettings(userSettingDto)
 
         //Then
         assertEquals(savedDto.userSeq, savedDto.userSeq)
@@ -52,7 +52,7 @@ class UserSettingServiceIntegrationTest @Autowired constructor(
 
         //When
         val exception = assertThrows<IllegalArgumentException>{
-            userSettingService.userSettingTableSetting(userSettingDto)
+            userSettingService.createDefaultUserSettings(userSettingDto)
         }
 
         //Then
