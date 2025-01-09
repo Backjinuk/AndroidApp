@@ -12,4 +12,9 @@ interface UserRepository {
     fun userJoin(user : UserEntity): UserEntity
 
     fun addUserTokenByUserSeq(userTokenEntity: UserTokenEntity) : UserTokenEntity
+
+    fun getFindUserInfoByUserSeq(userSeq: Long) : UserEntity
+
+    fun updateUserInfoByUser(userEntity: UserEntity): UserEntity
+
 }

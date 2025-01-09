@@ -30,10 +30,22 @@ class UserService(
     fun addUserTokenByUserSeq(userTokenDto: UserTokenDto): UserTokenDto {
         validatorUtil.validator(userTokenDto) // ValidatorUtil 사용
 
-        val userTokenEntity = userRepository.addUserTokenByUserSeq(modelMapper.map(userTokenDto, UserTokenEntity::class.java))
+        val userTokenEntity =
+            userRepository.addUserTokenByUserSeq(modelMapper.map(userTokenDto, UserTokenEntity::class.java))
         return modelMapper.map(userTokenEntity, UserTokenDto::class.java)
     }
 
+    fun updateUserInfoByUser(userSeq: Long, userDto: UserDto): UserDto {
+        validatorUtil.validator(userDto)
+        val userEntity = userRepository.updateUserInfoByUser(modelMapper.map(userDto, UserEntity::class.java))
+
+        return modelMapper.map(userEntity, UserDto::class.java)
+    }
+
+    fun getFindUserInfoByUserSeq(userSeq: Long): UserDto {
+        val userEntity = userRepository.getFindUserInfoByUserSeq(userSeq)
+        return modelMapper.map(userEntity, UserDto::class.java)
+    }
 
 
 }

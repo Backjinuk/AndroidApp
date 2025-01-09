@@ -36,9 +36,190 @@ class UserServiceUnitTest {
     @InjectMockKs
     private lateinit var userService: UserService
 
+
+    @Nested
+    @DisplayName("updateUserInfoByUser")
+    inner class UpdateUserInfoByUserTests {
+
+        private val userDto = UserDto().apply {
+            email = "valid.email@example.com"
+            passwd = "ValidPass123"
+            nickName = "ValidNick"
+            userRole = UserRole.User
+            joinType = UserJoinType.GITHUB
+        }
+
+        @Test
+        @DisplayName("성공적으로 사용자 정보를 업데이트")
+        fun `성공적으로 사용자 정보를 업데이트`() {
+            // Given
+            val userSeq = 1L
+            val existingUserEntity = UserEntity().apply {
+                this.userSeq = userSeq
+                email = "old.email@example.com"
+                passwd = "OldPass123"
+                nickName = "OldNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+            val updatedUserEntity = UserEntity().apply {
+                this.userSeq = userSeq
+                email = userDto.email
+                passwd = userDto.passwd ?: ""
+                nickName = userDto.nickName
+                userRole = userDto.userRole
+                joinType = userDto.joinType
+            }
+            val updatedUserDto = UserDto().apply {
+                email = userDto.email
+                passwd = userDto.passwd
+                nickName = userDto.nickName
+                userRole = userDto.userRole
+                joinType = userDto.joinType
+            }
+
+            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns existingUserEntity
+            every { modelMapper.map(userDto, UserEntity::class.java) } returns updatedUserEntity
+            every { userRepository.userJoin(updatedUserEntity) } returns updatedUserEntity
+            every { modelMapper.map(updatedUserEntity, UserDto::class.java) } returns updatedUserDto
+
+            // When
+            val result = userService.updateUserInfoByUser(userSeq, userDto)
+
+            // Then
+            assertEquals(userDto.email, result.email)
+            assertEquals(userDto.nickName, result.nickName)
+            assertEquals(userDto.passwd, result.passwd)
+            assertEquals(userDto.userRole, result.userRole)
+            assertEquals(userDto.joinType, result.joinType)
+
+            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
+            verify(exactly = 1) { modelMapper.map(userDto, UserEntity::class.java) }
+            verify(exactly = 1) { userRepository.userJoin(updatedUserEntity) }
+            verify(exactly = 1) { modelMapper.map(updatedUserEntity, UserDto::class.java) }
+        }
+
+    }
+
+    @Nested
+    @DisplayName("getFindUserInfoByUserSeq")
+    inner class GetFindUserInfoByUserSeqTests {
+
+        @Test
+        @DisplayName("성공적으로 사용자 정보를 조회")
+        fun `성공적으로 사용자 정보를 조회`() {
+            // Given
+            val userSeq = 1L
+            val userEntity = UserEntity().apply {
+                this.userSeq = userSeq
+                email = "user.email@example.com"
+                passwd = "UserPass123"
+                nickName = "UserNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+            val userDto = UserDto().apply {
+                email = userEntity.email
+                passwd = userEntity.passwd
+                nickName = userEntity.nickName
+                userRole = userEntity.userRole
+                joinType = userEntity.joinType
+            }
+
+            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns userEntity
+            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
+
+            // When
+            val result = userService.getFindUserInfoByUserSeq(userSeq)
+
+            // Then
+            assertEquals(userDto.email, result.email)
+            assertEquals(userDto.passwd, result.passwd)
+            assertEquals(userDto.nickName, result.nickName)
+            assertEquals(userDto.userRole, result.userRole)
+            assertEquals(userDto.joinType, result.joinType)
+
+            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
+            verify(exactly = 1) { modelMapper.map(userEntity, UserDto::class.java) }
+        }
+
+        @Test
+        @DisplayName("사용자가 존재하지 않아 조회 실패")
+        fun `사용자가 존재하지 않아 조회 실패`() {
+            // Given
+            val userSeq = 1L
+            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns UserEntity()
+
+            // When & Then
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.getFindUserInfoByUserSeq(userSeq)
+            }
+            assertEquals("User with seq $userSeq not found", exception.message)
+
+            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
+            verify(exactly = 0) { modelMapper.map(any<UserEntity>(), any<Class<UserDto>>()) }
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 userSeq로 조회 시도")
+        fun `유효하지 않은 userSeq로 조회 시도`() {
+            // Given
+            val invalidUserSeq = -1L
+
+            // When & Then
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.getFindUserInfoByUserSeq(invalidUserSeq)
+            }
+            assertEquals("Invalid userSeq: $invalidUserSeq", exception.message)
+
+            verify(exactly = 0) { userRepository.getFindUserInfoByUserSeq(any()) }
+            verify(exactly = 0) { modelMapper.map(any<UserEntity>(), any<Class<UserDto>>()) }
+        }
+
+
+        @Test
+        @DisplayName("조회된 사용자 정보에 비밀번호가 포함되지 않음")
+        fun `조회된 사용자 정보에 비밀번호가 포함되지 않음`() {
+            // Given
+            val userSeq = 1L
+            val userEntity = UserEntity().apply {
+                this.userSeq = userSeq
+                email = "user.email@example.com"
+                passwd = "UserPass123"
+                nickName = "UserNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+            val userDto = UserDto().apply {
+                email = userEntity.email
+                passwd = "" // 비밀번호 제거
+                nickName = userEntity.nickName
+                userRole = userEntity.userRole
+                joinType = userEntity.joinType
+            }
+
+            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns UserEntity()
+            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
+
+            // When
+            val result = userService.getFindUserInfoByUserSeq(userSeq)
+
+            // Then
+            assertEquals(userDto.email, result.email)
+            assertEquals(userDto.nickName, result.nickName)
+            assertEquals(userDto.userRole, result.userRole)
+            assertEquals(userDto.joinType, result.joinType)
+            assertNull(result.passwd)
+
+            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
+            verify(exactly = 1) { modelMapper.map(userEntity, UserDto::class.java) }
+        }
+    }
+
     @Nested
     @DisplayName("registerUser 메서드 테스트")
-    inner class RegisterUser(){
+    inner class RegisterUser() {
+
         @Test
         @DisplayName("성공적인 회원 가입")
         fun `should register user successfully`() {
@@ -187,77 +368,80 @@ class UserServiceUnitTest {
 
             assertEquals(userJoin, true)
         }
+
     }
 
+    @Nested
+    @DisplayName("addUserTokenByUserSeq 메서드 테스트")
+    inner class AddUserTokenByUserSeq() {
+        @org.junit.jupiter.api.Test
+        @DisplayName("등록 성공 - 유효한 UserTokenDto는 DB에 저장되고 반환되어야 한다")
+        fun `등록 성공 - 유효한 UserTokenDto는 DB에 저장되고 반환되어야 한다`() {
+            // Given
+            val userTokenDto = UserTokenDto().apply {
+                userSeq = 100
+                refreshToken = "validRefreshToken"
+                expiredDt = LocalDateTime.now().plusDays(1)
+            }
 
-   @Nested
-   @DisplayName("addUserTokenByUserSeq 메서드 테스트")
-   inner class AddUserTokenByUserSeq(){
-       @org.junit.jupiter.api.Test
-       @DisplayName("등록 성공 - 유효한 UserTokenDto는 DB에 저장되고 반환되어야 한다")
-       fun `등록 성공 - 유효한 UserTokenDto는 DB에 저장되고 반환되어야 한다`() {
-           // Given
-           val userTokenDto = UserTokenDto().apply {
-               userSeq = 100
-               refreshToken = "validRefreshToken"
-               expiredDt = LocalDateTime.now().plusDays(1)
-           }
+            val userTokenEntity = UserTokenEntity().apply {
+                userSeq = userTokenDto.userSeq
+                refreshToken = userTokenDto.refreshToken
+                expiredDt = userTokenDto.expiredDt
+            }
 
-           val userTokenEntity = UserTokenEntity().apply {
-               userSeq = userTokenDto.userSeq
-               refreshToken = userTokenDto.refreshToken
-               expiredDt = userTokenDto.expiredDt
-           }
+            val savedEntity = UserTokenEntity().apply {
+                userTokenSeq = 1L // assuming userTokenSeq is set upon saving
+                userSeq = userTokenDto.userSeq
+                refreshToken = userTokenDto.refreshToken
+                expiredDt = userTokenDto.expiredDt
+                regDt = LocalDateTime.now() // set regDt if needed
+            }
 
-           val savedEntity = UserTokenEntity().apply {
-               userTokenSeq = 1L // assuming userTokenSeq is set upon saving
-               userSeq = userTokenDto.userSeq
-               refreshToken = userTokenDto.refreshToken
-               expiredDt = userTokenDto.expiredDt
-               regDt = LocalDateTime.now() // set regDt if needed
-           }
+            // Mocking Validator to return no violations
+            justRun { validatorUtil.validator(userTokenDto) }
 
-           // Mocking Validator to return no violations
-           justRun { validatorUtil.validator(userTokenDto) }
+            // Mocking ModelMapper to map DTO to Entity
+            every { modelMapper.map(userTokenDto, UserTokenEntity::class.java) } returns userTokenEntity
 
-           // Mocking ModelMapper to map DTO to Entity
-           every { modelMapper.map(userTokenDto, UserTokenEntity::class.java) } returns userTokenEntity
+            // Mocking Repository to save the entity
+            every { userRepository.addUserTokenByUserSeq(userTokenEntity) } returns savedEntity
 
-           // Mocking Repository to save the entity
-           every { userRepository.addUserTokenByUserSeq(userTokenEntity) } returns savedEntity
+            // Mocking ModelMapper to map Entity back to DTO
+            val savedUserDto = UserTokenDto().apply {
+                userTokenSeq = savedEntity.userTokenSeq
+                userSeq = savedEntity.userSeq
+                refreshToken = savedEntity.refreshToken
+                expiredDt = savedEntity.expiredDt
+                // regDt는 필요에 따라 설정
+            }
+            every { modelMapper.map(savedEntity, UserTokenDto::class.java) } returns savedUserDto
 
-           // Mocking ModelMapper to map Entity back to DTO
-           val savedUserDto = UserTokenDto().apply {
-               userTokenSeq = savedEntity.userTokenSeq
-               userSeq = savedEntity.userSeq
-               refreshToken = savedEntity.refreshToken
-               expiredDt = savedEntity.expiredDt
-               // regDt는 필요에 따라 설정
-           }
-           every { modelMapper.map(savedEntity, UserTokenDto::class.java) } returns savedUserDto
+            // When
+            val result = userService.addUserTokenByUserSeq(userTokenDto)
 
-           // When
-           val result = userService.addUserTokenByUserSeq(userTokenDto)
+            // Then
+            assertNotNull(result, "결과는 null이 아니어야 합니다.")
+            assertEquals(savedEntity.userTokenSeq, result.userTokenSeq, "userTokenSeq가 일치해야 합니다.")
+            assertEquals(userTokenDto.userSeq, result.userSeq, "userSeq가 일치해야 합니다.")
+            assertEquals(userTokenDto.refreshToken, result.refreshToken, "refreshToken이 일치해야 합니다.")
+            assertEquals(userTokenDto.expiredDt, result.expiredDt, "expiredDt가 일치해야 합니다.")
 
-           // Then
-           assertNotNull(result, "결과는 null이 아니어야 합니다.")
-           assertEquals(savedEntity.userTokenSeq, result.userTokenSeq, "userTokenSeq가 일치해야 합니다.")
-           assertEquals(userTokenDto.userSeq, result.userSeq, "userSeq가 일치해야 합니다.")
-           assertEquals(userTokenDto.refreshToken, result.refreshToken, "refreshToken이 일치해야 합니다.")
-           assertEquals(userTokenDto.expiredDt, result.expiredDt, "expiredDt가 일치해야 합니다.")
+            verify(exactly = 1) {
+                validatorUtil
+                    .validator(userTokenDto)
+            }
+            verify(exactly = 1) { modelMapper.map(userTokenDto, UserTokenEntity::class.java) }
+            verify(exactly = 1) { userRepository.addUserTokenByUserSeq(userTokenEntity) }
+            verify(exactly = 1) { modelMapper.map(savedEntity, UserTokenDto::class.java) }
+            confirmVerified(
+                validatorUtil, modelMapper, userRepository
+            )
+        }
 
-           verify(exactly = 1) { validatorUtil
-               .validator(userTokenDto) }
-           verify(exactly = 1) { modelMapper.map(userTokenDto, UserTokenEntity::class.java) }
-           verify(exactly = 1) { userRepository.addUserTokenByUserSeq(userTokenEntity) }
-           verify(exactly = 1) { modelMapper.map(savedEntity, UserTokenDto::class.java) }
-           confirmVerified(validatorUtil
-               , modelMapper, userRepository)
-       }
-
-       @org.junit.jupiter.api.Test
-       @DisplayName("등록 실패 - userSeq가 음수이면 예외가 발생한다")
-       fun `등록 실패 - userSeq가 음수이면 예외가 발생한다`() {
+        @org.junit.jupiter.api.Test
+        @DisplayName("등록 실패 - userSeq가 음수이면 예외가 발생한다")
+        fun `등록 실패 - userSeq가 음수이면 예외가 발생한다`() {
             // Given
             val userTokenDto = UserTokenDto().apply {
                 userSeq = -1
@@ -282,102 +466,111 @@ class UserServiceUnitTest {
             verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
 
             confirmVerified(userRepository, modelMapper, validatorUtil)
-       }
+        }
 
-       @Test
-       @DisplayName("등록 실패 - refreshToken이 비어있으면 예외가 발생한다")
-       fun `등록 실패 - refreshToken이 비어있으면 예외가 발생한다`() {
-           // Given
-           val userTokenDto = UserTokenDto().apply {
-               userSeq = 100
-               refreshToken = ""
-               expiredDt = LocalDateTime.now().plusDays(1)
-           }
+        @Test
+        @DisplayName("등록 실패 - refreshToken이 비어있으면 예외가 발생한다")
+        fun `등록 실패 - refreshToken이 비어있으면 예외가 발생한다`() {
+            // Given
+            val userTokenDto = UserTokenDto().apply {
+                userSeq = 100
+                refreshToken = ""
+                expiredDt = LocalDateTime.now().plusDays(1)
+            }
 
 
             every { validatorUtil.validator(userTokenDto) } throws IllegalArgumentException("refreshToken은 비어있을수 없습니다.")
 
-           // When & Then
-           val exception = assertThrows<IllegalArgumentException> {
-               userService.addUserTokenByUserSeq(userTokenDto)
-           }
+            // When & Then
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.addUserTokenByUserSeq(userTokenDto)
+            }
 
-           assertTrue(exception.message!!.contains("refreshToken은 비어있을수 없습니다."))
+            assertTrue(exception.message!!.contains("refreshToken은 비어있을수 없습니다."))
 
-           // verify
-           verify(exactly = 1) { validatorUtil .validator(userTokenDto) }
-           // No other interactions should occur
-           verify { modelMapper wasNot Called }
-           verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
+            // verify
+            verify(exactly = 1) { validatorUtil.validator(userTokenDto) }
+            // No other interactions should occur
+            verify { modelMapper wasNot Called }
+            verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
 
-           confirmVerified(userRepository, modelMapper, validatorUtil
-           )
-       }
+            confirmVerified(
+                userRepository, modelMapper, validatorUtil
+            )
+        }
 
-       @org.junit.jupiter.api.Test
-       @DisplayName("등록 실패 - expiredDt가 null이면 예외가 발생한다")
-       fun `등록 실패 - expiredDt가 null이면 예외가 발생한다`() {
-           // Given
-           val userTokenDto = UserTokenDto().apply {
-               userSeq = 100
-               refreshToken = "validRefreshToken"
-               expiredDt = null
-           }
+        @org.junit.jupiter.api.Test
+        @DisplayName("등록 실패 - expiredDt가 null이면 예외가 발생한다")
+        fun `등록 실패 - expiredDt가 null이면 예외가 발생한다`() {
+            // Given
+            val userTokenDto = UserTokenDto().apply {
+                userSeq = 100
+                refreshToken = "validRefreshToken"
+                expiredDt = null
+            }
 
-           every { validatorUtil
-               .validator(userTokenDto) } throws IllegalArgumentException("만료시간은 비어있을수 없습니다.")
+            every {
+                validatorUtil
+                    .validator(userTokenDto)
+            } throws IllegalArgumentException("만료시간은 비어있을수 없습니다.")
 
-           // When & Then
-           val exception = assertThrows<IllegalArgumentException> {
-               userService.addUserTokenByUserSeq(userTokenDto)
-           }
+            // When & Then
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.addUserTokenByUserSeq(userTokenDto)
+            }
 
-           assertTrue(exception.message!!.contains("만료시간은 비어있을수 없습니다."))
+            assertTrue(exception.message!!.contains("만료시간은 비어있을수 없습니다."))
 
-           // verify
-           verify(exactly = 1) { validatorUtil
-               .validator(userTokenDto) }
-           // No other interactions should occur
-           verify { modelMapper wasNot Called }
-           verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
+            // verify
+            verify(exactly = 1) {
+                validatorUtil
+                    .validator(userTokenDto)
+            }
+            // No other interactions should occur
+            verify { modelMapper wasNot Called }
+            verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
 
-           confirmVerified(userRepository, modelMapper, validatorUtil
-           )
-       }
+            confirmVerified(
+                userRepository, modelMapper, validatorUtil
+            )
+        }
 
-       @org.junit.jupiter.api.Test
-       @DisplayName("등록 실패 - 모든 필드가 유효하지 않으면 여러 예외가 발생한다")
-       fun `등록 실패 - 모든 필드가 유효하지 않으면 여러 예외가 발생한다`() {
-           // Given
-           val userTokenDto = UserTokenDto().apply {
-               userSeq = -10
-               refreshToken = ""
-               expiredDt = null
-           }
+        @org.junit.jupiter.api.Test
+        @DisplayName("등록 실패 - 모든 필드가 유효하지 않으면 여러 예외가 발생한다")
+        fun `등록 실패 - 모든 필드가 유효하지 않으면 여러 예외가 발생한다`() {
+            // Given
+            val userTokenDto = UserTokenDto().apply {
+                userSeq = -10
+                refreshToken = ""
+                expiredDt = null
+            }
 
             every { validatorUtil.validator(userTokenDto) } throws IllegalArgumentException(
                 "유효성 검증 실패: 유저 시퀸스는 양수여야 합니다., refreshToken은 비어있을수 없습니다., 만료시간은 비어있을수 없습니다."
             )
 
-           // When & Then
-           val exception = assertThrows<IllegalArgumentException> {
-               userService.addUserTokenByUserSeq(userTokenDto)
-           }
+            // When & Then
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.addUserTokenByUserSeq(userTokenDto)
+            }
 
-           assertTrue(exception.message!!.contains("유저 시퀸스는 양수여야 합니다."))
-           assertTrue(exception.message!!.contains("refreshToken은 비어있을수 없습니다."))
-           assertTrue(exception.message!!.contains("만료시간은 비어있을수 없습니다."))
+            assertTrue(exception.message!!.contains("유저 시퀸스는 양수여야 합니다."))
+            assertTrue(exception.message!!.contains("refreshToken은 비어있을수 없습니다."))
+            assertTrue(exception.message!!.contains("만료시간은 비어있을수 없습니다."))
 
-           // verify
-           verify(exactly = 1) { validatorUtil .validator(userTokenDto) }
+            // verify
+            verify(exactly = 1) { validatorUtil.validator(userTokenDto) }
 
-           // No other interactions should occur
-           verify { modelMapper wasNot Called }
-           verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
+            // No other interactions should occur
+            verify { modelMapper wasNot Called }
+            verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
 
-           confirmVerified(userRepository, modelMapper, validatorUtil
-           )
-       }
-   }
-
+            confirmVerified(
+                userRepository, modelMapper, validatorUtil
+            )
+        }
+    }
 }
+
+
+

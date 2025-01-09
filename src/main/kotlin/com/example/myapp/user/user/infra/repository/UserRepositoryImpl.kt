@@ -33,4 +33,14 @@ class UserRepositoryImpl(
         entityManager.persist(userTokenEntity)
         return userTokenEntity
     }
+
+    override fun getFindUserInfoByUserSeq(userSeq: Long): UserEntity {
+        TODO("Not yet implemented")
+    }
+
+    override fun updateUserInfoByUser(userEntity: UserEntity): UserEntity {
+        TODO("Not yet implemented")
+    }
+
+
 }
