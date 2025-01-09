@@ -1,5 +1,6 @@
 package com.example.myapp.user.user.service
 
+import com.example.myapp.Util.ValidatorUtil
 import com.example.myapp.user.user.domain.UserJoinType
 import com.example.myapp.user.user.domain.UserRole
 import com.example.myapp.user.user.domain.dto.UserDto
@@ -11,8 +12,6 @@ import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import jakarta.validation.ConstraintViolation
-import jakarta.validation.Validator
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -32,7 +31,7 @@ class UserServiceUnitTest {
     private lateinit var modelMapper: ModelMapper
 
     @MockK
-    private lateinit var validator: Validator
+    private lateinit var validatorUtil: ValidatorUtil
 
     @InjectMockKs
     private lateinit var userService: UserService
@@ -70,7 +69,7 @@ class UserServiceUnitTest {
             }
 
             // Mocking Validator to return no violations
-            every { validator.validate(userDto) } returns emptySet()
+            justRun { validatorUtil.validator(userDto) }
 
             // Mocking ModelMapper to map DTO to Entity
             every { modelMapper.map(userDto, UserEntity::class.java) } returns userEntity
@@ -119,21 +118,10 @@ class UserServiceUnitTest {
                 joinType = UserJoinType.HOMEPAGE
             }
 
-            // validator가 검증에 실패하도록 설정
-            val violation1 = mockk<ConstraintViolation<UserDto>>().apply {
-                every { propertyPath.toString() } returns "email"
-                every { message } returns "이메일은 필수 항목입니다."
-            }
-
-            val violation2 = mockk<ConstraintViolation<UserDto>>().apply {
-                every { propertyPath.toString() } returns "passwd"
-                every { message } returns "비밀번호는 8~20자 사이여야 합니다."
-            }
-
-            val violations = setOf(violation1, violation2)
-
-            // 검증 시 위반사항이 발견되도록 모킹
-            every { validator.validate(userDto) } returns violations
+            // Mocking ValidatorUtil to throw exception
+            every { validatorUtil.validator(userDto) } throws IllegalArgumentException(
+                "유효성 검증 실패: 이메일은 필수 항목입니다., 비밀번호는 8~20자 사이여야 합니다."
+            )
 
             // when & then
             val exception = assertThrows<IllegalArgumentException> {
@@ -146,9 +134,9 @@ class UserServiceUnitTest {
             assertTrue(exception.message?.contains("비밀번호는 8~20자 사이여야 합니다.") == true)
 
             // 검증 메서드가 실제로 호출되었는지 확인
-            verify(exactly = 1) { validator.validate(userDto) }
+            verify(exactly = 1) { validatorUtil.validator(userDto) }
             // 추가적인 상호작용이 없었는지 확인
-            confirmVerified(modelMapper, userRepository, validator)
+            confirmVerified(modelMapper, userRepository, validatorUtil)
         }
 
         @Test
@@ -174,7 +162,7 @@ class UserServiceUnitTest {
 
             // verify
             verify(exactly = 1) { userRepository.userIsExistsByEmail(userDto.email) }
-            confirmVerified(userRepository, modelMapper, validator)
+            confirmVerified(userRepository, modelMapper, validatorUtil)
         }
 
         @Test
@@ -230,7 +218,7 @@ class UserServiceUnitTest {
            }
 
            // Mocking Validator to return no violations
-           every { validator.validate(userTokenDto) } returns emptySet()
+           justRun { validatorUtil.validator(userTokenDto) }
 
            // Mocking ModelMapper to map DTO to Entity
            every { modelMapper.map(userTokenDto, UserTokenEntity::class.java) } returns userTokenEntity
@@ -258,48 +246,45 @@ class UserServiceUnitTest {
            assertEquals(userTokenDto.refreshToken, result.refreshToken, "refreshToken이 일치해야 합니다.")
            assertEquals(userTokenDto.expiredDt, result.expiredDt, "expiredDt가 일치해야 합니다.")
 
-           verify(exactly = 1) { validator.validate(userTokenDto) }
+           verify(exactly = 1) { validatorUtil
+               .validator(userTokenDto) }
            verify(exactly = 1) { modelMapper.map(userTokenDto, UserTokenEntity::class.java) }
            verify(exactly = 1) { userRepository.addUserTokenByUserSeq(userTokenEntity) }
            verify(exactly = 1) { modelMapper.map(savedEntity, UserTokenDto::class.java) }
-           confirmVerified(validator, modelMapper, userRepository)
+           confirmVerified(validatorUtil
+               , modelMapper, userRepository)
        }
 
        @org.junit.jupiter.api.Test
        @DisplayName("등록 실패 - userSeq가 음수이면 예외가 발생한다")
        fun `등록 실패 - userSeq가 음수이면 예외가 발생한다`() {
-           // Given
-           val userTokenDto = UserTokenDto().apply {
-               userSeq = -1
-               refreshToken = "validRefreshToken"
-               expiredDt = LocalDateTime.now().plusDays(1)
-           }
+            // Given
+            val userTokenDto = UserTokenDto().apply {
+                userSeq = -1
+                refreshToken = "validRefreshToken"
+                expiredDt = LocalDateTime.now().plusDays(1)
+            }
 
-           // Mocking Validator to return violations
-           val violation: ConstraintViolation<UserTokenDto> = mockk {
-               every { propertyPath.toString() } returns "userSeq"
-               every { message } returns "유저 시퀸스는 양수여야 합니다."
-           }
+            // Mocking ValidatorUtil to throw exception
+            every { validatorUtil.validator(userTokenDto) } throws IllegalArgumentException("유저 시퀸스는 양수여야 합니다.")
 
-           every { validator.validate(userTokenDto) } returns setOf(violation)
+            // When & Then
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.addUserTokenByUserSeq(userTokenDto)
+            }
 
-           // When & Then
-           val exception = assertThrows<IllegalArgumentException> {
-               userService.addUserTokenByUserSeq(userTokenDto)
-           }
+            assertTrue(exception.message!!.contains("유저 시퀸스는 양수여야 합니다."))
 
-           assertTrue(exception.message!!.contains("유저 시퀸스는 양수여야 합니다."))
+            // verify
+            verify(exactly = 1) { validatorUtil.validator(userTokenDto) }
+            // No other interactions should occur
+            verify { modelMapper wasNot Called }
+            verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
 
-           // verify
-           verify(exactly = 1) { validator.validate(userTokenDto) }
-           // No other interactions should occur
-           verify { modelMapper wasNot Called }
-           verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
-
-           confirmVerified(userRepository, modelMapper, validator)
+            confirmVerified(userRepository, modelMapper, validatorUtil)
        }
 
-       @org.junit.jupiter.api.Test
+       @Test
        @DisplayName("등록 실패 - refreshToken이 비어있으면 예외가 발생한다")
        fun `등록 실패 - refreshToken이 비어있으면 예외가 발생한다`() {
            // Given
@@ -309,12 +294,8 @@ class UserServiceUnitTest {
                expiredDt = LocalDateTime.now().plusDays(1)
            }
 
-           // Mocking Validator to return violations
-           val violation: ConstraintViolation<UserTokenDto> = mockk {
-               every { propertyPath.toString() } returns "refreshToken"
-               every { message } returns "refreshToken은 비어있을수 없습니다."
-           }
-           every { validator.validate(userTokenDto) } returns setOf(violation)
+
+            every { validatorUtil.validator(userTokenDto) } throws IllegalArgumentException("refreshToken은 비어있을수 없습니다.")
 
            // When & Then
            val exception = assertThrows<IllegalArgumentException> {
@@ -324,12 +305,13 @@ class UserServiceUnitTest {
            assertTrue(exception.message!!.contains("refreshToken은 비어있을수 없습니다."))
 
            // verify
-           verify(exactly = 1) { validator.validate(userTokenDto) }
+           verify(exactly = 1) { validatorUtil .validator(userTokenDto) }
            // No other interactions should occur
            verify { modelMapper wasNot Called }
            verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
 
-           confirmVerified(userRepository, modelMapper, validator)
+           confirmVerified(userRepository, modelMapper, validatorUtil
+           )
        }
 
        @org.junit.jupiter.api.Test
@@ -342,12 +324,8 @@ class UserServiceUnitTest {
                expiredDt = null
            }
 
-           // Mocking Validator to return violations
-           val violation: ConstraintViolation<UserTokenDto> = mockk {
-               every { propertyPath.toString() } returns "expiredDt"
-               every { message } returns "만료시간은 비어있을수 없습니다."
-           }
-           every { validator.validate(userTokenDto) } returns setOf(violation)
+           every { validatorUtil
+               .validator(userTokenDto) } throws IllegalArgumentException("만료시간은 비어있을수 없습니다.")
 
            // When & Then
            val exception = assertThrows<IllegalArgumentException> {
@@ -357,12 +335,14 @@ class UserServiceUnitTest {
            assertTrue(exception.message!!.contains("만료시간은 비어있을수 없습니다."))
 
            // verify
-           verify(exactly = 1) { validator.validate(userTokenDto) }
+           verify(exactly = 1) { validatorUtil
+               .validator(userTokenDto) }
            // No other interactions should occur
            verify { modelMapper wasNot Called }
            verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
 
-           confirmVerified(userRepository, modelMapper, validator)
+           confirmVerified(userRepository, modelMapper, validatorUtil
+           )
        }
 
        @org.junit.jupiter.api.Test
@@ -375,20 +355,9 @@ class UserServiceUnitTest {
                expiredDt = null
            }
 
-           // Mocking Validator to return multiple violations
-           val violation1: ConstraintViolation<UserTokenDto> = mockk {
-               every { propertyPath.toString() } returns "userSeq"
-               every { message } returns "유저 시퀸스는 양수여야 합니다."
-           }
-           val violation2: ConstraintViolation<UserTokenDto> = mockk {
-               every { propertyPath.toString() } returns "refreshToken"
-               every { message } returns "refreshToken은 비어있을수 없습니다."
-           }
-           val violation3: ConstraintViolation<UserTokenDto> = mockk {
-               every { propertyPath.toString() } returns "expiredDt"
-               every { message } returns "만료시간은 비어있을수 없습니다."
-           }
-           every { validator.validate(userTokenDto) } returns setOf(violation1, violation2, violation3)
+            every { validatorUtil.validator(userTokenDto) } throws IllegalArgumentException(
+                "유효성 검증 실패: 유저 시퀸스는 양수여야 합니다., refreshToken은 비어있을수 없습니다., 만료시간은 비어있을수 없습니다."
+            )
 
            // When & Then
            val exception = assertThrows<IllegalArgumentException> {
@@ -400,12 +369,14 @@ class UserServiceUnitTest {
            assertTrue(exception.message!!.contains("만료시간은 비어있을수 없습니다."))
 
            // verify
-           verify(exactly = 1) { validator.validate(userTokenDto) }
+           verify(exactly = 1) { validatorUtil .validator(userTokenDto) }
+
            // No other interactions should occur
            verify { modelMapper wasNot Called }
            verify { userRepository.addUserTokenByUserSeq(any()) wasNot Called }
 
-           confirmVerified(userRepository, modelMapper, validator)
+           confirmVerified(userRepository, modelMapper, validatorUtil
+           )
        }
    }
 

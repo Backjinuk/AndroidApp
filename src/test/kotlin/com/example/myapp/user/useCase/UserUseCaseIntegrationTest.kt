@@ -4,8 +4,6 @@ import com.example.myapp.user.user.domain.UserJoinType
 import com.example.myapp.user.user.domain.UserRole
 import com.example.myapp.user.user.domain.dto.UserDto
 import com.example.myapp.user.user.service.UserService
-import com.example.myapp.user.userProfile.service.UserProfileService
-import com.example.myapp.user.userSetting.service.UserSettingService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -20,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional
 class UserUseCaseIntegrationTest @Autowired constructor(
     private val userUseCaseInteract: UserUseCaseInteract,
     private val userService: UserService,
-    private val userProfileService: UserProfileService,
-    private val userSettingService: UserSettingService
 ) {
 
     @Test
@@ -126,7 +122,5 @@ class UserUseCaseIntegrationTest @Autowired constructor(
         }
 
         assertTrue(exception.message!!.contains("유효성 검증 실패") || exception.message!!.contains("토큰 등록 실패"))
-
-        // 트랜잭션 롤백 확인
     }
 }

@@ -1,11 +1,11 @@
 package com.example.myapp.user.user.service
 
+import com.example.myapp.Util.ValidatorUtil
 import com.example.myapp.user.user.domain.dto.UserDto
 import com.example.myapp.user.user.domain.dto.UserTokenDto
 import com.example.myapp.user.user.domain.entity.UserEntity
 import com.example.myapp.user.user.domain.entity.UserTokenEntity
 import com.example.myapp.user.user.infra.repository.UserRepository
-import jakarta.validation.Validator
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
 
@@ -13,17 +13,11 @@ import org.springframework.stereotype.Service
 class UserService(
     private val userRepository: UserRepository,
     private val modelMapper: ModelMapper,
-    private val validator: Validator,
+    private val validatorUtil: ValidatorUtil, // ValidatorUtil 추가
 ) {
 
     fun registerUser(userDto: UserDto): UserDto {
-        val violations = validator.validate(userDto)
-        if (violations.isNotEmpty()) {
-            // 예외 처리 로직
-            throw IllegalArgumentException(
-                "유효성 검증 실패: " + violations.joinToString { it.message }
-            )
-        }
+        validatorUtil.validator(userDto) // ValidatorUtil 사용
 
         val userEntity = userRepository.userJoin(modelMapper.map(userDto, UserEntity::class.java))
         return modelMapper.map(userEntity, UserDto::class.java)
@@ -34,16 +28,12 @@ class UserService(
     }
 
     fun addUserTokenByUserSeq(userTokenDto: UserTokenDto): UserTokenDto {
-        val validator = validator.validate(userTokenDto)
+        validatorUtil.validator(userTokenDto) // ValidatorUtil 사용
 
-        if (validator.isNotEmpty()) {
-            throw IllegalArgumentException(validator.joinToString { it.message })
-        }
-
-        val userTokenEntity =
-            userRepository.addUserTokenByUserSeq(modelMapper.map(userTokenDto, UserTokenEntity::class.java))
+        val userTokenEntity = userRepository.addUserTokenByUserSeq(modelMapper.map(userTokenDto, UserTokenEntity::class.java))
         return modelMapper.map(userTokenEntity, UserTokenDto::class.java)
     }
+
 
 
 }

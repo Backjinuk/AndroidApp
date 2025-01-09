@@ -5,18 +5,25 @@ import com.example.myapp.user.userSetting.domain.UserSettingEnabled
 import com.example.myapp.user.userSetting.domain.dto.UserSettingDto
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertTrue
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 class UserSettingServiceIntegrationTest @Autowired constructor(
     private val userSettingService: UserSettingService
 ) {
 
+    @Nested
+    @DisplayName("createDefaultUserSettings 메서드 테스트")
+    inner class CreateDefaultUserSettingsTestes {
 
     @Test
     fun `등록 성공 - 유효한 userSettingDto는 DB에 등록되어야 한다`() {
@@ -60,4 +67,5 @@ class UserSettingServiceIntegrationTest @Autowired constructor(
 
     }
 
+    }
 }
