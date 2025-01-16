@@ -17,4 +17,6 @@ interface UserRepository {
 
     fun updateUserInfoByUser(userEntity: UserEntity): UserEntity
 
+    fun userIsNickNameByUserDto(nickName: String): Boolean
+
 }

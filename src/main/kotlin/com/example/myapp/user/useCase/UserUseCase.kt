@@ -8,4 +8,6 @@ interface UserUseCase {
 
     fun registerUser(userDto: UserDto): UserDto
 
+    fun updateUserInfoByUser(userDto: UserDto): UserDto
+
 }

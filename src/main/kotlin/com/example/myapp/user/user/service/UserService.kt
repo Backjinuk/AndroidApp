@@ -30,21 +30,28 @@ class UserService(
     fun addUserTokenByUserSeq(userTokenDto: UserTokenDto): UserTokenDto {
         validatorUtil.validator(userTokenDto) // ValidatorUtil 사용
 
-        val userTokenEntity =
-            userRepository.addUserTokenByUserSeq(modelMapper.map(userTokenDto, UserTokenEntity::class.java))
+        val userTokenEntity = userRepository.addUserTokenByUserSeq(modelMapper.map(userTokenDto, UserTokenEntity::class.java))
         return modelMapper.map(userTokenEntity, UserTokenDto::class.java)
     }
 
-    fun updateUserInfoByUser(userSeq: Long, userDto: UserDto): UserDto {
+    fun updateUserInfoByUser(userDto: UserDto): UserDto {
         validatorUtil.validator(userDto)
-        val userEntity = userRepository.updateUserInfoByUser(modelMapper.map(userDto, UserEntity::class.java))
 
+        val userEntity = userRepository.updateUserInfoByUser(modelMapper.map(userDto, UserEntity::class.java))
         return modelMapper.map(userEntity, UserDto::class.java)
     }
 
     fun getFindUserInfoByUserSeq(userSeq: Long): UserDto {
+       if(userSeq <= 0){
+           throw IllegalArgumentException("유저 시퀸스는 양수여야 합니다.")
+       }
+
         val userEntity = userRepository.getFindUserInfoByUserSeq(userSeq)
         return modelMapper.map(userEntity, UserDto::class.java)
+    }
+
+    fun userIsNickNameByUserDto(userDto: UserDto) : Boolean {
+       return userRepository.userIsNickNameByUserDto(userDto.nickName);
     }
 
 

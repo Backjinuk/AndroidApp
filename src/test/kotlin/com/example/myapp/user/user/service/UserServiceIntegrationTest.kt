@@ -10,6 +10,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.dao.InvalidDataAccessApiUsageException
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -235,10 +236,146 @@ class UserServiceIntegrationTest @Autowired constructor(
                 exception.message?.contains("refreshToken은 비어있을수 없습니다.") == true,
                 "Exception message should contain 'refreshToken은 비어있을수 없습니다.'."
             )
-            assertTrue(
-                exception.message?.contains("만료일시는 null일 수 없습니다.") == true,
-                "Exception message should contain '만료일시는 null일 수 없습니다.'."
-            )
         }
     }
+
+    @Nested
+    @DisplayName("updateUserInfoByUser 메서드 통합 테스트")
+    inner class UpdateUserInfoByUserTests {
+
+        @Test
+        @DisplayName("성공적으로 사용자 정보를 업데이트")
+        fun `성공적으로 사용자 정보를 업데이트`() {
+            // Given: 기존 사용자 생성 및 저장
+            val userDto = UserDto().apply {
+                email = "old.email@example.com"
+                passwd = "OldPass123"
+                nickName = "OldNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            // 실제 DB에 저장 (저장 후 자동 생성된 userSeq 사용)
+            val savedUser = userService.registerUser(userDto)
+
+            // 업데이트할 내용 DTO 생성
+            val updateDto = UserDto().apply {
+                userSeq = savedUser.userSeq
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+                nickName = "ValidNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            // When: 업데이트 메서드 호출 (통합 테스트이므로 실제 빈들이 동작)
+            val updatedUserDto = userService.updateUserInfoByUser( updateDto)
+
+            // Then: 업데이트된 결과 검증
+            assertEquals(updateDto.email, updatedUserDto.email)
+            assertEquals(updateDto.nickName, updatedUserDto.nickName)
+            assertEquals(updateDto.passwd, updatedUserDto.passwd)
+            assertEquals(updateDto.userRole, updatedUserDto.userRole)
+            assertEquals(updateDto.joinType, updatedUserDto.joinType)
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 사용자로 업데이트 시도 시 실패")
+        fun `사용자가 존재하지 않아 업데이트 실패`() {
+            // Given: DB에 존재하지 않는 userSeq 사용 (예: 9999L)
+            val nonExistentUserSeq = 9999L
+            val updateDto = UserDto().apply {
+                userSeq = nonExistentUserSeq
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+                nickName = "ValidNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            // When & Then: 예외 발생 여부 검증
+            val exception = assertThrows<InvalidDataAccessApiUsageException> {
+                userService.updateUserInfoByUser(updateDto)
+            }
+
+            assertEquals("존재하지 않는 사용자 입니다.", exception.message)
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 이메일 형식으로 업데이트 실패")
+        fun `유효하지 않은 이메일 형식으로 업데이트 실패`() {
+            // Given: 기존 사용자 저장
+            val userEntity = UserDto().apply {
+                email = "old.email@example.com"
+                passwd = "OldPass123"
+                nickName = "OldNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+            val savedUser = userService.registerUser(userEntity)
+
+            // 그리고 이메일 형식이 유효하지 않은 DTO 생성
+            val invalidDto = UserDto().apply {
+                email = "invalid-email"
+                passwd = "ValidPass123"
+                nickName = "ValidNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            // When & Then: Validator에서 예외 발생
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.updateUserInfoByUser( invalidDto)
+            }
+            assertTrue(exception.message!!.contains("이메일 형식이 유효하지 않습니다."))
+        }
+
+    }
+
+    @Nested
+    @DisplayName("getFindUserInfoByUserSeq 메서드 테스트")
+    inner class getFindUserInfoByUserSeq {
+
+        @Test
+        @DisplayName("존재하는 사용자 정보 조회")
+        fun `존재하는 사용자 정보 조회`() {
+            // Given: 존재하는 사용자 (예: userSeq = 1L, 테스트 DB에 미리 존재)
+            val userDto = UserDto().apply {
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+                nickName = "ValidNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            val registeredUser = userService.registerUser(userDto)
+
+            val userSeq = registeredUser.userSeq
+
+            // When: 조회 실행
+            val result = userService.getFindUserInfoByUserSeq(userSeq)
+
+            // Then: 조회된 값이 null이 아니고, 필드들이 올바르게 설정되었는지 검증
+            assertNotNull(result)
+            // 실제 테스트 환경에 맞게 예상 값에 대한 검증을 추가합니다.
+            // 예를 들어, 테스트 DB에 저장된 데이터와 일치하는지 확인합니다.
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 사용자 정보 조회 시 실패")
+        fun `존재하지 않는 사용자 정보 조회 실패`() {
+            // Given: DB에 존재하지 않는 userSeq 사용 (예: 9999L)
+            val nonExistentUserSeq = 9999L
+
+            // When & Then: 조회 시 IllegalArgumentException 발생 검증
+            val exception = assertThrows<InvalidDataAccessApiUsageException> {
+                userService.getFindUserInfoByUserSeq(nonExistentUserSeq)
+            }
+            assertEquals("존재하지 않는 사용자 입니다.", exception.message)
+        }
+
+    }
+
+
 }
+

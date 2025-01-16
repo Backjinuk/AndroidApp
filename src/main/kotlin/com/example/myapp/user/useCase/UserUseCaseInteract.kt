@@ -17,7 +17,7 @@ class UserUseCaseInteract(
     private var userSettingService: UserSettingService,
     private var userProfileService: UserProfileService,
     private var modelMapper: ModelMapper
-) : UserUseCase{
+) : UserUseCase {
 
     override fun registerUser(userDto: UserDto): UserDto {
         // 1. 회원 정보 등록
@@ -37,6 +37,10 @@ class UserUseCaseInteract(
         )
 
         return registeredUser
+    }
+
+    override fun updateUserInfoByUser(userDto: UserDto): UserDto {
+        return userService.updateUserInfoByUser(userDto)
     }
 
 }
