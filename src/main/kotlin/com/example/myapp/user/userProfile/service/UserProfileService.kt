@@ -19,15 +19,46 @@ class UserProfileService(
 
         validatorUtil.validator(userProfileDto)
 
-        val returnValue = userProfileRepository.userProfitableSetting(modelMapper.map(userProfileDto, UserProfileEntity::class.java))
+        val returnValue =
+            userProfileRepository.userProfitableSetting(modelMapper.map(userProfileDto, UserProfileEntity::class.java))
         return modelMapper.map(returnValue, UserProfileDto::class.java)
     }
 
-    fun socialMediaPlatFromByUserProfile(socialMediaPlatFormDto: SocialMediaPlatFormDto) : SocialMediaPlatFormDto {
-
+    fun socialMediaPlatFromByUserProfile(socialMediaPlatFormDto: SocialMediaPlatFormDto): SocialMediaPlatFormDto {
         validatorUtil.validator(socialMediaPlatFormDto)
 
-       val returnValue = userProfileRepository.socialMediaPlatFromByUserProfile(modelMapper.map(socialMediaPlatFormDto, SocialMediaPlatFormEntity::class.java))
-       return modelMapper.map(returnValue, SocialMediaPlatFormDto::class.java)
+        val returnValue = userProfileRepository.socialMediaPlatFromByUserProfile( modelMapper.map( socialMediaPlatFormDto, SocialMediaPlatFormEntity::class.java ) )
+        return modelMapper.map(returnValue, SocialMediaPlatFormDto::class.java)
+    }
+
+    fun updateUserProfileByUserProfile(userProfileDto: UserProfileDto): UserProfileDto {
+        validatorUtil.validator(userProfileDto)
+
+        val returnValue =
+            userProfileRepository.updateUserProfileByUserProfile(modelMapper.map(userProfileDto, UserProfileEntity::class.java))
+        return modelMapper.map(returnValue, UserProfileDto::class.java)
+    }
+
+    fun findUserProfileInfoByUserSeq(userSeq : Long): UserProfileDto {
+        val returnValue = userProfileRepository.findUserProfileByUserSeq(userSeq)
+        return modelMapper.map(returnValue, UserProfileDto::class.java)
+
+    }
+
+    fun updateSocialMediaPlatFormBySocialMediaPlatForm(socialMediaPlatFormDto: SocialMediaPlatFormDto): SocialMediaPlatFormDto {
+        validatorUtil.validator(socialMediaPlatFormDto)
+
+        val returnValue = userProfileRepository.updateSocialMediaPlatFormBySocialMediaForm(
+            modelMapper.map(
+                socialMediaPlatFormDto,
+                SocialMediaPlatFormEntity::class.java
+            )
+        )
+        return modelMapper.map(returnValue, SocialMediaPlatFormDto::class.java)
+    }
+
+    fun findSocialMediaPlatFormByUserProfileSeq(userProfileSeq: Long): List<SocialMediaPlatFormDto> {
+        return userProfileRepository.findSocialMediaPlatFormByUserProfileSeq(userProfileSeq)
+            .map { modelMapper.map(it, SocialMediaPlatFormDto::class.java) }
     }
 }

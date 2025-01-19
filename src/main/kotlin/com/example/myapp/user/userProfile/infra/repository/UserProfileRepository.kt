@@ -9,6 +9,15 @@ interface UserProfileRepository {
 
     fun userProfitableSetting(userProfile: UserProfileEntity): UserProfileEntity
 
+    fun updateUserProfileByUserProfile(userProfileEntity: UserProfileEntity) : UserProfileEntity
+
+    fun findUserProfileByUserSeq(userSeq : Long) : UserProfileEntity
+
     fun socialMediaPlatFromByUserProfile(socialMediaPlatFormEntity: SocialMediaPlatFormEntity): SocialMediaPlatFormEntity
+
+    fun updateSocialMediaPlatFormBySocialMediaForm(socialMediaPlatFormEntity: SocialMediaPlatFormEntity) : SocialMediaPlatFormEntity
+
+    fun findSocialMediaPlatFormByUserProfileSeq(userProfileSeq: Long) : List<SocialMediaPlatFormEntity>
+
 
 }

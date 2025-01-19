@@ -36,225 +36,6 @@ class UserServiceUnitTest {
     @InjectMockKs
     private lateinit var userService: UserService
 
-
-    @Nested
-    @DisplayName("updateUserInfoByUser 메서드 테스트")
-    inner class UpdateUserInfoByUserTests {
-
-        private val userDto = UserDto().apply {
-            email = "valid.email@example.com"
-            passwd = "ValidPass123"
-            nickName = "ValidNick"
-            userRole = UserRole.User
-            joinType = UserJoinType.GITHUB
-        }
-
-        @Test
-        @DisplayName("성공적으로 사용자 정보를 업데이트")
-        fun `성공적으로 사용자 정보를 업데이트`() {
-            // Given
-            val userSeq = 1L
-            val existingUserEntity = UserEntity().apply {
-                this.userSeq = userSeq
-                email = "old.email@example.com"
-                passwd = "OldPass123"
-                nickName = "OldNick"
-                userRole = UserRole.User
-                joinType = UserJoinType.GITHUB
-            }
-            val updatedUserEntity = UserEntity().apply {
-                this.userSeq = userSeq
-                email = userDto.email
-                passwd = userDto.passwd ?: ""
-                nickName = userDto.nickName
-                userRole = userDto.userRole
-                joinType = userDto.joinType
-            }
-            val updatedUserDto = UserDto().apply {
-                email = userDto.email
-                passwd = userDto.passwd
-                nickName = userDto.nickName
-                userRole = userDto.userRole
-                joinType = userDto.joinType
-            }
-
-            // Mocking
-            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns existingUserEntity
-            every { modelMapper.map(userDto, UserEntity::class.java) } returns updatedUserEntity
-            // 유효성 검증은 성공했다고 가정
-            justRun { validatorUtil.validator(any<UserDto>()) }
-            every { userRepository.updateUserInfoByUser(updatedUserEntity) } returns updatedUserEntity
-            every { modelMapper.map(updatedUserEntity, UserDto::class.java) } returns updatedUserDto
-
-            // When
-            val result = userService.updateUserInfoByUser( userDto)
-
-            // Then
-            assertEquals(userDto.email, result.email)
-            assertEquals(userDto.nickName, result.nickName)
-            assertEquals(userDto.passwd, result.passwd)
-            assertEquals(userDto.userRole, result.userRole)
-            assertEquals(userDto.joinType, result.joinType)
-        }
-
-        @Test
-        @DisplayName("사용자가 존재하지 않아 업데이트 실패")
-        fun `사용자가 존재하지 않아 업데이트 실패`() {
-            // Given
-            val userSeq = 1L
-            val userEntity: UserEntity = UserEntity()
-
-            justRun { validatorUtil.validator(userDto) }
-
-            every { modelMapper.map(userDto, UserEntity::class.java) } returns userEntity
-            every { userRepository.updateUserInfoByUser(userEntity) } returns userEntity
-            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
-
-            // When & Then
-            val returnValue = userService.updateUserInfoByUser( userDto)
-
-            assertEquals(userEntity.userSeq, 0L)
-        }
-
-        @Test
-        @DisplayName("유효하지 않은 이메일 형식으로 업데이트 실패")
-        fun `유효하지 않은 이메일 형식으로 업데이트 실패`() {
-            // Given
-            val invalidUserDto = UserDto().apply {
-                email = "invalid-email"
-                passwd = userDto.passwd
-                nickName = userDto.nickName
-                userRole = userDto.userRole
-                joinType = userDto.joinType
-            }
-
-            every { validatorUtil.validator(invalidUserDto) } throws IllegalArgumentException("이메일 형식이 유효하지 않습니다.")
-
-            // When & Then
-            val exception = assertThrows<IllegalArgumentException> {
-                userService.updateUserInfoByUser( invalidUserDto)
-            }
-            assertEquals("이메일 형식이 유효하지 않습니다.", exception.message)
-        }
-
-    }
-
-
-    @Nested
-    @DisplayName("getFindUserInfoByUserSeq 메서드 테스트")
-    inner class GetFindUserInfoByUserSeqTests {
-
-        @Test
-        @DisplayName("성공적으로 사용자 정보를 조회")
-        fun `성공적으로 사용자 정보를 조회`() {
-            // Given
-            val userSeq = 1L
-            val userEntity = UserEntity().apply {
-                this.userSeq = userSeq
-                email = "user.email@example.com"
-                passwd = "UserPass123"
-                nickName = "UserNick"
-                userRole = UserRole.User
-                joinType = UserJoinType.GITHUB
-            }
-            val userDto = UserDto().apply {
-                email = userEntity.email
-                passwd = userEntity.passwd
-                nickName = userEntity.nickName
-                userRole = userEntity.userRole
-                joinType = userEntity.joinType
-            }
-
-            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns userEntity
-            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
-
-            // When
-            val result = userService.getFindUserInfoByUserSeq(userSeq)
-
-            // Then
-            assertEquals(userDto.email, result.email)
-            assertEquals(userDto.passwd, result.passwd)
-            assertEquals(userDto.nickName, result.nickName)
-            assertEquals(userDto.userRole, result.userRole)
-            assertEquals(userDto.joinType, result.joinType)
-
-            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
-            verify(exactly = 1) { modelMapper.map(userEntity, UserDto::class.java) }
-        }
-
-        @Test
-        @DisplayName("사용자가 존재하지 않아 조회 실패")
-        fun `사용자가 존재하지 않아 조회 실패`() {
-            // Given
-            val userSeq = 1L
-            val userEntity: UserEntity = UserEntity()
-            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns userEntity
-            every { modelMapper.map(userEntity, UserDto::class.java) } returns UserDto()
-            // When & Then
-            val returnValue = userService.getFindUserInfoByUserSeq(userSeq)
-
-            assertEquals(UserEntity().userSeq, returnValue.userSeq)
-
-            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
-            verify(exactly = 1) { modelMapper.map(any<UserEntity>(), any<Class<UserDto>>()) }
-        }
-
-        @Test
-        @DisplayName("유효하지 않은 userSeq로 조회 시도")
-        fun `유효하지 않은 userSeq로 조회 시도`() {
-            // Given
-            val invalidUserSeq = -1L
-
-            // When & Then
-            val exception = assertThrows<IllegalArgumentException> {
-                userService.getFindUserInfoByUserSeq(invalidUserSeq)
-            }
-            assertEquals("유저 시퀸스는 양수여야 합니다.", exception.message)
-
-            verify(exactly = 0) { userRepository.getFindUserInfoByUserSeq(any()) }
-            verify(exactly = 0) { modelMapper.map(any<UserEntity>(), any<Class<UserDto>>()) }
-        }
-
-
-        @Test
-        @DisplayName("조회된 사용자 정보에 비밀번호가 포함되지 않음")
-        fun `조회된 사용자 정보에 비밀번호가 포함되지 않음`() {
-            // Given
-            val userSeq = 1L
-            val userEntity = UserEntity().apply {
-                this.userSeq = userSeq
-                email = "user.email@example.com"
-                passwd = "UserPass123"
-                nickName = "UserNick"
-                userRole = UserRole.User
-                joinType = UserJoinType.GITHUB
-            }
-            val userDto = UserDto().apply {
-                email = userEntity.email
-                passwd = "" // 비밀번호 제거
-                nickName = userEntity.nickName
-                userRole = userEntity.userRole
-                joinType = userEntity.joinType
-            }
-
-            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns userEntity
-            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
-
-            // When
-            val result = userService.getFindUserInfoByUserSeq(userSeq)
-
-            // Then
-            assertEquals(userDto.email, result.email)
-            assertEquals(userDto.nickName, result.nickName)
-            assertEquals(userDto.userRole, result.userRole)
-            assertEquals(userDto.joinType, result.joinType)
-            assertEquals("", result.passwd)
-
-            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
-            verify(exactly = 1) { modelMapper.map(userEntity, UserDto::class.java) }
-        }
-    }
-
     @Nested
     @DisplayName("registerUser 메서드 테스트")
     inner class RegisterUser() {
@@ -408,6 +189,223 @@ class UserServiceUnitTest {
             assertEquals(userJoin, true)
         }
 
+    }
+
+    @Nested
+    @DisplayName("updateUserInfoByUser 메서드 테스트")
+    inner class UpdateUserInfoByUserTests {
+
+        private val userDto = UserDto().apply {
+            email = "valid.email@example.com"
+            passwd = "ValidPass123"
+            nickName = "ValidNick"
+            userRole = UserRole.User
+            joinType = UserJoinType.GITHUB
+        }
+
+        @Test
+        @DisplayName("성공적으로 사용자 정보를 업데이트")
+        fun `성공적으로 사용자 정보를 업데이트`() {
+            // Given
+            val userSeq = 1L
+            val existingUserEntity = UserEntity().apply {
+                this.userSeq = userSeq
+                email = "old.email@example.com"
+                passwd = "OldPass123"
+                nickName = "OldNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+            val updatedUserEntity = UserEntity().apply {
+                this.userSeq = userSeq
+                email = userDto.email
+                passwd = userDto.passwd ?: ""
+                nickName = userDto.nickName
+                userRole = userDto.userRole
+                joinType = userDto.joinType
+            }
+            val updatedUserDto = UserDto().apply {
+                email = userDto.email
+                passwd = userDto.passwd
+                nickName = userDto.nickName
+                userRole = userDto.userRole
+                joinType = userDto.joinType
+            }
+
+            // Mocking
+            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns existingUserEntity
+            every { modelMapper.map(userDto, UserEntity::class.java) } returns updatedUserEntity
+            // 유효성 검증은 성공했다고 가정
+            justRun { validatorUtil.validator(any<UserDto>()) }
+            every { userRepository.updateUserInfoByUser(updatedUserEntity) } returns updatedUserEntity
+            every { modelMapper.map(updatedUserEntity, UserDto::class.java) } returns updatedUserDto
+
+            // When
+            val result = userService.updateUserInfoByUser( userDto)
+
+            // Then
+            assertEquals(userDto.email, result.email)
+            assertEquals(userDto.nickName, result.nickName)
+            assertEquals(userDto.passwd, result.passwd)
+            assertEquals(userDto.userRole, result.userRole)
+            assertEquals(userDto.joinType, result.joinType)
+        }
+
+        @Test
+        @DisplayName("사용자가 존재하지 않아 업데이트 실패")
+        fun `사용자가 존재하지 않아 업데이트 실패`() {
+            // Given
+            val userSeq = 1L
+            val userEntity: UserEntity = UserEntity()
+
+            justRun { validatorUtil.validator(userDto) }
+
+            every { modelMapper.map(userDto, UserEntity::class.java) } returns userEntity
+            every { userRepository.updateUserInfoByUser(userEntity) } returns userEntity
+            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
+
+            // When & Then
+            val returnValue = userService.updateUserInfoByUser( userDto)
+
+            assertEquals(userEntity.userSeq, 0L)
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 이메일 형식으로 업데이트 실패")
+        fun `유효하지 않은 이메일 형식으로 업데이트 실패`() {
+            // Given
+            val invalidUserDto = UserDto().apply {
+                email = "invalid-email"
+                passwd = userDto.passwd
+                nickName = userDto.nickName
+                userRole = userDto.userRole
+                joinType = userDto.joinType
+            }
+
+            every { validatorUtil.validator(invalidUserDto) } throws IllegalArgumentException("이메일 형식이 유효하지 않습니다.")
+
+            // When & Then
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.updateUserInfoByUser( invalidUserDto)
+            }
+            assertEquals("이메일 형식이 유효하지 않습니다.", exception.message)
+        }
+
+    }
+
+    @Nested
+    @DisplayName("getFindUserInfoByUserSeq 메서드 테스트")
+    inner class GetFindUserInfoByUserSeqTests {
+
+        @Test
+        @DisplayName("성공적으로 사용자 정보를 조회")
+        fun `성공적으로 사용자 정보를 조회`() {
+            // Given
+            val userSeq = 1L
+            val userEntity = UserEntity().apply {
+                this.userSeq = userSeq
+                email = "user.email@example.com"
+                passwd = "UserPass123"
+                nickName = "UserNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+            val userDto = UserDto().apply {
+                email = userEntity.email
+                passwd = userEntity.passwd
+                nickName = userEntity.nickName
+                userRole = userEntity.userRole
+                joinType = userEntity.joinType
+            }
+
+            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns userEntity
+            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
+
+            // When
+            val result = userService.getFindUserInfoByUserSeq(userSeq)
+
+            // Then
+            assertEquals(userDto.email, result.email)
+            assertEquals(userDto.passwd, result.passwd)
+            assertEquals(userDto.nickName, result.nickName)
+            assertEquals(userDto.userRole, result.userRole)
+            assertEquals(userDto.joinType, result.joinType)
+
+            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
+            verify(exactly = 1) { modelMapper.map(userEntity, UserDto::class.java) }
+        }
+
+        @Test
+        @DisplayName("사용자가 존재하지 않아 조회 실패")
+        fun `사용자가 존재하지 않아 조회 실패`() {
+            // Given
+            val userSeq = 1L
+            val userEntity: UserEntity = UserEntity()
+            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns userEntity
+            every { modelMapper.map(userEntity, UserDto::class.java) } returns UserDto()
+            // When & Then
+            val returnValue = userService.getFindUserInfoByUserSeq(userSeq)
+
+            assertEquals(UserEntity().userSeq, returnValue.userSeq)
+
+            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
+            verify(exactly = 1) { modelMapper.map(any<UserEntity>(), any<Class<UserDto>>()) }
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 userSeq로 조회 시도")
+        fun `유효하지 않은 userSeq로 조회 시도`() {
+            // Given
+            val invalidUserSeq = -1L
+
+            // When & Then
+            val exception = assertThrows<IllegalArgumentException> {
+                userService.getFindUserInfoByUserSeq(invalidUserSeq)
+            }
+            assertEquals("유저 시퀸스는 양수여야 합니다.", exception.message)
+
+            verify(exactly = 0) { userRepository.getFindUserInfoByUserSeq(any()) }
+            verify(exactly = 0) { modelMapper.map(any<UserEntity>(), any<Class<UserDto>>()) }
+        }
+
+
+        @Test
+        @DisplayName("조회된 사용자 정보에 비밀번호가 포함되지 않음")
+        fun `조회된 사용자 정보에 비밀번호가 포함되지 않음`() {
+            // Given
+            val userSeq = 1L
+            val userEntity = UserEntity().apply {
+                this.userSeq = userSeq
+                email = "user.email@example.com"
+                passwd = "UserPass123"
+                nickName = "UserNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+            val userDto = UserDto().apply {
+                email = userEntity.email
+                passwd = "" // 비밀번호 제거
+                nickName = userEntity.nickName
+                userRole = userEntity.userRole
+                joinType = userEntity.joinType
+            }
+
+            every { userRepository.getFindUserInfoByUserSeq(userSeq) } returns userEntity
+            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
+
+            // When
+            val result = userService.getFindUserInfoByUserSeq(userSeq)
+
+            // Then
+            assertEquals(userDto.email, result.email)
+            assertEquals(userDto.nickName, result.nickName)
+            assertEquals(userDto.userRole, result.userRole)
+            assertEquals(userDto.joinType, result.joinType)
+            assertEquals("", result.passwd)
+
+            verify(exactly = 1) { userRepository.getFindUserInfoByUserSeq(userSeq) }
+            verify(exactly = 1) { modelMapper.map(userEntity, UserDto::class.java) }
+        }
     }
 
     @Nested
