@@ -22,50 +22,50 @@ class UserSettingServiceIntegrationTest @Autowired constructor(
 ) {
 
     @Nested
-    @DisplayName("createDefaultUserSettings 메서드 테스트")
-    inner class CreateDefaultUserSettingsTestes {
+    @DisplayName("createDefaultUserSetting 메서드 테스트")
+    inner class createDefaultUserSettingTests{
 
-    @Test
-    fun `등록 성공 - 유효한 userSettingDto는 DB에 등록되어야 한다`() {
-        //Given
-        val userSettingDto = UserSettingDto().apply {
-            userSeq = 100
-            notificationEnabled = UserSettingEnabled.ON
-            eventEnabled = UserSettingEnabled.ON
-            themePreference = ThemePreference.DARK
+        @Test
+        fun `등록 성공 - 유효한 userSettingDto는 db에 저장된다`(){
+            //Given
+            val userSettingDto = UserSettingDto().apply {
+                userSeq = 1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
+            }
+
+            //When
+            val result = userSettingService.createDefaultUserSettings(userSettingDto)
+
+            //Then
+            assertTrue(result.userSettingSeq != 0L)
+            assertEquals(result.userSeq, userSettingDto.userSeq)
+            assertEquals(result.notificationEnabled, userSettingDto.notificationEnabled)
+            assertEquals(result.eventEnabled, userSettingDto.eventEnabled)
+            assertEquals(result.themePreference, userSettingDto.themePreference)
         }
 
-        //When
-        val savedDto = userSettingService.createDefaultUserSettings(userSettingDto)
+        @Test
+        fun `등록 실패 - userSeq가 0인 경우 예외가 발생한다`(){
+            //Given
+            val userSettingDto = UserSettingDto().apply {
+                userSeq = -1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
+            }
 
-        //Then
-        assertEquals(savedDto.userSeq, savedDto.userSeq)
-        assertEquals(savedDto.notificationEnabled, savedDto.notificationEnabled)
-        assertEquals(savedDto.eventEnabled, savedDto.eventEnabled)
-        assertEquals(savedDto.themePreference, savedDto.themePreference)
+            //When
+            val exception = assertThrows<IllegalArgumentException> {
+                userSettingService.createDefaultUserSettings(userSettingDto)
+            }
+
+            //Then
+            assertTrue { exception.message!!.contains("유저의 시퀸스는 양수여야 합니다.") }
+        }
 
     }
 
-
-    @Test
-    fun `등록 실패 - userSeq가 음수일때 등록 실패`() {
-        //Given
-        val userSettingDto = UserSettingDto().apply {
-            userSeq = -1
-            notificationEnabled = UserSettingEnabled.ON
-            eventEnabled = UserSettingEnabled.ON
-            themePreference = ThemePreference.DARK
-        }
-
-        //When
-        val exception = assertThrows<IllegalArgumentException>{
-            userSettingService.createDefaultUserSettings(userSettingDto)
-        }
-
-        //Then
-        assertTrue(exception.message!!.contains("유저의 시퀸스는 양수여야 합니다."))
-
-    }
-
-    }
+    
 }

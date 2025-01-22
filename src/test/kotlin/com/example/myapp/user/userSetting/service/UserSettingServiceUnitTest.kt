@@ -1,33 +1,30 @@
 package com.example.myapp.user.userSetting.service
 
 import com.example.myapp.Util.ValidatorUtil
-import com.example.myapp.user.userProfile.domain.dto.SocialMediaPlatFormDto
-import com.example.myapp.user.userProfile.domain.dto.UserProfileDto
-import com.example.myapp.user.userProfile.domain.entity.SocialMediaPlatFormEntity
-import com.example.myapp.user.userProfile.domain.entity.UserProfileEntity
-import com.example.myapp.user.userProfile.infra.repository.UserProfileRepository
-import com.example.myapp.user.userProfile.service.UserProfileService
-import io.mockk.confirmVerified
+import com.example.myapp.user.userSetting.domain.ThemePreference
+import com.example.myapp.user.userSetting.domain.UserSettingEnabled
+import com.example.myapp.user.userSetting.domain.dto.UserSettingDto
+import com.example.myapp.user.userSetting.domain.entity.UserSettingEntity
+import com.example.myapp.user.userSetting.infra.repository.UserSettingRepository
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.justRun
-import io.mockk.verify
-import org.junit.jupiter.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.modelmapper.ModelMapper
+import kotlin.test.assertTrue
 
 @ExtendWith(MockKExtension::class)
 class UserProfileServiceUnitTest {
 
     @MockK
-    private lateinit var userProfileRepository: UserProfileRepository
-
+    private lateinit var userSettingRepository: UserSettingRepository
     @MockK
     private lateinit var modelMapper: ModelMapper
 
@@ -35,367 +32,198 @@ class UserProfileServiceUnitTest {
     private lateinit var validatorUtil: ValidatorUtil
 
     @InjectMockKs
-    private lateinit var userProfileService: UserProfileService
+    private lateinit var userSettingService: UserSettingService
+
 
     @Nested
-    @DisplayName("createDefaultUserProfile 메서드 테스트")
-    inner class CreateDefaultUserProfileTests {
+    @DisplayName("createDefaultUserSetting 메서드 테스트")
+    inner class createDefaultUserSettingTests {
 
         @Test
-        @DisplayName("성공적인 등록 - 유효한 UserProfileDto는 저장되어야 한다")
-        fun `should save valid UserProfileDto successfully`() {
-            // Given
-            val userProfileDto = UserProfileDto().apply {
-                userSeq = 100
-                fileSeq = 200
-                introduction = "안녕하세요, 저는 사용자입니다."
+        fun `등록 성공 - 유효한 userSettingDto는 db에 저장된다`(){
+            //Given
+            val userSettingDto = UserSettingDto().apply {
+                userSeq = 1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
             }
 
-            val userProfileEntity = UserProfileEntity().apply {
-                userSeq = userProfileDto.userSeq
-                fileSeq = userProfileDto.fileSeq
-                introduction = userProfileDto.introduction
-                userProfileSeq = 1 // Assuming this is set after saving
+            val userSettingEntity = UserSettingEntity().apply {
+                userSeq = 1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
             }
 
-            // MockK 설정: 유효성 검사가 통과됨
-            justRun { validatorUtil.validator(userProfileDto) }
+            justRun { validatorUtil.validator(userSettingDto) }
+            every {userSettingRepository.createDefaultUserSetting(userSettingEntity)} returns userSettingEntity
 
-            // MockK 설정: ModelMapper가 DTO를 Entity로 변환
-            every { modelMapper.map(userProfileDto, UserProfileEntity::class.java) } returns userProfileEntity
+            every {modelMapper.map(userSettingDto, UserSettingEntity::class.java)} returns userSettingEntity
+            every {modelMapper.map(userSettingEntity, UserSettingDto::class.java)} returns userSettingDto
 
-            // MockK 설정: 리포지토리가 저장을 수행하고 반환값을 제공함
-            every { userProfileRepository.userProfitableSetting(userProfileEntity) } returns userProfileEntity
+           //When
+            val result = userSettingService.createDefaultUserSettings(userSettingDto)
 
-            // MockK 설정: ModelMapper가 Entity를 DTO로 변환
-            every { modelMapper.map(userProfileEntity, UserProfileDto::class.java) } returns userProfileDto
-
-            // When
-            val savedProfile = userProfileService.createDefaultUserProfile(userProfileDto)
-
-            // Then
-            assertNotNull(savedProfile)
-            assertEquals(100, savedProfile!!.userSeq, "userSeq가 일치해야 합니다.")
-            assertEquals(200, savedProfile.fileSeq, "fileSeq가 일치해야 합니다.")
-            assertEquals("안녕하세요, 저는 사용자입니다.", savedProfile.introduction, "introduction이 일치해야 합니다.")
-
-            // MockK 검증: validator.validator(), modelMapper.map, repository.userProfitableSetting, modelMapper.map 호출 확인
-            verify(exactly = 1) { validatorUtil.validator(userProfileDto) }
-            verify(exactly = 1) { modelMapper.map(userProfileDto, UserProfileEntity::class.java) }
-            verify(exactly = 1) { userProfileRepository.userProfitableSetting(userProfileEntity) }
-            verify(exactly = 1) { modelMapper.map(userProfileEntity, UserProfileDto::class.java) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
+            //Then
+            assertThat(result).isEqualTo(userSettingDto)
         }
 
         @Test
-        @DisplayName("성공적인 등록 - introduction이 빈값이여도 등록이 되어야 한다")
-        fun `should save UserProfileDto with empty introduction successfully`() {
-            // Given
-            val userProfileDto = UserProfileDto().apply {
-                userSeq = 100
-                fileSeq = 200
-                introduction = ""
+        fun `등록 실패 - 유효하지 않은 userSettingDto는 db에 저장되지 않는다`(){
+            //Given
+            val userSettingDto = UserSettingDto().apply {
+                userSeq = -1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
             }
 
-            val userProfileEntity = UserProfileEntity().apply {
-                userSeq = userProfileDto.userSeq
-                fileSeq = userProfileDto.fileSeq
-                introduction = userProfileDto.introduction
-            }
+            every { validatorUtil.validator(userSettingDto) } throws IllegalArgumentException("유저의 시퀸스는 양수여야 합니다.")
 
-            // MockK 설정: 유효성 검사가 통과됨
-            justRun { validatorUtil.validator(userProfileDto) }
-
-            // MockK 설정: ModelMapper가 DTO를 Entity로 변환
-            every { modelMapper.map(userProfileDto, UserProfileEntity::class.java) } returns userProfileEntity
-
-            // MockK 설정: 리포지토리가 저장을 수행하고 반환값을 제공함
-            every { userProfileRepository.userProfitableSetting(userProfileEntity) } returns userProfileEntity
-
-            // MockK 설정: ModelMapper가 Entity를 DTO로 변환
-            every { modelMapper.map(userProfileEntity, UserProfileDto::class.java) } returns userProfileDto
-
-            // When
-            val savedProfile = userProfileService.createDefaultUserProfile(userProfileDto)
-
-            // Then
-            assertNotNull(savedProfile)
-            assertEquals(100, savedProfile!!.userSeq, "userSeq가 일치해야 합니다.")
-            assertEquals(200, savedProfile.fileSeq, "fileSeq가 일치해야 합니다.")
-            assertEquals("", savedProfile.introduction, "introduction이 빈값이어야 합니다.")
-
-            // MockK 검증: validator.validator(), modelMapper.map, repository.userProfitableSetting, modelMapper.map 호출 확인
-            verify(exactly = 1) { validatorUtil.validator(userProfileDto) }
-            verify(exactly = 1) { modelMapper.map(userProfileDto, UserProfileEntity::class.java) }
-            verify(exactly = 1) { userProfileRepository.userProfitableSetting(userProfileEntity) }
-            verify(exactly = 1) { modelMapper.map(userProfileEntity, UserProfileDto::class.java) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
-        }
-
-        @Test
-        @DisplayName("등록 실패 - 유효하지않은 UserProfileDto는 저장되지 않아야 한다(userSeq)")
-        fun `should not save invalid UserProfileDto with invalid userSeq`() {
-            // Given
-            val userProfileDto = UserProfileDto().apply {
-                userSeq = 0
-                fileSeq = 200
-                introduction = "안녕하세요, 저는 사용자입니다."
-            }
-            val userProfileEntity = UserProfileEntity().apply {
-                userSeq = userProfileDto.userSeq
-                fileSeq = userProfileDto.fileSeq
-                introduction = userProfileDto.introduction
-            }
-
-            // Mocking ModelMapper to map DTO to Entity
-            every { modelMapper.map(userProfileDto, UserProfileEntity::class.java) } returns userProfileEntity
-
-            // ValidatorUtil의 예외 메시지를 기대하는 형식으로 수정
-            every { validatorUtil.validator(userProfileDto) } throws IllegalArgumentException("유효성 검증 실패: 유저 시퀸스는 양수여야 합니다.")
-
-            // When & Then
+            //When
             val exception = assertThrows<IllegalArgumentException> {
-                userProfileService.createDefaultUserProfile(userProfileDto)
+                userSettingService.createDefaultUserSettings(userSettingDto)
             }
 
-            // 예외 메시지에 검증 실패 메시지가 포함되어 있는지 확인
-            assertTrue(
-                exception.message!!.contains("유효성 검증 실패: 유저 시퀸스는 양수여야 합니다."),
-                "예외 메시지에 '유효성 검증 실패: 유저 시퀸스는 양수여야 합니다.'가 포함되어야 합니다."
-            )
-
-            // MockK 검증: validator.validator() 호출되었고, repository.save와 modelMapper.map은 호출되지 않았는지 확인
-            verify(exactly = 1) { validatorUtil.validator(userProfileDto) }
-            verify(exactly = 0) { userProfileRepository.userProfitableSetting(userProfileEntity) }
-            verify(exactly = 0) { modelMapper.map(any(), any<Class<UserProfileEntity>>()) }
-            verify(exactly = 0) { modelMapper.map(any<UserProfileEntity>(), any<Class<UserProfileDto>>()) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
-        }
-
-        @Test
-        @DisplayName("등록 실패 - 유효하지 않은 UserProfileDto는 저장되지 않아야 한다(userSeq, fileSeq)")
-        fun `should not save invalid UserProfileDto with invalid userSeq and fileSeq`() {
-            // Given
-            val userProfileDto = UserProfileDto().apply {
-                userSeq = 0 // 유효하지 않은 값
-                fileSeq = -1 // 유효하지 않은 값
-                introduction = "안녕하세요, 저는 사용자입니다."
-            }
-
-            // Validator Mock 설정: 유효성 검사 실패 시 예외 던지기
-            every { validatorUtil.validator(userProfileDto) } throws IllegalArgumentException("유저 시퀸스는 양수여야 합니다., 파일 시퀸스는 0 이상이어야 합니다.")
-
-            // When & Then
-            val exception = assertThrows<IllegalArgumentException> {
-                userProfileService.createDefaultUserProfile(userProfileDto)
-            }
-
-            // 예외 메시지에 두 개의 검증 실패 메시지가 포함되어 있는지 확인
-            assertTrue(
-                exception.message!!.contains("유저 시퀸스는 양수여야 합니다."),
-                "예외 메시지에 '유저 시퀸스는 양수여야 합니다.'가 포함되어야 합니다."
-            )
-            assertTrue(
-                exception.message!!.contains("파일 시퀸스는 0 이상이어야 합니다."),
-                "예외 메시지에 '파일 시퀸스는 0 이상이어야 합니다.'가 포함되어야 합니다."
-            )
-
-            // MockK 검증: validator.validator() 호출되었고, repository.save와 modelMapper.map은 호출되지 않았는지 확인
-            verify(exactly = 1) { validatorUtil.validator(userProfileDto) }
-            verify(exactly = 0) { userProfileRepository.userProfitableSetting(any()) }
-            verify(exactly = 0) { modelMapper.map(any(), any<Class<UserProfileEntity>>()) }
-            verify(exactly = 0) { modelMapper.map(any<UserProfileEntity>(), any<Class<UserProfileDto>>()) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
+            assertTrue { exception.message!!.contains("유저의 시퀸스는 양수여야 합니다.") }
         }
     }
 
     @Nested
-    @DisplayName("socialMediaPlatFromByUserProfile 메서드 테스트")
-    inner class SocialMediaPlatFromByUserProfileTests {
+    @DisplayName("updateUserSettingByUserSetting 메서드 테스트")
+    inner class updateUserSettingByUserSettingTests {
 
         @Test
-        @DisplayName("등록 성공 - 유효한 SocialMediaPlatForm은 db에 저장되어야 한다")
-        fun `should save valid SocialMediaPlatForm successfully`() {
-            // Given
-            val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
-                userProfileSeq = 50
-                platFormName = "Github"
-                platFormUrl = "https://github/test"
+        fun `수정 성공 - 유효한 userSettingDto는 db에 수정된다`(){
+            //Given
+            val userSettingDto = UserSettingDto().apply {
+                userSettingSeq = 1
+                userSeq = 1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
             }
 
-            val socialMediaPlatFormEntity = SocialMediaPlatFormEntity().apply {
-                userProfileSeq = socialMediaPlatFormDto.userProfileSeq
-                platFormName = socialMediaPlatFormDto.platFormName
-                platFormUrl = socialMediaPlatFormDto.platFormUrl
+            val userSettingEntity = UserSettingEntity().apply {
+                userSettingSeq = 1
+                userSeq = 1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
             }
 
-            // MockK 설정: 유효성 검사가 통과됨
-            justRun { validatorUtil.validator(socialMediaPlatFormDto) }
+            justRun { validatorUtil.validator(userSettingDto) }
+            every {userSettingRepository.updateUserSettingByUserSetting(userSettingEntity)} returns userSettingEntity
 
-            // MockK 설정: ModelMapper가 DTO를 Entity로 변환
-            every {
-                modelMapper.map(
-                    socialMediaPlatFormDto,
-                    SocialMediaPlatFormEntity::class.java
-                )
-            } returns socialMediaPlatFormEntity
+            every {modelMapper.map(userSettingDto, UserSettingEntity::class.java)} returns userSettingEntity
+            every {modelMapper.map(userSettingEntity, UserSettingDto::class.java)} returns userSettingDto
 
-            // MockK 설정: 리포지토리가 저장을 수행하고 반환값을 제공함
-            every { userProfileRepository.socialMediaPlatFromByUserProfile(socialMediaPlatFormEntity) } returns socialMediaPlatFormEntity
+           //When
+            val result = userSettingService.updateUserSettingByUserSetting(userSettingDto)
 
-            // MockK 설정: ModelMapper가 Entity를 DTO로 변환
-            every {
-                modelMapper.map(
-                    socialMediaPlatFormEntity,
-                    SocialMediaPlatFormDto::class.java
-                )
-            } returns socialMediaPlatFormDto
-
-            // When
-            val savedValue = userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
-
-            // Then
-            assertNotNull(savedValue)
-            assertEquals(50, savedValue.userProfileSeq, "userProfileSeq가 일치해야 합니다.")
-            assertEquals("Github", savedValue.platFormName, "platFormName이 일치해야 합니다.")
-            assertEquals("https://github/test", savedValue.platFormUrl, "platFormUrl이 일치해야 합니다.")
-
-            // MockK 검증: validator.validator(), modelMapper.map, repository.socialMediaPlatFromByUserProfile, modelMapper.map 호출 확인
-            verify(exactly = 1) { validatorUtil.validator(socialMediaPlatFormDto) }
-            verify(exactly = 1) { modelMapper.map(socialMediaPlatFormDto, SocialMediaPlatFormEntity::class.java) }
-            verify(exactly = 1) { userProfileRepository.socialMediaPlatFromByUserProfile(socialMediaPlatFormEntity) }
-            verify(exactly = 1) { modelMapper.map(socialMediaPlatFormEntity, SocialMediaPlatFormDto::class.java) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
+            //Then
+            assertThat(result).isEqualTo(userSettingDto)
         }
 
         @Test
-        @DisplayName("등록 실패 - 유효하지 않은 userProfileSeq는 db에 저장되지 않아야 한다")
-        fun `should not save SocialMediaPlatForm with invalid userProfileSeq`() {
-            // Given
-            val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
-                userProfileSeq = -1
-                platFormName = "Github"
-                platFormUrl = "https://github/test"
+        fun `수정 실패 - 유효하지 않은 userSettingDto는 db에 수정되지 않는다`(){
+            //Given
+            val userSettingDto = UserSettingDto().apply {
+                userSettingSeq = 1
+                userSeq = -1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
             }
 
-            // Mocking ValidatorUtil to throw exception
-            every { validatorUtil.validator(socialMediaPlatFormDto) } throws IllegalArgumentException("유저 프로필의 시퀸스는 0이상이여야 합니다.")
+            every { validatorUtil.validator(userSettingDto) } throws IllegalArgumentException("유저의 시퀸스는 양수여야 합니다.")
 
-            // When & Then
+            //When
             val exception = assertThrows<IllegalArgumentException> {
-                userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
+                userSettingService.updateUserSettingByUserSetting(userSettingDto)
             }
 
-            // Then
-            assertTrue(
-                exception.message!!.contains("유저 프로필의 시퀸스는 0이상이여야 합니다."),
-                "예외 메시지에 '유저 프로필의 시퀸스는 0이상이여야 합니다.'가 포함되어야 합니다."
-            )
-            verify(exactly = 0) { userProfileRepository.socialMediaPlatFromByUserProfile(any()) }
-            verify(exactly = 1) { validatorUtil.validator(socialMediaPlatFormDto) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
+            assertTrue { exception.message!!.contains("유저의 시퀸스는 양수여야 합니다.") }
         }
 
         @Test
-        @DisplayName("등록 실패 - 유효하지 않은 platFormName은 db에 저장되지 않아야 한다")
-        fun `should not save SocialMediaPlatForm with empty platFormName`() {
-            // Given
-            val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
-                userProfileSeq = 100
-                platFormName = ""
-                platFormUrl = "https://github/test"
+        fun `수정 실패 - userSetting가 존재하지 않으면 경우 db에 수정되지 않는다`(){
+
+            //Given
+            val userSettingDto = UserSettingDto().apply {
+                userSettingSeq = 1
+                userSeq = 1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
             }
 
-            // Mocking ValidatorUtil to throw exception
-            every { validatorUtil.validator(socialMediaPlatFormDto) } throws IllegalArgumentException("플랫폼 이름은 비어있을수 없습니다.")
+            justRun { validatorUtil.validator(userSettingDto) }
+            every { userSettingRepository.updateUserSettingByUserSetting(any()) } throws IllegalArgumentException("존재하지 않는 유저 입니다.")
+            every { modelMapper.map(userSettingDto, UserSettingEntity::class.java) } returns UserSettingEntity()
+            every { modelMapper.map(any(), UserSettingDto::class.java) } returns userSettingDto
 
-            // When & Then
+            //When
             val exception = assertThrows<IllegalArgumentException> {
-                userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
+                userSettingService.updateUserSettingByUserSetting(userSettingDto)
             }
 
-            // Then
-            assertTrue(
-                exception.message!!.contains("플랫폼 이름은 비어있을수 없습니다."),
-                "예외 메시지에 '플랫폼 이름은 비어있을수 없습니다.'가 포함되어야 합니다."
-            )
-            verify(exactly = 0) { userProfileRepository.socialMediaPlatFromByUserProfile(any()) }
-            verify(exactly = 1) { validatorUtil.validator(socialMediaPlatFormDto) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
-        }
-
-        @Test
-        @DisplayName("등록 실패 - 유효하지 않은 platFormUrl은 db에 저장되지 않아야 한다")
-        fun `should not save SocialMediaPlatForm with empty platFormUrl`() {
-            // Given
-            val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
-                userProfileSeq = 100
-                platFormName = "Github"
-                platFormUrl = ""
-            }
-
-            // Mocking ValidatorUtil to throw exception
-            every { validatorUtil.validator(socialMediaPlatFormDto) } throws IllegalArgumentException("url은 비어있을수 없습니다.")
-
-            // When & Then
-            val exception = assertThrows<IllegalArgumentException> {
-                userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
-            }
-
-            // Then
-            assertTrue(
-                exception.message!!.contains("url은 비어있을수 없습니다."),
-                "예외 메시지에 'url은 비어있을수 없습니다.'가 포함되어야 합니다."
-            )
-            verify(exactly = 0) { userProfileRepository.socialMediaPlatFromByUserProfile(any()) }
-            verify(exactly = 1) { validatorUtil.validator(socialMediaPlatFormDto) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
-        }
-
-        @Test
-        @DisplayName("등록 실패 - 유효하지 않은 platFormUrl(주소 형식)은 db에 저장되지 않아야 한다")
-        fun `should not save SocialMediaPlatForm with invalid platFormUrl format`() {
-            // Given
-            val socialMediaPlatFormDto = SocialMediaPlatFormDto().apply {
-                userProfileSeq = 100
-                platFormName = "Github"
-                platFormUrl = "test_url"
-            }
-
-            // Mocking ValidatorUtil to throw exception
-            every { validatorUtil.validator(socialMediaPlatFormDto) } throws IllegalArgumentException("유효한 url이여야 합니다.")
-
-            // When & Then
-            val exception = assertThrows<IllegalArgumentException> {
-                userProfileService.socialMediaPlatFromByUserProfile(socialMediaPlatFormDto)
-            }
-
-            // Then
-            assertTrue(
-                exception.message!!.contains("유효한 url이여야 합니다."),
-                "예외 메시지에 '유효한 url이여야 합니다.'가 포함되어야 합니다."
-            )
-            verify(exactly = 0) { userProfileRepository.socialMediaPlatFromByUserProfile(any()) }
-            verify(exactly = 1) { validatorUtil.validator(socialMediaPlatFormDto) }
-
-            // 모든 설정된 MockK 호출이 검증되었는지 확인
-            confirmVerified(validatorUtil, modelMapper, userProfileRepository)
+            assertTrue { exception.message!!.contains("존재하지 않는 유저 입니다.") }
         }
     }
+
+
+    @Nested
+    @DisplayName("findUserSettingInfoByUserSeq 메서드 테스트")
+    inner class findUserSettingInfoByUserSeqTests {
+
+        @Test
+        fun `조회 성공 - userSeq에 해당하는 userSettingDto를 반환한다`(){
+            //Given
+            val updateUserSeq = 1L
+
+            val userSettingDto = UserSettingDto().apply {
+                userSettingSeq = 1
+                userSeq = 1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
+            }
+
+            val userSettingEntity = UserSettingEntity().apply {
+                userSettingSeq = 1
+                userSeq = 1
+                notificationEnabled = UserSettingEnabled.OFF
+                eventEnabled = UserSettingEnabled.OFF
+                themePreference = ThemePreference.LIGTH
+            }
+
+            every { userSettingRepository.findUserSettingByUserSeq(updateUserSeq) } returns userSettingEntity
+            every { modelMapper.map(userSettingEntity, UserSettingDto::class.java) } returns userSettingDto
+
+            //When
+            val result = userSettingService.findUserSettingInfoByUserSeq(updateUserSeq)
+
+            //Then
+            assertThat(result).isEqualTo(userSettingDto)
+        }
+
+        @Test
+        fun `조회 실패 - userSeq에 해당하는 userSettingDto가 존재하지 않으면 IllegalArgumentException을 반환한다`(){
+            //Given
+            val userSeq = 1L
+
+            every { userSettingRepository.findUserSettingByUserSeq(userSeq) } throws IllegalArgumentException("존재하지 않는 유저 입니다.")
+
+            //When
+            val exception = assertThrows<IllegalArgumentException> {
+                userSettingService.findUserSettingInfoByUserSeq(userSeq)
+            }
+
+            assertTrue { exception.message!!.contains("존재하지 않는 유저 입니다.") }
+        }
+    }
+
+
 }

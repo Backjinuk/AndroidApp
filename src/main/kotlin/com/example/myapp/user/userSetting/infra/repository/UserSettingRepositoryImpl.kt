@@ -14,9 +14,17 @@ class UserSettingRepositoryImpl (
 
     private val qUserSettingEntity : QUserSettingEntity = QUserSettingEntity.userSettingEntity
 
-    override fun userSettingTableSetting(savedEntity: UserSettingEntity): UserSettingEntity {
+    override fun createDefaultUserSetting(savedEntity: UserSettingEntity): UserSettingEntity {
         entityManager.persist(savedEntity)
         return savedEntity
+    }
+
+    override fun updateUserSettingByUserSetting(userSettingEntity: UserSettingEntity): UserSettingEntity {
+        TODO("Not yet implemented")
+    }
+
+    override fun findUserSettingByUserSeq(updateUserSeq: Long): UserSettingEntity {
+        TODO("Not yet implemented")
     }
 
 
