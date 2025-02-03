@@ -241,7 +241,7 @@ class UserServiceUnitTest {
             every { modelMapper.map(updatedUserEntity, UserDto::class.java) } returns updatedUserDto
 
             // When
-            val result = userService.updateUserInfoByUser( userDto)
+            val result = userService.updateUserInfoByUser(userDto)
 
             // Then
             assertEquals(userDto.email, result.email)
@@ -265,7 +265,7 @@ class UserServiceUnitTest {
             every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
 
             // When & Then
-            val returnValue = userService.updateUserInfoByUser( userDto)
+            val returnValue = userService.updateUserInfoByUser(userDto)
 
             assertEquals(userEntity.userSeq, 0L)
         }
@@ -286,7 +286,7 @@ class UserServiceUnitTest {
 
             // When & Then
             val exception = assertThrows<IllegalArgumentException> {
-                userService.updateUserInfoByUser( invalidUserDto)
+                userService.updateUserInfoByUser(invalidUserDto)
             }
             assertEquals("이메일 형식이 유효하지 않습니다.", exception.message)
         }
@@ -411,6 +411,7 @@ class UserServiceUnitTest {
     @Nested
     @DisplayName("addUserTokenByUserSeq 메서드 테스트")
     inner class AddUserTokenByUserSeq() {
+
         @org.junit.jupiter.api.Test
         @DisplayName("등록 성공 - 유효한 UserTokenDto는 DB에 저장되고 반환되어야 한다")
         fun `등록 성공 - 유효한 UserTokenDto는 DB에 저장되고 반환되어야 한다`() {
@@ -607,6 +608,76 @@ class UserServiceUnitTest {
             )
         }
     }
+
+    @Nested
+    @DisplayName("getFindUserInfoByEmailAndPassword 메서드 테스트")
+    inner class GetFindUserInfoByEmailAndPasswordTests {
+
+        @Test
+        @DisplayName("성공적으로 사용자 정보를 조회")
+        fun `성공적으로 사용자 정보를 조회`() {
+            // Given
+            var email = "valid.email@example.com"
+            var passwd = "ValidPass123"
+
+            val userEntity = UserEntity().apply {
+                email = email
+                passwd = passwd
+                nickName = "UserNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            val userDto = UserDto().apply {
+                email = userEntity.email
+                passwd = userEntity.passwd
+                nickName = userEntity.nickName
+                userRole = userEntity.userRole
+                joinType = userEntity.joinType
+            }
+
+            every { userRepository.getFindUserInfoByEmailAndPasswd(email, passwd) } returns userEntity
+
+            every { modelMapper.map(userEntity, UserDto::class.java) } returns userDto
+
+            // When
+            val result = userService.getFindUserInfoByEmailAndPassword(email, passwd)
+
+            // Then
+            assertEquals(userDto.email, result.email)
+            assertEquals(userDto.passwd, result.passwd)
+            assertEquals(userDto.nickName, result.nickName)
+            assertEquals(userDto.userRole, result.userRole)
+            assertEquals(userDto.joinType, result.joinType)
+
+            verify(exactly = 1) { userRepository.getFindUserInfoByEmailAndPasswd(email, passwd) }
+            verify(exactly = 1) { modelMapper.map(userEntity, UserDto::class.java) }
+
+        }
+
+        @Test
+        fun `사용자가 존재하지 않아 조회 실패`() {
+            // Given
+            var email = "valid.email@example.com"
+            var passwd = "ValidPass123"
+
+            every {
+                userRepository.getFindUserInfoByEmailAndPasswd(
+                    email,
+                    passwd
+                )
+            } throws IllegalArgumentException("존재하지 않는 사용자 입니다.")
+
+            val exception =
+                assertThrows<IllegalArgumentException> { userService.getFindUserInfoByEmailAndPassword(email, passwd) }
+
+            assertTrue(exception.message!!.contains("존재하지 않는 사용자 입니다."))
+
+        }
+    }
+
+
+
 }
 
 

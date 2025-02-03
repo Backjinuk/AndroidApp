@@ -1,9 +1,12 @@
 package com.example.myapp.user.useCase
 
+import com.example.myapp.Util.JwtUtil
 import com.example.myapp.user.user.domain.UserJoinType
 import com.example.myapp.user.user.domain.UserRole
 import com.example.myapp.user.user.domain.dto.UserDto
 import com.example.myapp.user.user.domain.dto.UserTokenDto
+import com.example.myapp.user.user.domain.entity.UserEntity
+import com.example.myapp.user.user.domain.entity.UserTokenEntity
 import com.example.myapp.user.user.service.UserService
 import com.example.myapp.user.userProfile.domain.dto.UserProfileDto
 import com.example.myapp.user.userProfile.service.UserProfileService
@@ -15,6 +18,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.justRun
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -24,6 +28,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.modelmapper.ModelMapper
+import java.time.LocalDateTime
 
 @ExtendWith(MockKExtension::class)
 class UserUseCaseUnitTest {
@@ -36,6 +41,9 @@ class UserUseCaseUnitTest {
 
     @MockK
     private lateinit var userSettingService: UserSettingService
+
+    @MockK
+    private lateinit var jwtUtil: JwtUtil
 
     @MockK
     private lateinit var modelMapper: ModelMapper
@@ -294,5 +302,69 @@ class UserUseCaseUnitTest {
 
     }
 
+    @Nested
+    @DisplayName("login 메소드")
+    inner class Login {
 
+        @Test
+        fun `login - 성공적으로 로그인을 완료한다`(){
+            // given
+            val userDto = UserDto().apply {
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+            }
+
+            val userInfo = UserDto().apply {
+                userSeq = 1L
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+            }
+
+            val token = "testToken12345";
+
+
+            val userTokenDto = UserTokenDto().apply {
+                userSeq = userInfo.userSeq
+                refreshToken = token
+                expiredDt = LocalDateTime.now()
+            }
+
+            // when
+            every { userService.addUserTokenByUserSeq(any()) } returns userTokenDto
+            every { userService.getFindUserInfoByEmailAndPassword(userDto.email, userDto.passwd) } returns userInfo
+            every { jwtUtil.createRefreshToken(userInfo) } returns token
+            every { jwtUtil.getExpireDt(token) } returns LocalDateTime.now()
+
+            every { modelMapper.map(userTokenDto, UserTokenEntity::class.java) } returns UserTokenEntity()
+            every { modelMapper.map(UserEntity(), UserDto::class.java) } returns userInfo
+            every { modelMapper.map(UserTokenEntity() , UserTokenDto::class.java) } returns userTokenDto
+            every { modelMapper.map(userTokenDto, UserTokenEntity::class.java) } returns UserTokenEntity()
+
+            val result = userUseCaseInteractor.login(userDto)
+
+            // then
+            assertEquals(userInfo.userSeq, result.userSeq)
+            assertEquals(userInfo.email, result.email)
+            assertEquals(userInfo.passwd, result.passwd)
+        }
+
+        @Test
+        fun `login - 로그인 실패 시 토큰 등록 실패`() {
+            // given
+            val userDto = UserDto().apply {
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+            }
+
+            val userInfo = UserDto().apply {
+                userSeq = 1L
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+            }
+
+
+
+
+        }
+    }
 }

@@ -1,6 +1,5 @@
 package com.example.myapp.user.userProfile.infra.repository
 
-import com.example.myapp.Entity.QUser.user
 import com.example.myapp.user.user.infra.repository.setIfNotNull
 import com.example.myapp.user.userProfile.domain.entity.QSocialMediaPlatFormEntity
 import com.example.myapp.user.userProfile.domain.entity.QUserProfileEntity

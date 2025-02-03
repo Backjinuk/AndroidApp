@@ -54,5 +54,10 @@ class UserService(
        return userRepository.userIsNickNameByUserDto(userDto.nickName);
     }
 
+    fun getFindUserInfoByEmailAndPassword(email: String, passwd: String) : UserDto {
+        val userEntity = userRepository.getFindUserInfoByEmailAndPasswd(email, passwd)
+        return modelMapper.map(userEntity, UserDto::class.java)
+    }
+
 
 }

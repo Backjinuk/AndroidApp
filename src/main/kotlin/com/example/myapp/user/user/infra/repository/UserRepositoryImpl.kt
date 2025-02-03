@@ -79,6 +79,17 @@ class UserRepositoryImpl(
         return result != null
     }
 
+    override fun getFindUserInfoByEmailAndPasswd(email: String, passwd: String): UserEntity {
+        val resultValue = queryFactory.selectFrom(qUserEntity)
+            .where(qUserEntity.email.eq(email).and(qUserEntity.passwd.eq(passwd)))
+            .fetchOne()
+
+        if (resultValue == null) {
+            throw IllegalArgumentException("존재하지 않는 사용자 입니다.")
+        }
+
+        return resultValue
+    }
 }
 
 

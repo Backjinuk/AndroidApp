@@ -376,6 +376,45 @@ class UserServiceIntegrationTest @Autowired constructor(
 
     }
 
+    @Nested
+    @DisplayName("getFindUserInfoByEmailAndPassword 메서드 테스트")
+    inner class getFinduserInfoByEmailAndPassword {
+
+        @Test
+        fun `이메일과 비밀번호로 사용자 정보 조회`() {
+            // Given: 존재하는 사용자 (예: userSeq = 1L, 테스트 DB에 미리 존재)
+            val userDto = UserDto().apply {
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+                nickName = "ValidNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            userService.registerUser(userDto)
+
+            // When: 조회 실행
+            val result = userService.getFindUserInfoByEmailAndPassword(userDto.email, userDto.passwd)
+
+            // Then: 조회된 값이 null이 아니고, 필드들이 올바르게 설정되었는지 검증
+            assertNotNull(result)
+        }
+
+       @Test
+        fun `존재하지 않는 사용자 정보 조회 시 실패`() {
+           // Given: DB에 존재하지 않는 사용자 정보 사용
+           val email = "valid.email@example.com"
+           val passwd = "ValidPass123"
+
+           val result = assertThrows<InvalidDataAccessApiUsageException> {
+               userService.getFindUserInfoByEmailAndPassword(email, passwd)
+           }
+
+           assertTrue(result.message!!.contains("존재하지 않는 사용자 입니다."))
+       }
+    }
+
+
 
 }
 

@@ -19,4 +19,6 @@ interface UserRepository {
 
     fun userIsNickNameByUserDto(nickName: String): Boolean
 
+    fun getFindUserInfoByEmailAndPasswd(email: String, passwd: String) : UserEntity
+
 }

@@ -1,5 +1,6 @@
 package com.example.myapp.user.useCase
 
+import com.example.myapp.Util.JwtUtil
 import com.example.myapp.user.user.domain.dto.UserDto
 import com.example.myapp.user.user.domain.dto.UserTokenDto
 import com.example.myapp.user.user.service.UserService
@@ -16,6 +17,7 @@ class UserUseCaseInteract(
     private var userService: UserService,
     private var userSettingService: UserSettingService,
     private var userProfileService: UserProfileService,
+    private var jwtUtil: JwtUtil,
     private var modelMapper: ModelMapper
 ) : UserUseCase {
 
@@ -43,4 +45,23 @@ class UserUseCaseInteract(
         return userService.updateUserInfoByUser(userDto)
     }
 
+    override fun login(userDto: UserDto): UserDto {
+        val userInfo = userService.getFindUserInfoByEmailAndPassword(userDto.email, userDto.passwd)
+
+        // jwt 발급후 db애 저장
+        val token = jwtUtil.createRefreshToken(userInfo)
+
+        userService.addUserTokenByUserSeq(
+            UserTokenDto().apply {
+                userSeq = userInfo.userSeq
+                refreshToken = token
+                expiredDt = jwtUtil.getExpireDt(token)
+            }
+        )
+
+
+
+        return userInfo;
+
+    }
 }

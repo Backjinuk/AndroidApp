@@ -1,3 +1,4 @@
+/*
 package com.example.myapp.Controller
 
 import com.example.myapp.Dto.UserDto
@@ -25,7 +26,7 @@ class UserController {
     fun userController(userService: UserService, jwtUtil: JwtUtil){
         this.userService = userService;
         this.jwtUtil = jwtUtil;
-    }
+    ∑ß}
 
     @PostMapping("userJoin")
     fun userJoin(@RequestBody userDto :UserDto) : MutableMap<String, String>{
@@ -81,8 +82,12 @@ class UserController {
 
         // JWT 없으면 새로 발급
         if (mutableMap["AccessToken"].isNullOrEmpty() && mutableMap["RefreshToken"].isNullOrEmpty()) {
+*/
+/*
             mutableMap["AccessToken"] = loggedInUser?.let { jwtUtil?.createAccessToken(it).toString() }.toString()
             mutableMap["RefreshToken"] = loggedInUser?.let { jwtUtil?.createRefreshToken(it).toString() }.toString()
+*//*
+
 
             println("mutableMap[\"RefreshToken\"] = ${mutableMap["AccessToken"]}")
             println("mutableMap[\"RefreshToken\"] = ${mutableMap["RefreshToken"]}")
@@ -155,4 +160,4 @@ class UserController {
 
     }
 
-}
+}*/

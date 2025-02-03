@@ -1,6 +1,6 @@
 package com.example.myapp.Util
 
-import com.example.myapp.Dto.UserDto
+import com.example.myapp.user.user.domain.dto.UserDto
 import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.security.Key
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -52,8 +54,6 @@ class JwtUtil(
         val claims: Claims = Jwts.claims().also {
             it["userSeq"] = userDto.userSeq
             it["email"] = userDto.email
-            it["userId"] = userDto.userId
-            it["usertype"] = userDto.userType
         }
 
         val now: ZonedDateTime = ZonedDateTime.now()
@@ -137,10 +137,8 @@ class JwtUtil(
 
             // UserDto에 값을 할당
             val userDto = UserDto().apply {
-                userSeq = claims["userSeq"]?.toString()?.toLong()
-                email = claims["email"] as? String
-                userId = claims["userId"] as? String
-                userType = claims["userType"] as? String
+                userSeq = claims["userSeq"]?.toString()?.toLong()!!
+                email = (claims["email"] as? String).toString()
             }
 
             log.info("TOKEN ReFresh 완료...")
@@ -175,6 +173,16 @@ class JwtUtil(
 
     }
 
+
+    fun getExpireDt(token: String): LocalDateTime {
+        val claims = Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .body
+
+        return claims.expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+    }
 
 
 }
