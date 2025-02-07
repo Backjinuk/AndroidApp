@@ -1,6 +1,7 @@
 package com.example.myapp.user.user.infra.repository
 
 import com.example.myapp.user.user.domain.entity.QUserEntity
+import com.example.myapp.user.user.domain.entity.QUserTokenEntity
 import com.example.myapp.user.user.domain.entity.UserEntity
 import com.example.myapp.user.user.domain.entity.UserTokenEntity
 import com.querydsl.core.types.Path
@@ -18,6 +19,7 @@ class UserRepositoryImpl(
 
     private val qUserEntity: QUserEntity = QUserEntity.userEntity
 
+    private val qUserTokenEntity: QUserTokenEntity = QUserTokenEntity.userTokenEntity
 
     override fun userJoin(user: UserEntity): UserEntity {
         entityManager.persist(user)
@@ -27,6 +29,19 @@ class UserRepositoryImpl(
     override fun addUserTokenByUserSeq(userTokenEntity: UserTokenEntity): UserTokenEntity {
         entityManager.persist(userTokenEntity)
         return userTokenEntity
+    }
+
+    override fun updateJwtTokenByUserSeq(userTokenEntity: UserTokenEntity?) {
+        val execute = queryFactory.update(qUserTokenEntity)
+            .setIfNotNull(qUserTokenEntity.refreshToken, userTokenEntity?.refreshToken)
+            .setIfNotNull(qUserTokenEntity.expiredDt, userTokenEntity?.expiredDt)
+            .where(qUserTokenEntity.userSeq.eq(userTokenEntity?.userSeq))
+            .execute()
+
+        if (execute == 0L) {
+            throw IllegalArgumentException("존재하지 않는 사용자 입니다.")
+        }
+
     }
 
     override fun getFindUserInfoByUserSeq(userSeq: Long): UserEntity {

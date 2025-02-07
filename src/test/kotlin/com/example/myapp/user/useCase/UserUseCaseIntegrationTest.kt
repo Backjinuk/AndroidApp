@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.dao.InvalidDataAccessApiUsageException
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 
@@ -169,5 +170,51 @@ class UserUseCaseIntegrationTest @Autowired constructor(
     }
 
 
+    @Nested
+    @DisplayName("login 메서드")
+    inner class Login {
 
+        @Test
+        fun `login - 성공적으로 로그인한다`() {
+            // given
+            val userDto = UserDto().apply {
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+                nickName = "ValidNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            userUseCaseInteract.registerUser(userDto)
+
+            // when
+            val result = userUseCaseInteract.login(userDto)
+
+            // then
+            assertNotNull(result.userSeq, "userSeq는 null이 아니어야 합니다.")
+            assertEquals(userDto.email, result.email, "이메일이 일치해야 합니다.")
+            assertEquals(userDto.nickName, result.nickName, "닉네임이 일치해야 합니다.")
+            assertNotNull(result.token, "토큰은 null이 아니어야 합니다.")
+        }
+
+        @Test
+        fun `login - 로그인 실패 시 예외 발생`() {
+            // given
+            val userDto = UserDto().apply {
+                email = "valid.email@example.com"
+                passwd = "ValidPass123"
+                nickName = "ValidNick"
+                userRole = UserRole.User
+                joinType = UserJoinType.GITHUB
+            }
+
+            // when & then
+            val exception = assertThrows<InvalidDataAccessApiUsageException> {
+                userUseCaseInteract.login(userDto)
+            }
+
+            assertTrue(exception.message!!.contains("존재하지 않는 사용자 입니다."))
+
+        }
+    }
 }

@@ -307,7 +307,7 @@ class UserUseCaseUnitTest {
     inner class Login {
 
         @Test
-        fun `login - 성공적으로 로그인을 완료한다`(){
+        fun `login - 성공적으로 로그인을 완료한다`() {
             // given
             val userDto = UserDto().apply {
                 email = "valid.email@example.com"
@@ -330,26 +330,27 @@ class UserUseCaseUnitTest {
             }
 
             // when
-            every { userService.addUserTokenByUserSeq(any()) } returns userTokenDto
+            justRun { userService.updateJwtTokenByUserSeq(any()) }
             every { userService.getFindUserInfoByEmailAndPassword(userDto.email, userDto.passwd) } returns userInfo
             every { jwtUtil.createRefreshToken(userInfo) } returns token
             every { jwtUtil.getExpireDt(token) } returns LocalDateTime.now()
 
             every { modelMapper.map(userTokenDto, UserTokenEntity::class.java) } returns UserTokenEntity()
             every { modelMapper.map(UserEntity(), UserDto::class.java) } returns userInfo
-            every { modelMapper.map(UserTokenEntity() , UserTokenDto::class.java) } returns userTokenDto
+            every { modelMapper.map(UserTokenEntity(), UserTokenDto::class.java) } returns userTokenDto
             every { modelMapper.map(userTokenDto, UserTokenEntity::class.java) } returns UserTokenEntity()
 
-            val result = userUseCaseInteractor.login(userDto)
+            val loginResponseDto = userUseCaseInteractor.login(userDto)
 
             // then
-            assertEquals(userInfo.userSeq, result.userSeq)
-            assertEquals(userInfo.email, result.email)
-            assertEquals(userInfo.passwd, result.passwd)
+            assertEquals(userInfo.userSeq, loginResponseDto.userSeq)
+            assertEquals(userInfo.email, loginResponseDto.email)
+            assertEquals(userInfo.nickName, loginResponseDto.nickName)
+            assertEquals(token, loginResponseDto.token)
         }
 
         @Test
-        fun `login - 로그인 실패 시 토큰 등록 실패`() {
+        fun `login - 로그인 실패 시 예외 발생`() {
             // given
             val userDto = UserDto().apply {
                 email = "valid.email@example.com"
@@ -362,9 +363,32 @@ class UserUseCaseUnitTest {
                 passwd = "ValidPass123"
             }
 
+            val token = "testToken12345";
 
 
+            val userTokenDto = UserTokenDto().apply {
+                userSeq = userInfo.userSeq
+                refreshToken = token
+                expiredDt = LocalDateTime.now()
+            }
 
+            // when
+            every {
+                userService.getFindUserInfoByEmailAndPassword(
+                    userDto.email,
+                    userDto.passwd
+                )
+            } throws IllegalArgumentException("존재하지 않는 회원입니다.")
+
+            // then
+            val exception = assertThrows<IllegalArgumentException> {
+                userUseCaseInteractor.login(userDto)
+            }
+
+            assertEquals("존재하지 않는 회원입니다.", exception.message, "예외 메시지가 일치해야 합니다.")
         }
     }
+
+
+
 }

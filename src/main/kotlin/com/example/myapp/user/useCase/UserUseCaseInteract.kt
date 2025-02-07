@@ -1,6 +1,7 @@
 package com.example.myapp.user.useCase
 
 import com.example.myapp.Util.JwtUtil
+import com.example.myapp.user.user.controller.dto.LoginResponseDto
 import com.example.myapp.user.user.domain.dto.UserDto
 import com.example.myapp.user.user.domain.dto.UserTokenDto
 import com.example.myapp.user.user.service.UserService
@@ -17,8 +18,7 @@ class UserUseCaseInteract(
     private var userService: UserService,
     private var userSettingService: UserSettingService,
     private var userProfileService: UserProfileService,
-    private var jwtUtil: JwtUtil,
-    private var modelMapper: ModelMapper
+    private var jwtUtil: JwtUtil
 ) : UserUseCase {
 
     override fun registerUser(userDto: UserDto): UserDto {
@@ -29,12 +29,14 @@ class UserUseCaseInteract(
 
         userSettingService.createDefaultUserSettings(UserSettingDto().apply { userSeq = registeredUser.userSeq })
 
+        val token = jwtUtil.createAccessToken(registeredUser);
+
         userService.addUserTokenByUserSeq(
             //임시로 refreshToken, exprieDt 지정
             UserTokenDto().apply {
                 userSeq = registeredUser.userSeq
-                refreshToken = "testToken12345"
-                expiredDt = LocalDateTime.now()
+                refreshToken = token
+                expiredDt = jwtUtil.getExpireDt(token.split(" ")[1])
             }
         )
 
@@ -45,23 +47,27 @@ class UserUseCaseInteract(
         return userService.updateUserInfoByUser(userDto)
     }
 
-    override fun login(userDto: UserDto): UserDto {
+
+    override fun login(userDto: UserDto): LoginResponseDto {
         val userInfo = userService.getFindUserInfoByEmailAndPassword(userDto.email, userDto.passwd)
 
         // jwt 발급후 db애 저장
         val token = jwtUtil.createRefreshToken(userInfo)
 
-        userService.addUserTokenByUserSeq(
+        userService.updateJwtTokenByUserSeq(
             UserTokenDto().apply {
                 userSeq = userInfo.userSeq
                 refreshToken = token
-                expiredDt = jwtUtil.getExpireDt(token)
+                expiredDt = jwtUtil.getExpireDt(token.split(" ")[1])
             }
         )
 
-
-
-        return userInfo;
+        return LoginResponseDto().apply {
+            this.userSeq = userInfo.userSeq
+            this.email = userInfo.email
+            this.nickName = userInfo.nickName
+            this.token = token
+        }
 
     }
 }

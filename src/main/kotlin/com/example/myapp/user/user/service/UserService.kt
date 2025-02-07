@@ -59,5 +59,9 @@ class UserService(
         return modelMapper.map(userEntity, UserDto::class.java)
     }
 
+    fun updateJwtTokenByUserSeq(userTokenDto: UserTokenDto) {
+       userRepository.updateJwtTokenByUserSeq(modelMapper.map(userTokenDto, UserTokenEntity::class.java));
+    }
+
 
 }

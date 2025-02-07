@@ -21,4 +21,7 @@ interface UserRepository {
 
     fun getFindUserInfoByEmailAndPasswd(email: String, passwd: String) : UserEntity
 
+    fun updateJwtTokenByUserSeq(userTokenEntity: UserTokenEntity?)
+
+
 }
